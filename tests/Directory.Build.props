@@ -1,0 +1,12 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- Exitcode 8 = "zero tests ran": testprojecten die nog geen tests hebben (tests volgen per taakgroep) laten de run niet falen. -->
+    <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --ignore-exit-code 8</TestingPlatformCommandLineArguments>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(MSBuildProjectName)' != 'Doctrina.TestKit' and '$(ArchitectureFixture)' != 'true'">
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>

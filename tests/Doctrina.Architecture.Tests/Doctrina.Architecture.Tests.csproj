@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Doctrina.Architecture.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="NetArchTest.Rules" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Host verwijst naar elke productmodule (design D1), dus hun assemblies staan in de uitvoermap. -->
+    <ProjectReference Include="..\..\src\Doctrina.Host\Doctrina.Host.csproj" />
+  </ItemGroup>
+  <ItemGroup Label="Fixtures: opzettelijk foute en goede moduleverwijzingen (taak 4.1)">
+    <ProjectReference Include="..\Doctrina.Architecture.Tests.Fixtures\Modules\Alpha\Doctrina.Modules.Alpha\Doctrina.Modules.Alpha.csproj" />
+    <ProjectReference Include="..\Doctrina.Architecture.Tests.Fixtures\Modules\Gamma\Doctrina.Modules.Gamma\Doctrina.Modules.Gamma.csproj" />
+  </ItemGroup>
+</Project>

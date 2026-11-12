@@ -1,0 +1,25 @@
+# .NET
+bin/
+obj/
+artifacts/
+TestResults/
+*.user
+*.suo
+.vs/
+*.trx
+coverage*.xml
+
+# Node / front-end build
+node_modules/
+wwwroot/css/*.min.css
+
+# Lokale configuratie en secrets
+.env
+appsettings.Local.json
+appsettings.Secrets.json
+*.pfx
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/

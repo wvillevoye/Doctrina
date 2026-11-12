@@ -1,0 +1,3 @@
+# Regeleinden normaliseren in de repo; shellscripts altijd LF (bash faalt op CRLF, ook in Git Bash).
+* text=auto
+*.sh text eol=lf

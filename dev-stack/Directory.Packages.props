@@ -1,0 +1,6 @@
+<Project>
+  <!-- Geen central package management voor de dev-stack-voorbeelden (versies staan in hun eigen .csproj). -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+</Project>

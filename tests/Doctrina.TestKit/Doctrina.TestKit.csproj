@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <!-- Gedeelde testhelpers: nagebootste OIDC-provider, testmodules (Sample, Notes, A, B), LocalDB-databasefixture en testdata-builders.
+       Doctrina.Host verwijst hier nooit naar (design D10). -->
+  <PropertyGroup>
+    <RootNamespace>Doctrina.TestKit</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Alleen voor dotnet ef (migraties van de testmodules), zie docs/ontwikkelen/database.md. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Doctrina.Core\Doctrina.Core.csproj" />
+    <ProjectReference Include="..\..\src\Doctrina.Infrastructure\Doctrina.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

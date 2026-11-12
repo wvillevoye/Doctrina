@@ -1,0 +1,36 @@
+name: doctrina-dev
+# Lokale dev-stack voor Doctrina (zie ../docs/Doctrina-voorstel.md §3.3): Keycloak en Mailpit.
+# De database draait niet hier maar op SQL Server LocalDB: (localdb)\MSSQLLocalDB (design D13 van add-modular-foundation).
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION:-26.6.1}
+    container_name: keycloak
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_ADMIN_USER:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD:-admin}
+      KC_HTTP_PORT: 8080
+      KC_HEALTH_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./realm:/opt/keycloak/data/import:ro
+      - keycloak-data:/opt/keycloak/data
+    healthcheck:
+      # Het image heeft geen curl; gebruik bash /dev/tcp
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q '\"status\": \"UP\"' <&3"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  mailpit:
+    image: axllent/mailpit:${MAILPIT_VERSION:-v1.28}
+    container_name: mailpit
+    ports:
+      - "8025:8025"   # web-UI
+      - "1025:1025"   # SMTP
+
+volumes:
+  keycloak-data:

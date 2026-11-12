@@ -1,0 +1,9 @@
+@page "/sample/fout"
+
+@* Gooit altijd: voor de test van de foutpagina. *@
+<h1>Komt nooit in beeld</h1>
+
+@code {
+    protected override void OnInitialized() =>
+        throw new InvalidOperationException("Geheime paginafout over I6123456");
+}

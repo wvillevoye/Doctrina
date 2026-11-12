@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Doctrina.Core/Doctrina.Core.csproj" />
+    <Project Path="src/Doctrina.Host/Doctrina.Host.csproj" />
+    <Project Path="src/Doctrina.Infrastructure/Doctrina.Infrastructure.csproj" />
+    <Project Path="src/Doctrina.UI/Doctrina.UI.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Doctrina.Architecture.Tests/Doctrina.Architecture.Tests.csproj" />
+    <Project Path="tests/Doctrina.Core.Tests/Doctrina.Core.Tests.csproj" />
+    <Project Path="tests/Doctrina.Host.IntegrationTests/Doctrina.Host.IntegrationTests.csproj" />
+    <Project Path="tests/Doctrina.TestKit/Doctrina.TestKit.csproj" />
+  </Folder>
+</Solution>

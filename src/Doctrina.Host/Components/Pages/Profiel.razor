@@ -1,0 +1,98 @@
+@page "/profiel"
+@attribute [Authorize]
+@inject Doctrina.Infrastructure.Authorization.PermissionRegistry Registry
+
+<PageTitle>Mijn profiel · Doctrina</PageTitle>
+
+<h1>Mijn profiel</h1>
+
+@if (_user is not null)
+{
+  <dl>
+    <dt>Naam</dt>
+    <dd data-testid="name">@_user.Identity?.Name</dd>
+
+    <dt>Persoon-id</dt>
+    <dd data-testid="person-id">@(_user.FindFirst(DoctrinaClaimTypes.PersonId)?.Value ?? "–")</dd>
+
+    <dt>E-mail</dt>
+    <dd>@(_user.FindFirst(DoctrinaClaimTypes.Email)?.Value ?? "–")</dd>
+
+    <dt>Ingelogd via (issuer)</dt>
+    <dd data-testid="issuer">@_issuer</dd>
+
+    <dt>Gebruikers-id (sub)</dt>
+    <dd>@(_user.FindFirst(DoctrinaClaimTypes.Subject)?.Value ?? "–")</dd>
+
+    <dt>Rollen</dt>
+    <dd>
+      @if (_roles.Count == 0)
+      {
+        <span>geen</span>
+      }
+      else
+      {
+        <ul data-testid="roles">
+          @foreach (var role in _roles)
+          {
+            <li>@role</li>
+          }
+        </ul>
+      }
+    </dd>
+
+    <dt>Permissies per rol</dt>
+    <dd>
+      <ul data-testid="role-permissions">
+        @foreach (var role in _roles)
+        {
+          var granted = Registry.PermissionsFor([role]);
+          <li>@role: @(granted.Count == 0 ? "geen" : string.Join(", ", granted))</li>
+        }
+      </ul>
+    </dd>
+
+    <dt>Beheerder</dt>
+    <dd data-testid="is-admin">@(_user.IsInRole("admin") ? "ja" : "nee")</dd>
+
+    <dt>Permissies</dt>
+    <dd>
+      @if (_permissions.Count == 0)
+      {
+        <span data-testid="permissions">geen</span>
+      }
+      else
+      {
+        <ul data-testid="permissions">
+          @foreach (var permission in _permissions)
+          {
+            <li><code>@permission</code> – @(Registry.Find(permission)?.Description ?? "onbekend")</li>
+          }
+        </ul>
+      }
+    </dd>
+  </dl>
+}
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    private ClaimsPrincipal? _user;
+    private string? _issuer;
+    private List<string> _roles = [];
+    private List<string> _permissions = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthenticationState is null)
+        {
+            return;
+        }
+
+        _user = (await AuthenticationState).User;
+        _issuer = _user.FindFirst(DoctrinaClaimTypes.Subject)?.Issuer;
+        _roles = [.. _user.FindAll(DoctrinaClaimTypes.Roles).Select(c => c.Value).Order(StringComparer.Ordinal)];
+        _permissions = [.. _user.FindAll(DoctrinaClaimTypes.Permission).Select(c => c.Value).Distinct().Order(StringComparer.Ordinal)];
+    }
+}

@@ -1,0 +1,24 @@
+@page "/fout"
+@using System.Diagnostics
+
+@* Foutpagina voor pagina's (niet voor /api: die krijgen ProblemDetails). Toont geen exceptiondetails, alleen een
+   trace-id waarmee beheer de fout in de logs terugvindt. *@
+<PageTitle>Er ging iets mis · Doctrina</PageTitle>
+
+<h1>Er ging iets mis</h1>
+<p>Er is een onverwachte fout opgetreden. Probeer het later opnieuw.</p>
+@if (!string.IsNullOrEmpty(_traceId))
+{
+  <p>Geef bij een melding deze code door: <code data-testid="trace-id">@_traceId</code></p>
+}
+<p><a href="/">Terug naar de startpagina</a></p>
+
+@code {
+    private string? _traceId;
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    protected override void OnInitialized() =>
+        _traceId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+}

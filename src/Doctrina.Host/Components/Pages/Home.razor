@@ -1,0 +1,14 @@
+@page "/"
+
+<PageTitle>Doctrina</PageTitle>
+
+<h1>Welkom bij Doctrina</h1>
+
+<AuthorizeView>
+  <Authorized>
+    <p>Je bent ingelogd als <strong>@context.User.Identity?.Name</strong>. Bekijk <a href="/profiel">je profiel</a>.</p>
+  </Authorized>
+  <NotAuthorized>
+    <p>Log in met je instellingsaccount om verder te gaan.</p>
+  </NotAuthorized>
+</AuthorizeView>

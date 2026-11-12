@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <!-- Blazor Web App (Interactive Server): opstarten, routing, auth, module-loading. -->
+  <PropertyGroup>
+    <RootNamespace>Doctrina.Host</RootNamespace>
+    <UserSecretsId>doctrina-host</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Testinstellingen en secrets gaan nooit mee bij publiceren (design D13). -->
+    <Content Update="appsettings.Test.json;appsettings.Secrets.json;appsettings.Secrets.example.json" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Doctrina.Core\Doctrina.Core.csproj" />
+    <ProjectReference Include="..\Doctrina.Infrastructure\Doctrina.Infrastructure.csproj" />
+    <ProjectReference Include="..\Doctrina.UI\Doctrina.UI.csproj" />
+  </ItemGroup>
+</Project>

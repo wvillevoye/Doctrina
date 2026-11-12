@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Fixture voor de architectuurtests (taak 4.1); geen echte module en nooit door Doctrina.Host gebruikt. -->
+  <PropertyGroup>
+    <ArchitectureFixture>true</ArchitectureFixture>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+</Project>

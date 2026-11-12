@@ -1,0 +1,28 @@
+@inject NavigationManager Navigation
+
+@* Inhoud van de router als een pagina niet mag (navigeren binnen een geopende Blazor-pagina). Bij het laden van een
+   pagina regelt de server dit al: anoniem → inloggen, ingelogd zonder permissie → /geen-toegang (403). *@
+@if (_authenticated)
+{
+  <h1>Geen toegang</h1>
+  <p>Je bent ingelogd, maar je hebt geen rechten voor deze pagina.</p>
+  <p><a href="/">Terug naar de startpagina</a></p>
+}
+
+@code {
+    private bool _authenticated;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = AuthenticationState is null ? null : (await AuthenticationState).User;
+        _authenticated = user?.Identity?.IsAuthenticated == true;
+        if (!_authenticated)
+        {
+            var returnUrl = "/" + Navigation.ToBaseRelativePath(Navigation.Uri);
+            Navigation.NavigateTo($"{AuthenticationEndpoints.SignInPath}?returnUrl={Uri.EscapeDataString(returnUrl)}", forceLoad: true);
+        }
+    }
+}

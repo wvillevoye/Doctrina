@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Gedeelde conventies en contracten, geen domeinlogica en geen infrastructuur (zie proposal §3.1).
+       Geen NuGet-packages; alleen het ASP.NET Core-framework voor de /api/v1-routegroep in IModule (design D2). -->
+  <PropertyGroup>
+    <RootNamespace>Doctrina.Core</RootNamespace>
+    <!-- Publieke API: XML-commentaar verplicht (CS1591 weer aan). -->
+    <NoWarn>$(NoWarn.Replace('CS1591', ''))</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+</Project>

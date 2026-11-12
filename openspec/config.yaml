@@ -1,0 +1,43 @@
+schema: spec-driven
+
+# Projectcontext: randvoorwaarden die een agent niet uit de code kan afleiden.
+# Volledige achtergrond: docs/Doctrina-voorstel.md. Huisregels: AGENTS.md.
+context: |
+  Doctrina is een modulair LMS (modulaire monoliet) voor het Nederlandse hoger onderwijs.
+  De stack ligt vast: .NET 10 (LTS) / C#, Blazor Web App (Interactive Server), ASP.NET Core Minimal APIs onder /api/v1
+  met OpenAPI + Scalar, EF Core 10 op SQL Server (lokaal en in tests: LocalDB `(localdb)\MSSQLLocalDB`), Hangfire, xUnit + bUnit.
+  Target net10.0, ook al bestaat .NET 11; Microsoft.*-packages vast op 10.0.x.
+  Alleen officiële of OSI-gelicenseerde packages; geen commercieel gelicenseerde bibliotheken (bv. MediatR v13+,
+  AutoMapper v15+, EFCore.BulkExtensions) zonder uitdrukkelijk akkoord.
+  Elke feature is een module met een eigen SQL-schema, DbContext en migraties; modules verwijzen alleen via
+  *.Contracts-projecten of in-process events naar elkaar, nooit via de implementatie.
+  Het datamodel volgt de naamgeving van OOAPI v5; uitwisselbare entiteiten hebben altijd Id (uniqueidentifier, sequentieel
+  gegenereerd door EF), ExternalId, Status, DateLastModified (UTC) en Source.
+  Verwachte fouten gebruiken Result/Result<T> met stabiele foutcodes met module-prefix; de API vertaalt ze naar RFC 9457 ProblemDetails.
+  Authenticatie is standaard OpenID Connect en moet ongewijzigd werken tegen Keycloak (lokale dev-stack), Microsoft Entra ID
+  en SURFconext: rollen komen uit een platte "roles"-claim, de weergavenaam uit "name", inbound claim mapping staat uit.
+  Systemen roepen de API aan met OAuth 2.0 client credentials; hun permissies komen ook in de "roles"-claim.
+  De lokale dev-stack (Keycloak, Mailpit) staat in dev-stack/ (docker compose-project doctrina-dev);
+  het claimcontract staat in docs/doctrina-integratie.md. De realm-bestanden daar worden gegenereerd door dev-stack/scripts/generate-realm.ps1.
+  Configuratie: appsettings.json + appsettings.{Development,Test,Production}.json; secrets alleen in het niet-gecommitte
+  appsettings.Secrets.json (voorbeeld: appsettings.Secrets.example.json). Omgeving Test = de geautomatiseerde tests.
+  Doctrina.Host draait in development op https://localhost:5001 (en http://localhost:5000).
+  Ontwikkelaars werken op Windows met Docker Desktop; scripts en documentatie moeten daar werken.
+  Toegankelijkheid WCAG 2.2 AA, privacy by design (AVG): geen persoonsgegevens in logs.
+  Alle OpenSpec-artefacten zijn in het Nederlands (design D12 van add-modular-foundation).
+
+rules:
+  proposal:
+    - Schrijf in het Nederlands; houd de koppen `## Why` en `## What Changes` Engels (vereist door de validator).
+    - Benoem expliciet wat buiten de scope valt.
+    - Verwijs naar de bijbehorende rij in docs/Doctrina-voorstel.md sectie 8 als de change uit de roadmap komt.
+  specs:
+    - Schrijf specs in het Nederlands. Houd de structuurwoorden Engels - `## Purpose`, `## ADDED Requirements`, `### Requirement:`, `#### Scenario:`, SHALL/MUST en GIVEN/WHEN/THEN - zodat `openspec validate --strict` slaagt.
+    - Scenarionamen zijn uniek binnen een capability, zodat tests ernaar kunnen verwijzen.
+  design:
+    - Schrijf in het Nederlands.
+    - Leg elke afwijking van docs/Doctrina-voorstel.md vast als besluit met onderbouwing.
+  tasks:
+    - Schrijf in het Nederlands.
+    - Elk spec-scenario wordt gedekt door minstens één testtaak; noem de test naar de requirement/het scenario (Nederlandse namen, testklasse = requirement, methode = scenario).
+    - Gebruikersdocumentatie is in het Nederlands.

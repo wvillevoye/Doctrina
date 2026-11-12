@@ -26,7 +26,7 @@ Verwijder de voorbeeldbestanden van de templates en houd de `.csproj` kaal (doel
 
 | Project | Verwijst naar |
 |---|---|
-| `Doctrina.Modules.Academic` | `Doctrina.Core`, `Doctrina.Infrastructure`, eigen `.Contracts`, `.Contracts` van andere modules |
+| `Doctrina.Modules.Academic` | `Doctrina.Core`, `Doctrina.Infrastructure`, `Doctrina.UI`, eigen `.Contracts`, `.Contracts` van andere modules |
 | `Doctrina.Modules.Academic.Contracts` | alleen `Doctrina.Core` |
 | `Doctrina.Host` | `Doctrina.Modules.Academic` (elke module, design D1) |
 
@@ -74,7 +74,9 @@ Afspraken:
 - **Permissies** beginnen met `<Naam>.`; dubbele of verkeerd genoemde permissies laten het opstarten mislukken.
 - **Endpoints** komen altijd onder `/api/v1` en vereisen standaard een token. Voeg `.RequirePermission(...)` toe.
 - **Pagina's** staan in de module (`Components/`) en vragen een permissie met
-  `@attribute [RequirePermission("Academic.Manage")]`. Gebruik `Doctrina.UI`-componenten, geen ruwe Bootstrap-classes.
+  `@attribute [RequirePermission("Academic.Manage")]`. Ze geven alleen vorm met `Dc*`-componenten uit `Doctrina.UI`
+  en `--dc-*`-tokens: geen ruwe Bootstrap-classes en geen letterlijke kleuren (de architectuurtests controleren dit).
+  Begin elke pagina met `DcPageHeader`; zie [vormgeving.md](vormgeving.md) en de stijlgids op `/stijlgids`.
 - **Navigatie-items** met `RequiredPermission` zie je alleen als je die permissie hebt.
 - **Health checks** krijgen de tag `ModuleHealthChecks.TagFor(Name)`, zodat `/health/ready` ze per module toont.
 
@@ -122,7 +124,8 @@ public static class AcademicErrors
 
 Een endpoint geeft `result.ToHttpResult()` terug: dat wordt ProblemDetails met de juiste status en `code`. De titel
 voor gebruikers komt uit `Resources/AcademicErrors.resx` (Nederlands) en `AcademicErrors.en.resx` (Engels), met de
-foutcode als sleutel. Zonder vertaling wordt de melding uit de code getoond.
+foutcode als sleutel. Zonder vertaling wordt de melding uit de code getoond. Op een pagina toon je dezelfde fout met
+`DcResult` of via `DcForm Error="…"`, met dezelfde vertaalde titel ([vormgeving.md](vormgeving.md#voorbeelden)).
 
 ## 6. Communiceren met andere modules
 
@@ -152,4 +155,5 @@ Noem testklassen naar de requirement en testmethoden naar het scenario uit de sp
 - [ ] `AddDoctrinaModule<…>()` in `KnownModules.cs`, naam in `Modules:Enabled`, rolkoppeling bijgewerkt
 - [ ] DbContext + eerste migratie ([database.md](database.md))
 - [ ] Foutcodes met vertalingen
+- [ ] Pagina's met `Dc*`-componenten, gecontroleerd in licht en donker
 - [ ] Tests per spec-scenario; `dotnet test` groen (inclusief architectuurtests)

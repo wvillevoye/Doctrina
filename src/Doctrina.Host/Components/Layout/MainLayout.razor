@@ -1,38 +1,48 @@
 @inherits LayoutComponentBase
 @inject NavigationManager Navigation
+@inject IOptions<ThemeSettings> ThemeOptions
 
-@* Bewust kale, semantische HTML: de vormgeving volgt met change add-design-system. *@
-<a href="#inhoud" class="skip-link">Naar de inhoud</a>
+@* Layout van de host: de app-shell uit Doctrina.UI met de gegevens van de host (spec app-shell). De standaardtitel
+   wordt overschreven door de PageTitle of DcPageHeader van de pagina. *@
+<PageTitle>Doctrina</PageTitle>
 
-<header>
-  <a href="/" class="brand">Doctrina</a>
-  <NavMenu />
-  <div class="account">
-    <AuthorizeView>
-      <Authorized>
-        <span data-testid="account-name">@context.User.Identity?.Name</span>
-        <form method="post" action="@AuthenticationEndpoints.SignOutPath">
-          <AntiforgeryToken />
-          <input type="hidden" name="returnUrl" value="/" />
-          <button type="submit">Uitloggen</button>
-        </form>
-      </Authorized>
-      <NotAuthorized>
-        <a href="@SignInHref">Inloggen</a>
-      </NotAuthorized>
-    </AuthorizeView>
-  </div>
-</header>
-
-<main id="inhoud" tabindex="-1">
-  @Body
-</main>
+<DcAppShell LogoPath="@NullIfEmpty(ThemeOptions.Value.LogoPath)"
+            LogoAlt="@ThemeOptions.Value.LogoAlt"
+            Theme="@HttpContext.CurrentTheme()"
+            ReturnUrl="@CurrentPath"
+            UserName="@_userName"
+            SignInHref="@SignInHref"
+            SignOutAction="@AuthenticationEndpoints.SignOutPath">
+  <Navigation>
+    <NavMenu />
+  </Navigation>
+  <ChildContent>
+    @Body
+  </ChildContent>
+</DcAppShell>
 
 <div id="blazor-error-ui" role="alert">
   Er ging iets mis op deze pagina. <a href="" class="reload">Opnieuw laden</a>
 </div>
 
 @code {
-    private string SignInHref =>
-        $"{AuthenticationEndpoints.SignInPath}?returnUrl={Uri.EscapeDataString("/" + Navigation.ToBaseRelativePath(Navigation.Uri))}";
+    private string? _userName;
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    private string CurrentPath => "/" + Navigation.ToBaseRelativePath(Navigation.Uri);
+
+    private string SignInHref => $"{AuthenticationEndpoints.SignInPath}?returnUrl={Uri.EscapeDataString(CurrentPath)}";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var user = AuthenticationState is null ? null : (await AuthenticationState).User;
+        _userName = user?.Identity?.IsAuthenticated == true ? user.Identity.Name ?? string.Empty : null;
+    }
+
+    private static string? NullIfEmpty(string? value) => string.IsNullOrEmpty(value) ? null : value;
 }

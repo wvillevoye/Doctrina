@@ -23,3 +23,6 @@ appsettings.Secrets.json
 .DS_Store
 Thumbs.db
 .idea/
+
+# Gegenereerd door AspNetCore.SassCompiler tijdens dotnet build (change add-design-system)
+src/Doctrina.UI/wwwroot/css/doctrina.css

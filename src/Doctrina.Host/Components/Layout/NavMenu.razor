@@ -3,33 +3,27 @@
 @inject ModuleCatalog Modules
 
 @* Hoofdmenu: vaste items van de host plus de items van ingeschakelde modules, gefilterd op permissie
-   (spec module-system "Modules leveren navigatie"). *@
-<nav aria-label="Hoofdmenu">
-  <ul>
-    <li><NavLink href="/" Match="NavLinkMatch.All">Start</NavLink></li>
-    @foreach (var item in VisibleItems)
-    {
-      <li><NavLink href="@item.Href">@item.Title</NavLink></li>
-    }
-    @if (_user.Identity?.IsAuthenticated == true)
-    {
-      <li><NavLink href="/profiel">Mijn profiel</NavLink></li>
-    }
-  </ul>
-</nav>
+   (spec module-system "Modules leveren navigatie"). De weergave komt uit Doctrina.UI (DcNavMenu). *@
+<DcNavMenu Items="@_items" />
 
 @code {
-    private ClaimsPrincipal _user = new();
+    private IReadOnlyList<DcNavItem> _items = [];
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthenticationState { get; set; }
 
-    private IEnumerable<NavItem> VisibleItems =>
-        Modules.Navigation.Where(item => item.RequiredPermission is null
-            || _user.HasClaim(DoctrinaClaimTypes.Permission, item.RequiredPermission));
-
     protected override async Task OnParametersSetAsync()
     {
-        _user = AuthenticationState is null ? new ClaimsPrincipal() : (await AuthenticationState).User;
+        var user = AuthenticationState is null ? new ClaimsPrincipal() : (await AuthenticationState).User;
+        var items = new List<DcNavItem> { new("Start", "/", MatchAll: true) };
+        items.AddRange(Modules.Navigation
+            .Where(item => item.RequiredPermission is null || user.HasClaim(DoctrinaClaimTypes.Permission, item.RequiredPermission))
+            .Select(item => new DcNavItem(item.Title, item.Href)));
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            items.Add(new DcNavItem("Mijn profiel", "/profiel"));
+        }
+
+        _items = items;
     }
 }

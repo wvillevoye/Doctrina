@@ -1,0 +1,84 @@
+.dc-nav {
+  display: flex;
+  align-items: center;
+}
+
+.dc-nav__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dc-space-2);
+  min-height: 2.5rem;
+  padding: var(--dc-space-2) var(--dc-space-3);
+  border: var(--dc-border-width) solid var(--dc-border-strong);
+  border-radius: var(--dc-radius);
+  color: var(--dc-text);
+  background-color: var(--dc-surface);
+  font-weight: var(--dc-font-weight-semibold);
+  cursor: pointer;
+}
+
+/* Smal scherm: het menu opent als zwevende laag (popover). */
+.dc-nav__panel {
+  inset: 4rem var(--dc-space-4) auto var(--dc-space-4);
+  margin: 0;
+  padding: var(--dc-space-3);
+  border: var(--dc-border-width) solid var(--dc-border);
+  border-radius: var(--dc-radius-lg);
+  color: var(--dc-text);
+  background-color: var(--dc-surface);
+  box-shadow: var(--dc-shadow-float);
+}
+
+.dc-nav__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dc-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dc-nav__link {
+  display: block;
+  padding: var(--dc-space-2) var(--dc-space-3);
+  border-radius: var(--dc-radius);
+  color: var(--dc-text);
+  font-weight: var(--dc-font-weight-medium);
+  text-decoration: none;
+}
+
+.dc-nav__link:hover {
+  color: var(--dc-text);
+  background-color: var(--dc-neutral-subtle);
+}
+
+/* Huidige pagina: niet alleen kleur, ook een dikke onderstreping (WCAG 1.4.1). */
+.dc-nav__link[aria-current="page"] {
+  color: var(--dc-text);
+  text-decoration: underline;
+  text-decoration-color: var(--dc-accent);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 0.45em;
+}
+
+/* Breed scherm: altijd zichtbaar, geen menuknop. Overschrijft de verberging van [popover] door de browser. */
+@media (min-width: 48rem) {
+  .dc-nav__toggle {
+    display: none;
+  }
+
+  .dc-nav__panel {
+    position: static;
+    display: block;
+    inset: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  .dc-nav__list {
+    flex-direction: row;
+  }
+}

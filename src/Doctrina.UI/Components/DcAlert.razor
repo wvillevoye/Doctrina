@@ -1,0 +1,46 @@
+@* Melding. Info en succes worden beleefd aangekondigd (role="status"), waarschuwingen en fouten direct
+   (role="alert"). Het icoon is decoratief; de ernst staat ook in de tekst voor hulptechnologie. *@
+<div class="@CssClass" role="@(Severity is DcSeverity.Warning or DcSeverity.Danger ? "alert" : "status")" @attributes="AdditionalAttributes">
+  <DcIcon Name="@IconName" Class="dc-alert__icon" />
+  <div class="dc-alert__body">
+    <span class="visually-hidden">@SeverityText: </span>
+    @if (Title is not null)
+    {
+      <p class="dc-alert__title">@Title</p>
+    }
+    @ChildContent
+  </div>
+</div>
+
+@code {
+    [Parameter]
+    public DcSeverity Severity { get; set; } = DcSeverity.Info;
+
+    /// <summary>Korte, vette eerste regel.</summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass => $"alert dc-alert alert-{Severity.ToString().ToLowerInvariant()}";
+
+    private string IconName => Severity switch
+    {
+        DcSeverity.Success => "circle-check",
+        DcSeverity.Warning => "triangle-alert",
+        DcSeverity.Danger => "circle-alert",
+        _ => "info",
+    };
+
+    private string SeverityText => Severity switch
+    {
+        DcSeverity.Success => "Gelukt",
+        DcSeverity.Warning => "Let op",
+        DcSeverity.Danger => "Fout",
+        _ => "Informatie",
+    };
+}

@@ -1,0 +1,35 @@
+@* Kop van een pagina: de enige h1, een beschrijving en acties. Zet ook de titel van het browservenster in de vorm
+   "<titel> · Doctrina" (spec app-shell "Elke pagina heeft dezelfde toegankelijke opbouw"). *@
+<PageTitle>@($"{DocumentTitle ?? Title} · Doctrina")</PageTitle>
+
+<div class="dc-page-header">
+  <div class="dc-page-header__text">
+    <h1 class="dc-page-header__title">@Title</h1>
+    @if (Description is not null)
+    {
+      <p class="dc-page-header__description">@Description</p>
+    }
+  </div>
+  @if (Actions is not null)
+  {
+    <div class="dc-page-header__actions">@Actions</div>
+  }
+</div>
+
+@code {
+    /// <summary>Kop van de pagina (h1).</summary>
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    /// <summary>Korte uitleg onder de kop.</summary>
+    [Parameter]
+    public RenderFragment? Description { get; set; }
+
+    /// <summary>Knoppen voor de belangrijkste acties van de pagina.</summary>
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+
+    /// <summary>Andere titel voor het browservenster dan de kop, bv. "Start" voor een welkomstkop.</summary>
+    [Parameter]
+    public string? DocumentTitle { get; set; }
+}

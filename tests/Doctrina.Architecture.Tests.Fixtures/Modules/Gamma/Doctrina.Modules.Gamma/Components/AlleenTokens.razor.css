@@ -1,0 +1,5 @@
+/* Toegestaan: kleuren uit tokens. */
+.melding {
+  color: var(--dc-accent);
+  border-color: var(--dc-border);
+}

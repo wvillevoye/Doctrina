@@ -81,6 +81,36 @@ public sealed class DoctrinaCoreBevatGeenInfrastructuur
     }
 }
 
+// Design D7 / taak 1.4 van add-design-system: de componentenbibliotheek kent alleen Core en ASP.NET Core.
+public sealed class DoctrinaUiHangtAlleenAfVanCore
+{
+    private static readonly string[] Forbidden = ["Doctrina.Infrastructure", "Doctrina.Host", ModuleBoundaries.Prefix];
+
+    private static bool IsForbidden(string name) =>
+        Forbidden.Any(f => name.Equals(f, StringComparison.Ordinal) || name.StartsWith(f.TrimEnd('.') + ".", StringComparison.Ordinal));
+
+    [Fact]
+    public void UiVerwijstNietNaarInfrastructuurHostOfModules()
+    {
+        var project = XDocument.Load(RepoPaths.Project("src", "Doctrina.UI", "Doctrina.UI.csproj"));
+        var projectReferences = project.Descendants()
+            .Where(e => e.Name.LocalName == "ProjectReference")
+            .Select(e => Path.GetFileNameWithoutExtension(((string?)e.Attribute("Include") ?? string.Empty).Replace('\\', '/')))
+            .ToList();
+
+        using var stream = File.OpenRead(RepoPaths.OutputAssembly("Doctrina.UI"));
+        using var pe = new System.Reflection.PortableExecutable.PEReader(stream);
+        var metadata = System.Reflection.Metadata.PEReaderExtensions.GetMetadataReader(pe);
+        var assemblyReferences = metadata.AssemblyReferences
+            .Select(h => metadata.GetString(metadata.GetAssemblyReference(h).Name))
+            .ToList();
+
+        Assert.Equal(["Doctrina.Core"], projectReferences);
+        Assert.DoesNotContain("AspNetCore.SassCompiler", assemblyReferences); // alleen een build-hulpmiddel
+        Assert.DoesNotContain(assemblyReferences, IsForbidden);
+    }
+}
+
 public sealed class ModulesGebruikenGeenRuweBootstrapClasses
 {
     [Fact]
@@ -98,4 +128,41 @@ public sealed class ModulesGebruikenGeenRuweBootstrapClasses
     [Fact]
     public void ProductmodulesBevattenGeenRuweBootstrapClasses() =>
         Assert.Empty(RawBootstrap.Violations(RepoPaths.ProductModules));
+}
+
+// Spec ui-components, requirement "Modules geven alleen vorm via de componentenbibliotheek" (add-design-system, taak 6.3).
+public sealed class ModulesGevenAlleenVormViaDeComponentenbibliotheek
+{
+    [Fact]
+    public void LetterlijkeKleurInEenModuleLaatDeTestsFalen()
+    {
+        var violations = LiteralColors.Violations(Path.Combine(RepoPaths.FixtureModules, "Alpha"));
+
+        Assert.Collection(
+            violations,
+            v => Assert.StartsWith(Path.Combine("Doctrina.Modules.Alpha", "Components", "InlineStijl.razor") + ":2: letterlijke kleur 'rgb'", v, StringComparison.Ordinal),
+            v => Assert.StartsWith(Path.Combine("Doctrina.Modules.Alpha", "Components", "LetterlijkeKleur.razor.css") + ":3: letterlijke kleur '#c2573a'", v, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void TokenGebruikenIsToegestaan() =>
+        Assert.Empty(LiteralColors.Violations(Path.Combine(RepoPaths.FixtureModules, "Gamma")));
+
+    [Fact]
+    public void ProductmodulesBevattenGeenLetterlijkeKleuren() =>
+        Assert.Empty(LiteralColors.Violations(RepoPaths.ProductModules));
+}
+
+// Spec app-shell, requirement "Hostpagina's gebruiken de componentenbibliotheek" (add-design-system, taak 6.3).
+public sealed class HostpaginasGebruikenDeComponentenbibliotheek
+{
+    [Fact]
+    public void HostpaginasVolgenDeRegelsVoorModules()
+    {
+        var host = RepoPaths.Project("src", "Doctrina.Host");
+
+        Assert.NotEmpty(Directory.EnumerateFiles(Path.Combine(host, "Components"), "*.razor", SearchOption.AllDirectories));
+        Assert.Empty(RawBootstrap.Violations(host));
+        Assert.Empty(LiteralColors.Violations(host));
+    }
 }

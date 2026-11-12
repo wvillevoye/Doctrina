@@ -1,12 +1,10 @@
 @page "/"
 
-<PageTitle>Doctrina</PageTitle>
-
-<h1>Welkom bij Doctrina</h1>
+<DcPageHeader Title="Welkom bij Doctrina" DocumentTitle="Start" />
 
 <AuthorizeView>
   <Authorized>
-    <p>Je bent ingelogd als <strong>@context.User.Identity?.Name</strong>. Bekijk <a href="/profiel">je profiel</a>.</p>
+    <p>Je bent ingelogd als <strong>@context.User.Identity?.Name</strong>. Bekijk <DcLink Href="/profiel">je profiel</DcLink>.</p>
   </Authorized>
   <NotAuthorized>
     <p>Log in met je instellingsaccount om verder te gaan.</p>

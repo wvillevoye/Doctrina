@@ -1,0 +1,18 @@
+.dc-card {
+  margin-bottom: var(--dc-space-5);
+}
+
+.dc-card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dc-space-2);
+  padding: var(--dc-space-3) var(--dc-space-5);
+  border-top: var(--dc-border-width) solid var(--dc-border);
+  border-radius: 0 0 var(--dc-radius-lg) var(--dc-radius-lg);
+  background-color: var(--dc-surface-sunken);
+}
+
+.dc-card__title {
+  margin-bottom: var(--dc-space-3);
+  font-size: var(--dc-font-size-h3);
+}

@@ -47,6 +47,11 @@ dotnet run --project src/Doctrina.Host --launch-profile https
 Open https://localhost:5001. De omgeving is `Development`; de instellingen komen uit
 `src/Doctrina.Host/appsettings.Development.json` plus je `appsettings.Secrets.json`.
 
+De eerste build compileert ook de stylesheet (`AspNetCore.SassCompiler`, zonder Node.js). Rechtsboven in de header
+kies je het thema: licht, donker of systeem (standaard). De keuze wordt onthouden in een cookie. Alle componenten
+staan in de stijlgids op https://localhost:5001/stijlgids (alleen in `Development`); meer in
+[vormgeving.md](vormgeving.md).
+
 ## 4. Inloggen
 
 Klik op **Inloggen**. Je komt bij Keycloak; log in met een testaccount:

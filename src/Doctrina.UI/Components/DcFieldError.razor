@@ -1,0 +1,57 @@
+@implements IDisposable
+
+@* Foutmelding(en) van één veld. Het invoerelement verwijst ernaar met aria-describedby (zie DcFieldBase). *@
+@if (_messages.Count > 0)
+{
+  <div id="@Id" class="dc-field-error" data-testid="field-error">
+    <DcIcon Name="circle-alert" />
+    <span>@string.Join(" ", _messages)</span>
+  </div>
+}
+
+@code {
+    private EditContext? _subscribedContext;
+    private List<string> _messages = [];
+
+    /// <summary>Id waarnaar het invoerelement verwijst.</summary>
+    [Parameter, EditorRequired]
+    public string Id { get; set; } = string.Empty;
+
+    /// <summary>Het veld waarvan de meldingen worden getoond.</summary>
+    [Parameter, EditorRequired]
+    public FieldIdentifier Field { get; set; }
+
+    [CascadingParameter]
+    private EditContext? EditContext { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (!ReferenceEquals(EditContext, _subscribedContext))
+        {
+            Unsubscribe();
+            _subscribedContext = EditContext;
+            if (_subscribedContext is not null)
+            {
+                _subscribedContext.OnValidationStateChanged += HandleValidationStateChanged;
+            }
+        }
+
+        _messages = EditContext is null ? [] : [.. EditContext.GetValidationMessages(Field)];
+    }
+
+    public void Dispose() => Unsubscribe();
+
+    private void HandleValidationStateChanged(object? sender, ValidationStateChangedEventArgs e)
+    {
+        _messages = EditContext is null ? [] : [.. EditContext.GetValidationMessages(Field)];
+        StateHasChanged();
+    }
+
+    private void Unsubscribe()
+    {
+        if (_subscribedContext is not null)
+        {
+            _subscribedContext.OnValidationStateChanged -= HandleValidationStateChanged;
+        }
+    }
+}

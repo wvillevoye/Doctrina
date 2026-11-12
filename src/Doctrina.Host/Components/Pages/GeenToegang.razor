@@ -1,10 +1,11 @@
 @page "/geen-toegang"
 
-<PageTitle>Geen toegang · Doctrina</PageTitle>
+<DcPageHeader Title="Geen toegang" />
 
-<h1>Geen toegang</h1>
-<p>Je bent ingelogd, maar je hebt geen rechten voor deze pagina.</p>
-<p><a href="/">Terug naar de startpagina</a></p>
+<DcAlert Severity="DcSeverity.Warning">
+  <p>Je bent ingelogd, maar je hebt geen rechten voor deze pagina.</p>
+</DcAlert>
+<DcButton Href="/" Icon="arrow-left">Terug naar de startpagina</DcButton>
 
 @code {
     [CascadingParameter]

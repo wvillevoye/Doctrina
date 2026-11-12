@@ -185,6 +185,28 @@ public sealed class FouttitelsZijnVertaald(DoctrinaHostFactory factory) : IClass
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         Assert.Equal("Item not found", (await response.ProblemAsync(Ct)).GetProperty("title").GetString());
     }
+
+    [Fact]
+    public void ComponentenKrijgenDezelfdeTitelsViaIErrorTitles()
+    {
+        // add-design-system design D8: DcResult gebruikt IErrorTitles uit Doctrina.Core in plaats van ErrorTitles.
+        using var host = factory.WithModules([new SampleModule()], SampleModule.ModuleName);
+        using var scope = host.Services.CreateScope();
+        var previous = System.Globalization.CultureInfo.CurrentUICulture;
+        System.Globalization.CultureInfo.CurrentUICulture = new System.Globalization.CultureInfo("nl");
+        try
+        {
+            var titles = scope.ServiceProvider.GetRequiredService<IErrorTitles>();
+
+            Assert.Same(scope.ServiceProvider.GetRequiredService<ErrorTitles>(), titles);
+            Assert.Equal("Voorbeelditem niet gevonden", titles.For("Sample.Item.NotFound", "terugval"));
+            Assert.Equal("terugval", titles.For("Sample.Bestaat.Niet", "terugval"));
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentUICulture = previous;
+        }
+    }
 }
 
 public sealed class OnverwachteFoutenLekkenGeenDetails(DoctrinaHostFactory factory) : IClassFixture<DoctrinaHostFactory>

@@ -1,0 +1,53 @@
+@using System.ComponentModel.DataAnnotations
+@using Doctrina.Core.Results
+
+@* Formulier voor de stijlgids: alle velden, optioneel met een validatiefout uit een Result. *@
+<DcForm Model="_model" Error="_error" FormName="@($"stijlgids-{Variant}")">
+  <DcTextField Label="E-mailadres" Type="email" Required Hint="Je adres bij de instelling." @bind-Value="_model.Email" />
+  <DcTextField Label="Voornaam" @bind-Value="_model.GivenName" />
+  <DcSelect TValue="string" Label="Rol" @bind-Value="_model.Role">
+    <option value="">Kies een rol…</option>
+    <option value="student">Student</option>
+    <option value="docent">Docent</option>
+  </DcSelect>
+  <DcCheckbox Label="Stuur mij meldingen per e-mail" @bind-Value="_model.Notify" />
+  <div class="dc-form__actions">
+    <DcButton Type="submit" Variant="DcButtonVariant.Primary">Opslaan</DcButton>
+    <DcButton Type="reset">Annuleren</DcButton>
+  </div>
+</DcForm>
+
+@code {
+    private readonly Model _model = new() { Email = "sanne@" };
+    private Error? _error;
+
+    /// <summary>Voor een unieke formuliernaam per thema.</summary>
+    [Parameter, EditorRequired]
+    public string Variant { get; set; } = string.Empty;
+
+    /// <summary>Toon de fout zoals een upsert-service die teruggeeft.</summary>
+    [Parameter]
+    public bool WithErrors { get; set; }
+
+    protected override void OnInitialized() =>
+        _error = WithErrors
+            ? Error.Validation("Stijlgids.Persoon.Invalid", "Controleer de gemarkeerde velden.", new Dictionary<string, string[]>(StringComparer.Ordinal)
+            {
+                ["email"] = ["Ongeldig e-mailadres."],
+                ["givenName"] = ["Vul een voornaam in."],
+            })
+            : null;
+
+    private sealed class Model
+    {
+        [Required(ErrorMessage = "Vul een e-mailadres in.")]
+        [EmailAddress(ErrorMessage = "Ongeldig e-mailadres.")]
+        public string? Email { get; set; }
+
+        public string? GivenName { get; set; }
+
+        public string? Role { get; set; }
+
+        public bool Notify { get; set; }
+    }
+}

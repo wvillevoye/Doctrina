@@ -4,9 +4,11 @@
    pagina regelt de server dit al: anoniem → inloggen, ingelogd zonder permissie → /geen-toegang (403). *@
 @if (_authenticated)
 {
-  <h1>Geen toegang</h1>
-  <p>Je bent ingelogd, maar je hebt geen rechten voor deze pagina.</p>
-  <p><a href="/">Terug naar de startpagina</a></p>
+  <DcPageHeader Title="Geen toegang" />
+  <DcAlert Severity="DcSeverity.Warning">
+    <p>Je bent ingelogd, maar je hebt geen rechten voor deze pagina.</p>
+  </DcAlert>
+  <DcButton Href="/" Icon="arrow-left">Terug naar de startpagina</DcButton>
 }
 
 @code {

@@ -1,0 +1,5 @@
+.dc-styleguide__note {
+  margin-top: var(--dc-space-2);
+  color: var(--dc-text-muted);
+  font-size: var(--dc-font-size-sm);
+}

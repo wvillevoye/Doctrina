@@ -1,0 +1,5 @@
+.dc-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--dc-space-1);
+}

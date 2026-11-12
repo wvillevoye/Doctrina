@@ -1,0 +1,25 @@
+.dc-styleguide__toc ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dc-space-2) var(--dc-space-4);
+  margin: 0 0 var(--dc-space-6);
+  padding: 0;
+  list-style: none;
+}
+
+::deep .dc-styleguide__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--dc-space-2);
+}
+
+::deep .dc-styleguide__icons {
+  gap: var(--dc-space-3);
+  font-size: 1.25rem;
+}
+
+::deep .dc-styleguide__note {
+  color: var(--dc-text-muted);
+  font-size: var(--dc-font-size-sm);
+}

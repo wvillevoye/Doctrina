@@ -15,6 +15,7 @@
   </ItemGroup>
   <ItemGroup Label="Overig (MIT / Apache-2.0)">
     <PackageVersion Include="Scalar.AspNetCore" Version="2.20.0" />
+    <PackageVersion Include="AspNetCore.SassCompiler" Version="1.108.1" />
   </ItemGroup>
   <ItemGroup Label="Tests">
     <PackageVersion Include="xunit.v3" Version="4.0.3" />

@@ -1,0 +1,26 @@
+@inherits DcFieldBase<string>
+
+@* Tekstveld met label, toelichting en foutmelding (spec ui-components, design D7). *@
+<div class="dc-field">
+  <label for="@InputId" class="form-label dc-field__label">
+    @Label
+    @if (Required)
+    {
+      <span class="dc-field__required">(verplicht)</span>
+    }
+  </label>
+  <InputText id="@InputId" type="@Type" class="@(IsInvalid ? "form-control is-invalid" : "form-control")"
+             Value="@Value" ValueChanged="@ValueChanged" ValueExpression="@ValueExpression"
+             @attributes="InputAttributes" />
+  @if (Hint is not null)
+  {
+    <div id="@HintId" class="dc-field__hint">@Hint</div>
+  }
+  <DcFieldError Id="@ErrorId" Field="@Field" />
+</div>
+
+@code {
+    /// <summary><c>text</c> (standaard), <c>email</c>, <c>password</c>, <c>tel</c>, <c>url</c>, <c>search</c>.</summary>
+    [Parameter]
+    public string Type { get; set; } = "text";
+}

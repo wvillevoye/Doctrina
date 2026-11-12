@@ -1,0 +1,37 @@
+@* Eén sectie van de stijlgids: het component in het lichte en het donkere thema naast elkaar (design D11). *@
+<section id="@SectionId(Component)" class="dc-styleguide__section" aria-labelledby="@($"{SectionId(Component)}-titel")">
+  <h2 id="@($"{SectionId(Component)}-titel")" class="dc-styleguide__name">@Component.Name.Split('`')[0]</h2>
+  <p class="dc-styleguide__description">@Description</p>
+  <div class="dc-styleguide__themes">
+    <div class="dc-styleguide__sample" data-dc-theme="light">
+      <p class="dc-styleguide__theme">Licht</p>
+      @Sample("licht")
+    </div>
+    <div class="dc-styleguide__sample" data-dc-theme="dark">
+      <p class="dc-styleguide__theme">Donker</p>
+      @Sample("donker")
+    </div>
+  </div>
+</section>
+
+@code {
+    /// <summary>Het component; bepaalt de id van de sectie (<c>dc-&lt;naam-in-kebab-case&gt;</c>).</summary>
+    [Parameter, EditorRequired]
+    public Type Component { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public string Description { get; set; } = string.Empty;
+
+    /// <summary>Het voorbeeld; krijgt "licht" of "donker" mee voor unieke id's.</summary>
+    [Parameter, EditorRequired]
+    public RenderFragment<string> Sample { get; set; } = default!;
+
+    /// <summary><c>DcPageHeader</c> → <c>dc-page-header</c>; <c>DcTable`1</c> → <c>dc-table</c>.</summary>
+    public static string SectionId(Type component)
+    {
+        ArgumentNullException.ThrowIfNull(component);
+        var name = component.Name.Split('`')[0];
+        name = name.StartsWith("Dc", StringComparison.Ordinal) ? name[2..] : name;
+        return "dc-" + string.Concat(name.Select((c, i) => i > 0 && char.IsUpper(c) ? "-" + char.ToLowerInvariant(c) : char.ToLowerInvariant(c).ToString()));
+    }
+}

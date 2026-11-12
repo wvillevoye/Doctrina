@@ -52,6 +52,9 @@ public sealed class DoctrinaHostFactory : WebApplicationFactory<Program>
     {
         // Omgeving "Test": instellingen uit src/Doctrina.Host/appsettings.Test.json, geen appsettings.Secrets.json (design D13).
         builder.UseEnvironment(DoctrinaConfigurationExtensions.TestEnvironment);
+        // Statische bestanden van Razor Class Libraries (_content/Doctrina.UI/...) laadt ASP.NET Core buiten Development
+        // alleen uit de publish-uitvoer; in tests komen ze uit het manifest van de build.
+        builder.UseStaticWebAssets();
 
         builder.ConfigureTestServices(services =>
         {

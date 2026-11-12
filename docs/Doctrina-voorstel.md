@@ -421,7 +421,7 @@ Wat Bootstrap herkenbaar maakt en wij aanpassen: font, knoppen (vorm, kleur, gew
 | 9 | `add-course-templates` | Offering aanmaken vanuit cursus-template | 3, 7, 8 |
 | later | `add-oneroster-interop`, `add-common-cartridge-import`, `add-lti-tool-role`, `add-xapi` | | |
 
-Per change: `proposal.md`, `tasks.md`, `design.md` (bij architectuurkeuzes), delta-specs in `specs/<capability>/spec.md`. Specs in het Engels (SHALL/MUST), gebruikersdocumentatie in het Nederlands.
+Per change: `proposal.md`, `tasks.md`, `design.md` (bij architectuurkeuzes), delta-specs in `specs/<capability>/spec.md`. Alle artefacten (ook de specs) en de gebruikersdocumentatie in het Nederlands; alleen de structuurwoorden die de validator nodig heeft blijven Engels (`## Why`, `### Requirement:`, `#### Scenario:`, SHALL/MUST, GIVEN/WHEN/THEN) — design D12 van `add-modular-foundation`.
 
 ## 9. Huisregels voor Claude (voor `AGENTS.md` / `CLAUDE.md`)
 

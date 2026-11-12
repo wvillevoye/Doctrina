@@ -1,0 +1,38 @@
+.dc-styleguide__section {
+  margin-bottom: var(--dc-space-7);
+  scroll-margin-top: var(--dc-space-5);
+}
+
+.dc-styleguide__name {
+  font-family: var(--dc-font-mono);
+  font-size: var(--dc-font-size-h3);
+}
+
+.dc-styleguide__description {
+  color: var(--dc-text-muted);
+}
+
+.dc-styleguide__themes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+  gap: var(--dc-space-4);
+}
+
+/* De container krijgt via data-dc-theme zijn eigen tokens; deze kleuren volgen dus het thema van het voorbeeld. */
+.dc-styleguide__sample {
+  min-width: 0;
+  padding: var(--dc-space-5);
+  border: var(--dc-border-width) solid var(--dc-border);
+  border-radius: var(--dc-radius-lg);
+  color: var(--dc-text);
+  background-color: var(--dc-bg);
+}
+
+.dc-styleguide__theme {
+  margin: 0 0 var(--dc-space-3);
+  color: var(--dc-text-muted);
+  font-size: var(--dc-font-size-sm);
+  font-weight: var(--dc-font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}

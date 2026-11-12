@@ -1,0 +1,49 @@
+@* Accountgedeelte (spec app-shell "Het accountgedeelte toont wie er is ingelogd"). Anoniem: knop "Inloggen" met de
+   huidige pagina als terugkeeradres. Ingelogd: naam met een menu (Popover API) met "Mijn profiel" en "Uitloggen". *@
+@if (UserName is null)
+{
+  <DcButton Href="@SignInHref" Variant="DcButtonVariant.Primary" Icon="log-in" data-testid="sign-in">Inloggen</DcButton>
+}
+else
+{
+  <div class="dc-account">
+    <button type="button" class="dc-account__toggle" popovertarget="@MenuId">
+      <DcIcon Name="user" />
+      <span data-testid="account-name">@UserName</span>
+      <DcIcon Name="chevron-down" />
+    </button>
+    <div id="@MenuId" popover class="dc-account__menu">
+      <ul class="dc-account__list" aria-label="Account">
+        <li><a href="@ProfileHref" class="dc-account__item"><DcIcon Name="user" />Mijn profiel</a></li>
+        <li>
+          <form method="post" action="@SignOutAction" class="dc-account__form">
+            <AntiforgeryToken />
+            <input type="hidden" name="returnUrl" value="/" />
+            <button type="submit" class="dc-account__item"><DcIcon Name="log-out" />Uitloggen</button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </div>
+}
+
+@code {
+    /// <summary>Id van het uitklapbare accountmenu; uniek per pagina.</summary>
+    [Parameter]
+    public string MenuId { get; set; } = "dc-accountmenu";
+
+    /// <summary>Weergavenaam van de ingelogde gebruiker; <see langword="null"/> voor een anonieme bezoeker.</summary>
+    [Parameter]
+    public string? UserName { get; set; }
+
+    /// <summary>Inlogadres, inclusief de huidige pagina als terugkeeradres.</summary>
+    [Parameter, EditorRequired]
+    public string SignInHref { get; set; } = string.Empty;
+
+    /// <summary>Formulier-endpoint voor uitloggen (POST met antiforgery).</summary>
+    [Parameter, EditorRequired]
+    public string SignOutAction { get; set; } = string.Empty;
+
+    [Parameter]
+    public string ProfileHref { get; set; } = "/profiel";
+}

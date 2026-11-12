@@ -1,0 +1,64 @@
+@* Layout van elke pagina (spec app-shell, design D9): skiplink, header met merk, hoofdmenu, themakeuze en
+   accountgedeelte, en de hoofdinhoud. Werkt bij statische weergave zonder scripts. *@
+<a href="#inhoud" class="dc-skip-link">Naar de inhoud</a>
+
+<header class="dc-shell__header">
+  <div class="dc-shell__bar">
+    <a href="/" class="dc-shell__brand" data-testid="brand">
+      @if (LogoPath is not null)
+      {
+        <img src="@LogoPath" alt="@LogoAlt" class="dc-shell__logo" />
+      }
+      else
+      {
+        <span class="dc-shell__wordmark">Doctrina</span>
+      }
+    </a>
+    <div class="dc-shell__nav">@Navigation</div>
+    <div class="dc-shell__tools">
+      <DcThemeSwitcher Current="Theme" ReturnUrl="@ReturnUrl" />
+      <DcAccountMenu UserName="@UserName" SignInHref="@SignInHref" SignOutAction="@SignOutAction" ProfileHref="@ProfileHref" />
+    </div>
+  </div>
+</header>
+
+<main id="inhoud" tabindex="-1" class="dc-shell__main">
+  @ChildContent
+</main>
+
+@code {
+    /// <summary>De inhoud van de pagina.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Het hoofdmenu, meestal een <see cref="DcNavMenu"/> met de items die de host zichtbaar maakt.</summary>
+    [Parameter]
+    public RenderFragment? Navigation { get; set; }
+
+    /// <summary>Eigen logo (white-label) in plaats van het woordmerk; vereist <see cref="LogoAlt"/>.</summary>
+    [Parameter]
+    public string? LogoPath { get; set; }
+
+    [Parameter]
+    public string? LogoAlt { get; set; }
+
+    [Parameter]
+    public DcTheme Theme { get; set; }
+
+    /// <summary>De huidige pagina (lokaal pad), voor de themakeuze.</summary>
+    [Parameter, EditorRequired]
+    public string ReturnUrl { get; set; } = "/";
+
+    /// <summary>Weergavenaam van de ingelogde gebruiker; <see langword="null"/> voor een anonieme bezoeker.</summary>
+    [Parameter]
+    public string? UserName { get; set; }
+
+    [Parameter, EditorRequired]
+    public string SignInHref { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string SignOutAction { get; set; } = string.Empty;
+
+    [Parameter]
+    public string ProfileHref { get; set; } = "/profiel";
+}

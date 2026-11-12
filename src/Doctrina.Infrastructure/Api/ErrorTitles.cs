@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Reflection;
 using System.Resources;
+using Doctrina.Core.Results;
 using Doctrina.Infrastructure.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +17,7 @@ public sealed record ErrorTitleSource(ResourceManager Resources);
 /// Vertaalde titels voor foutcodes (spec api-conventions "Fouttitels zijn vertaald", design D9): de taal van het verzoek
 /// (<c>Accept-Language</c>, nl standaard, en), met de eigen melding van de fout als terugval.
 /// </summary>
-public sealed class ErrorTitles(IEnumerable<ErrorTitleSource> sources)
+public sealed class ErrorTitles(IEnumerable<ErrorTitleSource> sources) : IErrorTitles
 {
     private readonly ErrorTitleSource[] _sources = [.. sources];
 
@@ -36,6 +37,9 @@ public sealed class ErrorTitles(IEnumerable<ErrorTitleSource> sources)
 
         return fallback;
     }
+
+    /// <inheritdoc />
+    string IErrorTitles.For(string code, string fallback) => For(code, fallback);
 }
 
 /// <summary>ProblemDetails-afspraken voor alle fouten van de host.</summary>
@@ -70,6 +74,7 @@ public static class ErrorTitleServiceCollectionExtensions
     public static IServiceCollection AddErrorTitles(this IServiceCollection services, string baseName, Assembly assembly)
     {
         services.TryAddSingleton<ErrorTitles>();
+        services.TryAddSingleton<IErrorTitles>(sp => sp.GetRequiredService<ErrorTitles>());
         return services.AddSingleton(new ErrorTitleSource(new ResourceManager(baseName, assembly)));
     }
 }

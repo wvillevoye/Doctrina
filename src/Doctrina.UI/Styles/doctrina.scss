@@ -1,0 +1,33 @@
+// Ingang van de stylesheet van Doctrina → wwwroot/css/doctrina.css (design D1).
+// Bootstrap 5.3 wordt selectief geïmporteerd; zonder JavaScript-afhankelijke onderdelen (modal, dropdown, collapse,
+// offcanvas, tooltip): dialogen en menu's gebruiken native HTML (design D9, D10).
+
+@import "tokens";
+@import "bootstrap-config";
+
+@import "vendor/bootstrap/functions";
+@import "vendor/bootstrap/variables";
+@import "vendor/bootstrap/variables-dark";
+@import "vendor/bootstrap/maps";
+@import "vendor/bootstrap/mixins";
+@import "vendor/bootstrap/utilities";
+
+@import "vendor/bootstrap/root";
+@import "vendor/bootstrap/reboot";
+@import "vendor/bootstrap/type";
+@import "vendor/bootstrap/containers";
+@import "vendor/bootstrap/grid";
+@import "vendor/bootstrap/buttons";
+@import "vendor/bootstrap/forms";
+@import "vendor/bootstrap/tables";
+@import "vendor/bootstrap/card";
+@import "vendor/bootstrap/alert";
+@import "vendor/bootstrap/badge";
+@import "vendor/bootstrap/close";
+@import "vendor/bootstrap/helpers";
+@import "vendor/bootstrap/utilities/api";
+
+@import "fonts";
+@import "bootstrap-bridge";
+@import "base";
+@import "forms";

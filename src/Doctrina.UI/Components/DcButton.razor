@@ -1,0 +1,92 @@
+@* Knop of link in knopvorm (design D7). Altijd een toegankelijke naam: tekst (ChildContent) of Label bij alleen een
+   icoon (spec ui-components "Knoppen en links hebben altijd een toegankelijke naam"). *@
+@if (Href is not null)
+{
+  <a href="@Href" class="@CssClass" @attributes="AdditionalAttributes">@Content</a>
+}
+else
+{
+  <button type="@Type" class="@CssClass" disabled="@(Disabled || Busy)" aria-busy="@(Busy ? "true" : null)"
+          @onclick="HandleClick" @attributes="AdditionalAttributes">@Content</button>
+}
+
+@code {
+    private RenderFragment Content => @<text>
+        @if (Busy)
+        {
+          <DcIcon Name="loader-circle" Class="dc-icon--spin" />
+        }
+        else if (Icon is not null)
+        {
+          <DcIcon Name="@Icon" />
+        }
+        @if (ChildContent is not null)
+        {
+          <span>@ChildContent</span>
+        }
+        else
+        {
+          <span class="visually-hidden">@Label</span>
+        }
+        @if (Busy)
+        {
+          <span class="visually-hidden">(bezig)</span>
+        }
+    </text>;
+
+    /// <summary>Zichtbare tekst van de knop.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Toegankelijke naam voor een knop met alleen een icoon (niet zichtbaar, wel voorgelezen).</summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter]
+    public DcButtonVariant Variant { get; set; } = DcButtonVariant.Secondary;
+
+    /// <summary>Lucide-icoon vóór de tekst.</summary>
+    [Parameter]
+    public string? Icon { get; set; }
+
+    /// <summary>Maakt er een link in knopvorm van (navigatie in plaats van actie).</summary>
+    [Parameter]
+    public string? Href { get; set; }
+
+    /// <summary><c>button</c> (standaard), <c>submit</c> of <c>reset</c>.</summary>
+    [Parameter]
+    public string Type { get; set; } = "button";
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>De actie loopt: de knop is uitgeschakeld en meldt "bezig".</summary>
+    [Parameter]
+    public bool Busy { get; set; }
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass => Variant switch
+    {
+        DcButtonVariant.Primary => "dc-button btn btn-primary",
+        DcButtonVariant.Ghost => "dc-button btn btn-ghost",
+        DcButtonVariant.Danger => "dc-button btn btn-danger",
+        _ => "dc-button btn btn-secondary",
+    } + (ChildContent is null ? " dc-button--icon" : string.Empty);
+
+    // Ook als een event toch binnenkomt (bv. vlak voor het uitschakelen): niet opnieuw activeren.
+    private Task HandleClick(MouseEventArgs args) => Busy || Disabled ? Task.CompletedTask : OnClick.InvokeAsync(args);
+
+    protected override void OnParametersSet()
+    {
+        if (ChildContent is null && string.IsNullOrWhiteSpace(Label))
+        {
+            throw new InvalidOperationException(
+                "DcButton heeft geen toegankelijke naam: geef tekst als inhoud of zet Label bij een knop met alleen een icoon.");
+        }
+    }
+}

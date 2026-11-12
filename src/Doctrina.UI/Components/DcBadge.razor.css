@@ -1,0 +1,37 @@
+.dc-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem var(--dc-space-2);
+  border: var(--dc-border-width) solid var(--dc-border-strong);
+  border-radius: var(--dc-radius-pill);
+  color: var(--dc-text);
+  background-color: var(--dc-neutral-subtle);
+  font-size: var(--dc-font-size-sm);
+  font-weight: var(--dc-font-weight-medium);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.dc-badge--accent {
+  border-color: var(--dc-accent);
+}
+
+.dc-badge--success {
+  border-color: var(--dc-success);
+  background-color: var(--dc-success-subtle);
+}
+
+.dc-badge--warning {
+  border-color: var(--dc-warning);
+  background-color: var(--dc-warning-subtle);
+}
+
+.dc-badge--danger {
+  border-color: var(--dc-danger);
+  background-color: var(--dc-danger-subtle);
+}
+
+.dc-badge--info {
+  border-color: var(--dc-info);
+  background-color: var(--dc-info-subtle);
+}

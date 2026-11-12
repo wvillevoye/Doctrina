@@ -34,7 +34,7 @@ public static class AuthenticationEndpoints
     }
 
     /// <summary>Alleen lokale paden (geen open redirect naar andere sites).</summary>
-    internal static string LocalPathOrRoot(string? returnUrl) =>
+    public static string LocalPathOrRoot(string? returnUrl) =>
         !string.IsNullOrEmpty(returnUrl)
         && returnUrl.StartsWith('/')
         && !returnUrl.StartsWith("//", StringComparison.Ordinal)

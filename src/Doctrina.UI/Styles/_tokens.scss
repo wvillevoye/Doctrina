@@ -1,0 +1,197 @@
+// Design tokens van Doctrina: de enige plek met letterlijke kleurwaarden (spec theming, design D2).
+//
+// Opbouw:
+// 1. Sass-variabelen met de kleurwaarden per thema. Bootstrap gebruikt de lichte waarden tijdens het compileren
+//    (_bootstrap-config.scss); tijdens runtime gelden alleen de CSS-variabelen hieronder.
+// 2. CSS-variabelen `--dc-*`, één per regel. Een white-label-stylesheet overschrijft alleen deze variabelen
+//    (docs/ontwikkelen/vormgeving.md). Tests lezen dit bestand regel voor regel (contrast, design D12).
+//
+// Thema's (design D3): `data-dc-theme="light|dark|system"` op <html> of op een container.
+
+// ---------------------------------------------------------------------------------------------------------------
+// 1. Kleurwaarden
+// ---------------------------------------------------------------------------------------------------------------
+
+// Palet "Doctrina" (voorstel §7.0)
+$dc-ink: #1f2a44;
+$dc-accent: #b44d32;
+$dc-sage: #6f8f7a;
+$dc-paper: #faf7f2;
+$dc-white: #ffffff;
+$dc-black: #000000;
+$dc-stone-50: #f7f4ef;
+$dc-stone-100: #efeae2;
+$dc-stone-200: #e2dbd0;
+$dc-stone-300: #cdc4b6;
+$dc-stone-400: #a99f91;
+$dc-stone-500: #8a8177;
+$dc-stone-600: #5e574e;
+$dc-stone-700: #48423b;
+$dc-stone-800: #2f2b27;
+$dc-stone-900: #1c1a17;
+
+// Licht thema: semantische kleuren
+$dc-light-success: #3f6b52;
+$dc-light-success-subtle: #e6efe8;
+$dc-light-warning: #8a5a00;
+$dc-light-warning-subtle: #f8eedb;
+$dc-light-danger: #a8322b;
+$dc-light-danger-subtle: #f8e5e2;
+$dc-light-info: #2f5d8a;
+$dc-light-info-subtle: #e4ecf5;
+
+// Donker thema: diepe inkt, perkament-tekst, accent iets lichter (voorstel §7.0)
+$dc-dark-bg: #121827;
+$dc-dark-surface: #1a2236;
+$dc-dark-surface-sunken: #0e1320;
+$dc-dark-text: #efe8dc;
+$dc-dark-text-muted: #b5ac9e;
+$dc-dark-border: #2e3850;
+$dc-dark-border-strong: #7d7568;
+$dc-dark-accent: #e58a6e;
+$dc-dark-success: #8dbb9e;
+$dc-dark-success-subtle: #1c3328;
+$dc-dark-warning: #e2b45c;
+$dc-dark-warning-subtle: #3a2e14;
+$dc-dark-danger: #f08a80;
+$dc-dark-danger-subtle: #3d1f1f;
+$dc-dark-info: #8fb8e3;
+$dc-dark-info-subtle: #1b2c42;
+
+// ---------------------------------------------------------------------------------------------------------------
+// 2. CSS-variabelen
+// ---------------------------------------------------------------------------------------------------------------
+
+// Kleuren van het lichte thema (ook de standaard).
+@mixin dc-light-colors {
+  --dc-bg: #{$dc-paper};
+  --dc-surface: #{$dc-white};
+  --dc-surface-sunken: #{$dc-stone-50};
+  --dc-text: #{$dc-ink};
+  --dc-text-muted: #{$dc-stone-600};
+  --dc-heading: #{$dc-ink};
+  --dc-border: #{$dc-stone-200};
+  --dc-border-strong: #{$dc-stone-500};
+  --dc-accent: #{$dc-accent};
+  --dc-accent-contrast: #{$dc-white};
+  --dc-link: #{$dc-accent};
+  --dc-focus: #{$dc-accent};
+  --dc-shade: #{$dc-black};
+  --dc-success: #{$dc-light-success};
+  --dc-success-contrast: #{$dc-white};
+  --dc-success-subtle: #{$dc-light-success-subtle};
+  --dc-warning: #{$dc-light-warning};
+  --dc-warning-contrast: #{$dc-white};
+  --dc-warning-subtle: #{$dc-light-warning-subtle};
+  --dc-danger: #{$dc-light-danger};
+  --dc-danger-contrast: #{$dc-white};
+  --dc-danger-subtle: #{$dc-light-danger-subtle};
+  --dc-info: #{$dc-light-info};
+  --dc-info-contrast: #{$dc-white};
+  --dc-info-subtle: #{$dc-light-info-subtle};
+  --dc-neutral-subtle: #{$dc-stone-100};
+  --dc-backdrop: #{rgba($dc-ink, 0.45)};
+  color-scheme: light;
+}
+
+// Kleuren van het donkere thema.
+@mixin dc-dark-colors {
+  --dc-bg: #{$dc-dark-bg};
+  --dc-surface: #{$dc-dark-surface};
+  --dc-surface-sunken: #{$dc-dark-surface-sunken};
+  --dc-text: #{$dc-dark-text};
+  --dc-text-muted: #{$dc-dark-text-muted};
+  --dc-heading: #{$dc-dark-text};
+  --dc-border: #{$dc-dark-border};
+  --dc-border-strong: #{$dc-dark-border-strong};
+  --dc-accent: #{$dc-dark-accent};
+  --dc-accent-contrast: #{$dc-dark-bg};
+  --dc-link: #{$dc-dark-accent};
+  --dc-focus: #{$dc-dark-accent};
+  --dc-shade: #{$dc-white};
+  --dc-success: #{$dc-dark-success};
+  --dc-success-contrast: #{$dc-dark-bg};
+  --dc-success-subtle: #{$dc-dark-success-subtle};
+  --dc-warning: #{$dc-dark-warning};
+  --dc-warning-contrast: #{$dc-dark-bg};
+  --dc-warning-subtle: #{$dc-dark-warning-subtle};
+  --dc-danger: #{$dc-dark-danger};
+  --dc-danger-contrast: #{$dc-dark-bg};
+  --dc-danger-subtle: #{$dc-dark-danger-subtle};
+  --dc-info: #{$dc-dark-info};
+  --dc-info-contrast: #{$dc-dark-bg};
+  --dc-info-subtle: #{$dc-dark-info-subtle};
+  --dc-neutral-subtle: #{$dc-dark-border};
+  --dc-backdrop: #{rgba($dc-black, 0.6)};
+  color-scheme: dark;
+}
+
+// Thema-onafhankelijke tokens: palet, typografie, spacing, radius, schaduw, motion.
+:root {
+  --dc-ink: #{$dc-ink};
+  --dc-sage: #{$dc-sage};
+  --dc-paper: #{$dc-paper};
+  --dc-stone-50: #{$dc-stone-50};
+  --dc-stone-100: #{$dc-stone-100};
+  --dc-stone-200: #{$dc-stone-200};
+  --dc-stone-300: #{$dc-stone-300};
+  --dc-stone-400: #{$dc-stone-400};
+  --dc-stone-500: #{$dc-stone-500};
+  --dc-stone-600: #{$dc-stone-600};
+  --dc-stone-700: #{$dc-stone-700};
+  --dc-stone-800: #{$dc-stone-800};
+  --dc-stone-900: #{$dc-stone-900};
+
+  --dc-font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --dc-font-heading: "Fraunces", Georgia, "Times New Roman", serif;
+  --dc-font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --dc-font-size-sm: 0.875rem;
+  --dc-font-size-base: 1rem;
+  --dc-font-size-lg: 1.125rem;
+  --dc-font-size-h1: clamp(1.875rem, 1.5rem + 1.5vw, 2.5rem);
+  --dc-font-size-h2: clamp(1.5rem, 1.3rem + 0.8vw, 1.875rem);
+  --dc-font-size-h3: 1.25rem;
+  --dc-font-weight-normal: 400;
+  --dc-font-weight-medium: 500;
+  --dc-font-weight-semibold: 600;
+  --dc-line-height: 1.6;
+  --dc-line-height-heading: 1.2;
+
+  --dc-space-1: 0.25rem;
+  --dc-space-2: 0.5rem;
+  --dc-space-3: 0.75rem;
+  --dc-space-4: 1rem;
+  --dc-space-5: 1.5rem;
+  --dc-space-6: 2rem;
+  --dc-space-7: 3rem;
+  --dc-content-width: 72rem;
+
+  --dc-radius-sm: 0.375rem;
+  --dc-radius: 0.5rem;
+  --dc-radius-lg: 0.75rem;
+  --dc-radius-pill: 999px;
+  --dc-border-width: 1px;
+  --dc-focus-width: 3px;
+  --dc-focus-offset: 2px;
+
+  --dc-shadow-float: 0 0.5rem 1.5rem #{rgba($dc-ink, 0.18)};
+
+  --dc-duration: 180ms;
+  --dc-duration-fast: 150ms;
+  --dc-easing: cubic-bezier(0.2, 0, 0, 1);
+}
+
+:root,
+[data-dc-theme="light"] {
+  @include dc-light-colors;
+}
+
+[data-dc-theme="dark"] {
+  @include dc-dark-colors;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-dc-theme="system"] {
+    @include dc-dark-colors;
+  }
+}

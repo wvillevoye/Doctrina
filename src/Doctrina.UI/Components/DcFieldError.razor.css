@@ -1,0 +1,9 @@
+.dc-field-error {
+  display: flex;
+  gap: var(--dc-space-1);
+  align-items: baseline;
+  margin-top: var(--dc-space-1);
+  color: var(--dc-danger);
+  font-size: var(--dc-font-size-sm);
+  font-weight: var(--dc-font-weight-medium);
+}

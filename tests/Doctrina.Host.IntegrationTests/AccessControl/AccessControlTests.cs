@@ -162,7 +162,7 @@ public sealed class PaginasEnEndpointsVereisenPermissies(DoctrinaHostFactory fac
         using var stillSignedIn = await browser.GetAsync(new Uri("/profiel", UriKind.Relative), Ct);
 
         Assert.Equal(HttpStatusCode.Forbidden, page.StatusCode);
-        Assert.Contains("<h1>Geen toegang</h1>", await page.Content.ReadAsStringAsync(Ct), StringComparison.Ordinal);
+        Assert.Matches("<h1[^>]*>Geen toegang</h1>", await page.Content.ReadAsStringAsync(Ct));
         Assert.Equal(HttpStatusCode.OK, stillSignedIn.StatusCode);
     }
 

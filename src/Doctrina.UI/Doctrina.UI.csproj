@@ -1,10 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
-  <!-- Componentenbibliotheek (Dc*-componenten, tokens, SCSS). Leeg tot change add-design-system. -->
+  <!-- Componentenbibliotheek: Dc*-componenten, design tokens, SCSS (change add-design-system). -->
   <PropertyGroup>
     <RootNamespace>Doctrina.UI</RootNamespace>
+    <!-- Alleen compileren tijdens de build; geen watcher, geen dart-runtime in de uitvoer of verwijzing naar het pakket. -->
+    <SassCompilerEnableWatcher>false</SassCompilerEnableWatcher>
   </PropertyGroup>
   <ItemGroup>
     <SupportedPlatform Include="browser" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- SCSS → CSS tijdens dotnet build, zonder Node.js (design D1). -->
+    <PackageReference Include="AspNetCore.SassCompiler" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Lucide-iconen als ingesloten resources; DcIcon rendert ze inline (design D6). -->
+    <EmbeddedResource Include="Icons\*.svg" LogicalName="Doctrina.UI.Icons.%(Filename).svg" />
+    <Content Update="sasscompiler.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" Pack="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Doctrina.Core\Doctrina.Core.csproj" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,49 @@
+@inject NavigationManager NavigationManager
+
+@* Hoofdmenu (spec app-shell "Het hoofdmenu werkt op elk schermformaat", design D9). Op smalle schermen zit het achter
+   de knop "Menu" met de native Popover API: openen/sluiten, Escape en aria-expanded regelt de browser, zonder script.
+   Op brede schermen toont CSS het menu altijd. *@
+<nav aria-label="@Label" class="dc-nav">
+  <button type="button" class="dc-nav__toggle" popovertarget="@Id" data-testid="menu-toggle">
+    <DcIcon Name="menu" />
+    <span>Menu</span>
+  </button>
+  <div id="@Id" popover class="dc-nav__panel">
+    <ul class="dc-nav__list">
+      @foreach (var item in Items)
+      {
+        <li>
+          <a href="@item.Href" class="dc-nav__link" aria-current="@(IsCurrent(item) ? "page" : null)">@item.Title</a>
+        </li>
+      }
+    </ul>
+  </div>
+</nav>
+
+@code {
+    /// <summary>Naam van het navigatie-landmark.</summary>
+    [Parameter]
+    public string Label { get; set; } = "Hoofdmenu";
+
+    /// <summary>Id van het uitklapbare menu; uniek per pagina.</summary>
+    [Parameter]
+    public string Id { get; set; } = "dc-hoofdmenu";
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<DcNavItem> Items { get; set; } = [];
+
+    private bool IsCurrent(DcNavItem item)
+    {
+        var path = Normalize(NavigationManager.ToAbsoluteUri(NavigationManager.Uri).AbsolutePath);
+        var href = Normalize(item.Href);
+
+        return string.Equals(path, href, StringComparison.OrdinalIgnoreCase)
+            || (!item.MatchAll && href != "/" && path.StartsWith(href + "/", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string Normalize(string path)
+    {
+        var trimmed = path.TrimEnd('/');
+        return trimmed.Length == 0 ? "/" : trimmed;
+    }
+}

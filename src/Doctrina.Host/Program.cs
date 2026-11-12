@@ -2,6 +2,7 @@ using Doctrina.Host;
 using Doctrina.Host.Api;
 using Doctrina.Host.Authentication;
 using Doctrina.Host.Components;
+using Doctrina.Host.Theming;
 using Doctrina.Infrastructure.Api;
 using Doctrina.Infrastructure.Authentication;
 using Doctrina.Infrastructure.Authorization;
@@ -32,6 +33,9 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddDoctrinaApi();
 builder.Services.AddDoctrinaEvents();
 builder.Services.AddHostedService<ModuleMigrationService>();
+// Vormgeving: white-label-instellingen, bij het opstarten gecontroleerd (design D4).
+builder.Services.AddOptions<ThemeSettings>().BindConfiguration(ThemeSettings.Section).ValidateOnStart();
+builder.Services.AddSingleton<Microsoft.Extensions.Options.IValidateOptions<ThemeSettings>, ThemeSettingsValidator>();
 
 var app = builder.Build();
 var modules = app.Services.GetRequiredService<ModuleCatalog>();
@@ -52,6 +56,7 @@ app.UseAntiforgery();
 
 app.MapStaticAssets();
 app.MapDoctrinaAuthenticationEndpoints();
+app.MapDoctrinaThemeEndpoint();
 app.MapDoctrinaHealth();
 app.MapDoctrinaApiDocumentation(app.Configuration, app.Environment);
 app.MapApiV1().MapDoctrinaModules();

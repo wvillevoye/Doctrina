@@ -1,12 +1,25 @@
+@using Doctrina.Host.Theming
+@using Doctrina.UI.Theming
+@using Microsoft.Extensions.Options
+@inject IOptions<ThemeSettings> ThemeOptions
+
 <!DOCTYPE html>
-<html lang="nl">
+@* Thema uit de cookie al in de eerste weergave: geen script, geen flits (design D3). *@
+<html lang="nl" data-dc-theme="@_theme.ToValue()" data-bs-theme="@(_theme == DcTheme.System ? null : _theme.ToValue())">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <base href="/" />
-  <link rel="stylesheet" href="@Assets["app.css"]" />
+  <link rel="preload" href="_content/Doctrina.UI/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="_content/Doctrina.UI/fonts/fraunces-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="@Assets["_content/Doctrina.UI/css/doctrina.css"]" />
+  <link rel="stylesheet" href="@Assets["Doctrina.Host.styles.css"]" />
+  @if (!string.IsNullOrEmpty(ThemeOptions.Value.StylesheetPath))
+  {
+    @* White-label: ná de standaardstijlen, zodat de --dc-waarden van de instelling winnen (design D4). *@
+    <link rel="stylesheet" href="@ThemeOptions.Value.StylesheetPath" data-testid="theme-stylesheet" />
+  }
   <ImportMap />
-  <title>Doctrina</title>
   <HeadOutlet />
 </head>
 <body>
@@ -14,3 +27,12 @@
   <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 </html>
+
+@code {
+    private DcTheme _theme;
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    protected override void OnInitialized() => _theme = HttpContext.CurrentTheme();
+}

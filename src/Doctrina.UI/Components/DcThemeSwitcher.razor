@@ -1,0 +1,29 @@
+@* Themakeuze licht/donker/systeem als gewoon formulier: werkt zonder scripts (spec theming, design D3). De actieve
+   keuze heeft aria-pressed="true" en een zichtbare markering (spec app-shell "De themakeuze staat in de header"). *@
+<form method="post" action="@DcThemes.EndpointPath" class="dc-theme-switcher" data-testid="theme-switcher">
+  <AntiforgeryToken />
+  <input type="hidden" name="returnUrl" value="@ReturnUrl" />
+  <div role="group" aria-label="Thema" class="dc-theme-switcher__options">
+    @foreach (var (theme, icon) in Options)
+    {
+      <button type="submit" name="theme" value="@theme.ToValue()" class="dc-theme-switcher__option"
+              aria-pressed="@(theme == Current ? "true" : "false")" title="@($"Thema: {theme.ToDisplayName().ToLowerInvariant()}")">
+        <DcIcon Name="@icon" />
+        <span class="visually-hidden">@theme.ToDisplayName()</span>
+      </button>
+    }
+  </div>
+</form>
+
+@code {
+    private static readonly (DcTheme Theme, string Icon)[] Options =
+        [(DcTheme.Light, "sun"), (DcTheme.Dark, "moon"), (DcTheme.System, "monitor")];
+
+    /// <summary>De huidige keuze (uit de cookie, zie <see cref="DcThemes.CookieName"/>).</summary>
+    [Parameter]
+    public DcTheme Current { get; set; }
+
+    /// <summary>Lokaal pad waarnaar het formulier na het opslaan terugkeert (de huidige pagina).</summary>
+    [Parameter, EditorRequired]
+    public string ReturnUrl { get; set; } = "/";
+}

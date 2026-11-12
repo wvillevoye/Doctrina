@@ -17,9 +17,11 @@
   cursor: pointer;
 }
 
-/* Smal scherm: het menu opent als zwevende laag (popover). */
+/* Smal scherm: het menu opent als zwevende laag (popover) over de volle breedte. width: auto overschrijft de
+   width: fit-content die de browser aan [popover] geeft, zodat links en rechts allebei gelden. */
 .dc-nav__panel {
   inset: 4rem var(--dc-space-4) auto var(--dc-space-4);
+  width: auto;
   margin: 0;
   padding: var(--dc-space-3);
   border: var(--dc-border-width) solid var(--dc-border);

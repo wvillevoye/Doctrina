@@ -69,12 +69,20 @@ Overige controles uit de taken: architectuurregel `DoctrinaUiHangtAlleenAfVanCor
 
 ## Handmatige browsercontrole (taak 8.2)
 
-Nog uit te voeren in de stijlgids (https://localhost:5001/stijlgids), in Edge of Chrome én in Firefox:
+In de stijlgids (https://localhost:5001/stijlgids), omgeving Development. Chrome op 2026-11-12, met Claude in Chrome
+(muis en toetsenbord; de toestand gecontroleerd via de DOM). Firefox nog uit te voeren.
 
-| Controle | Edge/Chrome | Firefox |
+| Controle | Chrome | Firefox |
 |---|---|---|
-| Dialoog: focus naar de dialoog bij openen, Tab blijft erin, Escape sluit, focus terug naar de knop | – | – |
-| Hoofdmenu op een smal venster: knop "Menu" opent/sluit (ook met Enter/Spatie en Escape) | – | – |
-| Accountmenu als popover, met het toetsenbord te bedienen | – | – |
-| Themawissel licht/donker/systeem, zonder flits bij het laden | – | – |
-| `prefers-reduced-motion`: geen animatie van dialoog en spinner | – | – |
+| Dialoog: openen (muis en Enter) zet de focus op "Sluiten"; de dialoog is modaal (`:modal`), heet "Cursus verwijderen?" en de pagina erachter is niet te focussen. Tab blijft in de dialoog (na het laatste element gaat Chrome naar de browserbalk en daarna terug naar "Sluiten"). Escape en de sluitknop sluiten; de focus gaat terug naar de knop en `OnClose` komt aan. | ✓ | – |
+| Hoofdmenu op een smal venster (657 px): knop "Menu" zichtbaar, menu verborgen, geen horizontale scroll; Enter opent, Escape sluit, de focus blijft op "Menu". Op 1384 px staat het menu in de header en is de knop verborgen. | ✓ (na correctie, zie onder) | – |
+| Accountmenu (voorbeeld met ingelogde gebruiker): Enter opent, Tab gaat naar "Mijn profiel" met zichtbare focus-ring, Escape sluit en zet de focus terug op de naam. | ✓ | – |
+| Themawissel: "donker" (toetsenbord) wordt onthouden (cookie HttpOnly, `aria-pressed` op donker); de HTML van de server heeft al `data-dc-theme="dark"` met de stylesheet in `<head>` en geen script ervoor, dus geen flits. "Systeem" (muis) verwijdert de keuze; de pagina volgt het systeem (licht). Geen consolefouten. | ✓ | – |
+| `prefers-reduced-motion`: geen animatie van dialoog en spinner | niet gecontroleerd: de systeemvoorkeur is via de extensie niet na te bootsen (wel via DevTools → Rendering → "Emulate CSS media feature prefers-reduced-motion"); de CSS-regels zijn gedekt door `BewegingRespecteertDeVoorkeurVanDeGebruiker` | – |
+
+**Gevonden en opgelost:** het uitgeklapte hoofdmenu op een smal venster was een smal blok linksboven, omdat de browser
+`[popover]` `width: fit-content` geeft. `DcNavMenu.razor.css` zet nu `width: auto`, zodat het menu tussen de marges de
+volle breedte neemt (gecontroleerd: 610 px breed bij een venster van 657 px).
+
+**Opmerking:** na het versturen van het themaformulier legde een andere Chrome-extensie op deze machine een eigen laag
+over de pagina. Dat komt niet van Doctrina (het verschijnt bij elke formulier-POST, de pagina zelf laadt goed).

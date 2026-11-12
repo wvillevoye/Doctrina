@@ -7,7 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Time.Testing;
 
-// Tests volgen spec openspec/changes/add-modular-foundation/specs/data-persistence/spec.md:
+// Tests volgen spec openspec/specs/data-persistence/spec.md:
 // klasse = requirement, methode = scenario. Elke test krijgt een eigen, lege LocalDB-database.
 namespace Doctrina.Host.IntegrationTests.DataPersistence;
 

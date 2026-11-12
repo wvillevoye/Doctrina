@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 
-// Tests volgen spec openspec/changes/add-modular-foundation/specs/access-control/spec.md:
+// Tests volgen spec openspec/specs/access-control/spec.md:
 // klasse = requirement, methode = scenario.
 namespace Doctrina.Host.IntegrationTests.AccessControl;
 

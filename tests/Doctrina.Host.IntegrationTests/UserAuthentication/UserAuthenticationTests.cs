@@ -4,7 +4,7 @@ using System.Net.Http.Json;
 using Doctrina.TestKit.Authentication;
 using Microsoft.AspNetCore.WebUtilities;
 
-// Tests volgen spec openspec/changes/add-modular-foundation/specs/user-authentication/spec.md:
+// Tests volgen spec openspec/specs/user-authentication/spec.md:
 // klasse = requirement, methode = scenario.
 namespace Doctrina.Host.IntegrationTests.UserAuthentication;
 

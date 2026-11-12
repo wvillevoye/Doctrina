@@ -15,7 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-// Tests volgen spec openspec/changes/add-modular-foundation/specs/api-conventions/spec.md:
+// Tests volgen spec openspec/specs/api-conventions/spec.md:
 // klasse = requirement, methode = scenario.
 namespace Doctrina.Host.IntegrationTests.ApiConventions;
 

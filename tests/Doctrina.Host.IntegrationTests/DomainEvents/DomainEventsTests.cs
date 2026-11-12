@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-// Tests volgen spec openspec/changes/add-modular-foundation/specs/domain-events/spec.md:
+// Tests volgen spec openspec/specs/domain-events/spec.md:
 // klasse = requirement, methode = scenario.
 namespace Doctrina.Host.IntegrationTests.DomainEvents;
 

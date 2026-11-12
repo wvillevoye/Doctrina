@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-// Tests volgen spec openspec/changes/add-modular-foundation/specs/module-system/spec.md:
+// Tests volgen spec openspec/specs/module-system/spec.md:
 // klasse = requirement, methode = scenario.
 namespace Doctrina.Host.IntegrationTests.ModuleSystem;
 

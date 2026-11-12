@@ -3,7 +3,7 @@ using Doctrina.Architecture.Tests.Rules;
 using Doctrina.Core.Results;
 using NetArchTest.Rules;
 
-// Tests volgen spec openspec/changes/add-modular-foundation/specs/module-system/spec.md
+// Tests volgen spec openspec/specs/module-system/spec.md
 // (requirement "Modulegrenzen worden tijdens de build bewaakt") en taak 4.1.
 namespace Doctrina.Architecture.Tests;
 

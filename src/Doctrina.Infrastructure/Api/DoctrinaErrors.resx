@@ -21,4 +21,7 @@
   <data name="Server.Unexpected" xml:space="preserve">
     <value>Er is een onverwachte fout opgetreden</value>
   </data>
+  <data name="Api.TooManyRequests" xml:space="preserve">
+    <value>Te veel verzoeken</value>
+  </data>
 </root>

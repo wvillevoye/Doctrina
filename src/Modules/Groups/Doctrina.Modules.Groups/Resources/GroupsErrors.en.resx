@@ -33,4 +33,7 @@
   <data name="Groups.Distribution.Invalid" xml:space="preserve">
     <value>Can't distribute the students</value>
   </data>
+  <data name="Groups.Api.OfferingRequired" xml:space="preserve">
+    <value>Offering required</value>
+  </data>
 </root>

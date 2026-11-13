@@ -1,5 +1,7 @@
 using System.Net;
 using Doctrina.Core.Results;
+using System.Net.Http.Json;
+using Doctrina.Host.IntegrationTests.ApiConventions;
 using Doctrina.Host.IntegrationTests.HostUi;
 using Doctrina.Modules.Groups.Application;
 using Doctrina.Modules.Groups.Infrastructure;
@@ -172,5 +174,86 @@ public sealed class AlleenDocentenVanDeUitvoeringEnBeheerdersBeherenGroepen(Doct
         var (status, _) = await academic.GetAsync(factory, StubUser.Beheerder, $"/courses/{Guid.Empty}/groups", Ct);
 
         Assert.Equal(HttpStatusCode.NotFound, status);
+    }
+}
+
+// Spec groups-api, requirement "Groepen zijn via de API te lezen".
+public sealed class GroepenZijnViaDeApiTeLezen(DoctrinaHostFactory factory) : IClassFixture<DoctrinaHostFactory>
+{
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
+
+    [Fact]
+    public async Task GroepenVanEenUitvoering()
+    {
+        await using var academic = await AcademicHost.CreateAsync(factory, Ct, "Groups");
+        var offering = await academic.OfferingWithPeopleAsync();
+        var set = await academic.GroupsAsync(s => s.CreateSetAsync(offering, "Project teams", false, null, Ct));
+        var teamA = await academic.GroupsAsync(s => s.CreateGroupAsync(set.Id, "Team A", Ct));
+        var (sanne, sam) = (await academic.PersonIdAsync("I6000001"), await academic.PersonIdAsync("I6000002"));
+        await academic.GroupsAsync(s => s.AssignAsync(teamA.Id, sam, Ct));
+        await academic.GroupsAsync(s => s.AssignAsync(teamA.Id, sanne, Ct));
+        using var api = academic.Api(factory, roles: "test.read");
+
+        using var response = await api.GetAsync(Json.Url($"/api/v1/groups?offeringId={offering}"), Ct);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var group = Assert.Single((await response.ReadAsync(Ct)).EnumerateArray());
+        Assert.Equal(("Team A", "Project teams", "BIO101-2026-P1"),
+            (group.GetProperty("name").GetString(), group.GetProperty("groupSetName").GetString(), group.GetProperty("offeringId").GetString()));
+        Assert.Equal(["I6000001", "I6000002"], group.GetProperty("members").EnumerateArray().Select(m => m.GetString()));
+        Assert.Equal(teamA.Id.ToString("D"), group.GetProperty("groupId").GetString());
+    }
+
+    [Fact]
+    public async Task VerwijderdeGroep()
+    {
+        await using var academic = await AcademicHost.CreateAsync(factory, Ct, "Groups");
+        var offering = await academic.OfferingWithPeopleAsync();
+        var set = await academic.GroupsAsync(s => s.CreateSetAsync(offering, "Project teams", true, null, Ct));
+        var teamA = await academic.GroupsAsync(s => s.CreateGroupAsync(set.Id, "Team A", Ct));
+        await academic.GroupsAsync(s => s.DeleteGroupAsync(teamA.Id, Ct));
+        using var api = academic.Api(factory, roles: "test.read");
+
+        using var response = await api.GetAsync(Json.Url($"/api/v1/groups/{teamA.Id}"), Ct);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal("Groups.Group.NotFound", (await response.ProblemAsync(Ct)).GetProperty("code").GetString());
+    }
+
+    [Fact]
+    public async Task ZonderGroupsRead()
+    {
+        await using var academic = await AcademicHost.CreateAsync(factory, Ct, "Groups");
+        var offering = await academic.OfferingWithPeopleAsync();
+        using var api = academic.Api(factory, roles: "test.write");
+
+        using var response = await api.GetAsync(Json.Url($"/api/v1/groups?offeringId={offering}"), Ct);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ZonderOfferingId()
+    {
+        await using var academic = await AcademicHost.CreateAsync(factory, Ct, "Groups");
+        using var api = academic.Api(factory, roles: "test.read");
+
+        using var missing = await api.GetAsync(Json.Url("/api/v1/groups"), Ct);
+        using var unknown = await api.GetAsync(Json.Url($"/api/v1/groups?offeringId={Guid.Empty}"), Ct);
+
+        Assert.Equal(HttpStatusCode.BadRequest, missing.StatusCode);
+        Assert.Equal("Groups.Api.OfferingRequired", (await missing.ProblemAsync(Ct)).GetProperty("code").GetString());
+        Assert.Equal(HttpStatusCode.NotFound, unknown.StatusCode);
+    }
+
+    [Fact]
+    public async Task GeenSchrijvendeEndpoints()
+    {
+        await using var academic = await AcademicHost.CreateAsync(factory, Ct, "Groups");
+        using var api = academic.Api(factory);
+
+        using var post = await api.PostAsJsonAsync(Json.Url("/api/v1/groups"), new { name = "X" }, Ct);
+
+        Assert.Equal(HttpStatusCode.MethodNotAllowed, post.StatusCode);
     }
 }

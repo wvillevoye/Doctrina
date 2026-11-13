@@ -20,7 +20,10 @@ public sealed class GroupsModule : IModule
     public IReadOnlyCollection<string> DependsOn => ["Academic"];
 
     public IReadOnlyCollection<Permission> Permissions =>
-        [new(GroupsPermissions.Manage, "Manage the groups of every course offering")];
+    [
+        new(GroupsPermissions.Manage, "Manage the groups of every course offering"),
+        new(GroupsPermissions.Read, "Read groups and their members through the API"),
+    ];
 
     // No menu item: groups are reached from the page of a course offering.
     public IReadOnlyCollection<NavItem> Navigation => [];
@@ -35,14 +38,12 @@ public sealed class GroupsModule : IModule
         services.AddHealthChecks().AddCheck<GroupsHealthCheck>("groups", tags: [ModuleHealthChecks.TagFor(Name)]);
     }
 
-    // No REST endpoints yet: they come with add-api-and-import.
-    public void MapEndpoints(IEndpointRouteBuilder api)
-    {
-    }
+    public void MapEndpoints(IEndpointRouteBuilder api) => Api.GroupsEndpoints.Map(api);
 }
 
 /// <summary>Permissions of the Groups module.</summary>
 public static class GroupsPermissions
 {
     public const string Manage = "Groups.Manage";
+    public const string Read = "Groups.Read";
 }

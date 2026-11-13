@@ -373,7 +373,7 @@ public sealed class ElkeFoutcodeHeeftEenTitel
 {
     private static readonly ResourceManager Titles = new("Doctrina.Modules.Groups.Resources.GroupsErrors", typeof(GroupsModule).Assembly);
 
-    public static TheoryData<string> Codes() => [.. GroupsErrors.All];
+    public static TheoryData<string> Codes() => [.. GroupsErrors.All, Api.GroupsEndpoints.OfferingRequiredCode];
 
     [Theory]
     [MemberData(nameof(Codes))]

@@ -47,7 +47,27 @@ internal abstract class AcademicType
     public string ConflictCode => $"Academic.{EntityName}.Conflict";
 
     /// <summary>Checks the fields without touching the database.</summary>
+    public string NotFoundCode => $"Academic.{EntityName}.NotFound";
+
+    public string DuplicateExternalIdCode => $"Academic.{EntityName}.DuplicateExternalId";
+
     public abstract Result Validate(IReadOnlyDictionary<string, string?> fields);
+
+    /// <summary>All records of the type, including what <see cref="ToFields"/> needs (change add-rest-api, design D2).</summary>
+    public abstract IQueryable<ExchangeableEntity> Query(AcademicDbContext db);
+
+    /// <summary>
+    /// The record as fields with the same names as <see cref="Fields"/>: the reverse of the upsert, so reading a record
+    /// and writing it back changes nothing. References are ExternalIds, dates <c>yyyy-MM-dd</c>, numbers invariant.
+    /// </summary>
+    public abstract Dictionary<string, string?> ToFields(ExchangeableEntity entity);
+
+    internal static string StatusValue(EntityStatus status) => status == EntityStatus.Active ? "active" : "toBeDeleted";
+
+    protected static string? Date(DateOnly? date) => date?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+    protected static string ValueOf<TEnum>(IReadOnlyDictionary<string, TEnum> values, TEnum value)
+        where TEnum : struct => values.First(v => EqualityComparer<TEnum>.Default.Equals(v.Value, value)).Key;
 
     public abstract Task<Result<UpsertOutcome>> UpsertAsync(
         AcademicDbContext db, string source, IReadOnlyDictionary<string, string?> fields, CancellationToken cancellationToken);
@@ -140,6 +160,21 @@ internal abstract class AcademicType<TEntity, TValues> : AcademicType
 
     protected abstract TEntity Create(string externalId, string source, TValues values);
 
+    public override IQueryable<ExchangeableEntity> Query(AcademicDbContext db) => QueryTyped(db);
+
+    protected abstract IQueryable<TEntity> QueryTyped(AcademicDbContext db);
+
+    public override Dictionary<string, string?> ToFields(ExchangeableEntity entity)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+        var fields = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase) { [KeyField] = entity.ExternalId };
+        Fill(fields, (TEntity)entity);
+        fields[StatusField] = StatusValue(entity.Status);
+        return fields;
+    }
+
+    protected abstract void Fill(Dictionary<string, string?> fields, TEntity entity);
+
     protected abstract void Apply(TEntity entity, TValues values);
 }
 
@@ -231,6 +266,16 @@ internal sealed class OrganizationType_ : AcademicType<Organization, Organizatio
         return e;
     }
 
+    protected override IQueryable<Organization> QueryTyped(AcademicDbContext db) => db.Organizations.Include(o => o.Parent);
+
+    protected override void Fill(Dictionary<string, string?> f, Organization e)
+    {
+        f["name"] = e.Name;
+        f["shortName"] = e.ShortName;
+        f["organizationType"] = ValueOf(AcademicTypes.OrganizationTypes, e.OrganizationType);
+        f["parentOrganizationId"] = e.Parent?.ExternalId;
+    }
+
     protected override void Apply(Organization e, Values v)
     {
         e.Name = v.Name!;
@@ -273,6 +318,17 @@ internal sealed class AcademicSessionType_ : AcademicType<AcademicSession, Acade
         return e;
     }
 
+    protected override IQueryable<AcademicSession> QueryTyped(AcademicDbContext db) => db.AcademicSessions.Include(s => s.Parent);
+
+    protected override void Fill(Dictionary<string, string?> f, AcademicSession e)
+    {
+        f["name"] = e.Name;
+        f["academicSessionType"] = ValueOf(AcademicTypes.SessionTypes, e.AcademicSessionType);
+        f["startDate"] = Date(e.StartDate);
+        f["endDate"] = Date(e.EndDate);
+        f["parentAcademicSessionId"] = e.Parent?.ExternalId;
+    }
+
     protected override void Apply(AcademicSession e, Values v)
     {
         e.Name = v.Name!;
@@ -305,6 +361,17 @@ internal sealed class CourseType : AcademicType<Course, CourseType.Values>
         var e = new Course { ExternalId = externalId, Source = source, Name = v.Name! };
         Apply(e, v);
         return e;
+    }
+
+    protected override IQueryable<Course> QueryTyped(AcademicDbContext db) => db.Courses.Include(c => c.Organization);
+
+    protected override void Fill(Dictionary<string, string?> f, Course e)
+    {
+        f["name"] = e.Name;
+        f["abbreviation"] = e.Abbreviation;
+        f["description"] = e.Description;
+        f["studyLoad"] = e.StudyLoad?.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        f["organizationId"] = e.Organization?.ExternalId;
     }
 
     protected override void Apply(Course e, Values v)
@@ -355,6 +422,17 @@ internal sealed class CourseOfferingType : AcademicType<CourseOffering, CourseOf
         return e;
     }
 
+    protected override IQueryable<CourseOffering> QueryTyped(AcademicDbContext db) => db.CourseOfferings.Include(o => o.Course).Include(o => o.AcademicSession);
+
+    protected override void Fill(Dictionary<string, string?> f, CourseOffering e)
+    {
+        f["name"] = e.Name;
+        f["courseId"] = e.Course.ExternalId;
+        f["academicSessionId"] = e.AcademicSession.ExternalId;
+        f["startDate"] = Date(e.StartDate);
+        f["endDate"] = Date(e.EndDate);
+    }
+
     protected override void Apply(CourseOffering e, Values v)
     {
         e.Name = v.Name!;
@@ -393,6 +471,17 @@ internal sealed class PersonType : AcademicType<Person, PersonType.Values>
         var e = new Person { ExternalId = externalId, Source = source, GivenName = v.GivenName!, Surname = v.Surname! };
         Apply(e, v);
         return e;
+    }
+
+    protected override IQueryable<Person> QueryTyped(AcademicDbContext db) => db.Persons;
+
+    protected override void Fill(Dictionary<string, string?> f, Person e)
+    {
+        f["givenName"] = e.GivenName;
+        f["surnamePrefix"] = e.SurnamePrefix;
+        f["surname"] = e.Surname;
+        f["displayName"] = e.DisplayName;
+        f["mail"] = e.Mail;
     }
 
     protected override void Apply(Person e, Values v)
@@ -440,6 +529,15 @@ internal sealed class AssociationType : AcademicType<Association, AssociationTyp
         var e = new Association { ExternalId = externalId, Source = source };
         Apply(e, v);
         return e;
+    }
+
+    protected override IQueryable<Association> QueryTyped(AcademicDbContext db) => db.Associations.Include(a => a.Person).Include(a => a.CourseOffering);
+
+    protected override void Fill(Dictionary<string, string?> f, Association e)
+    {
+        f["personId"] = e.Person.ExternalId;
+        f["offeringId"] = e.CourseOffering.ExternalId;
+        f["role"] = ValueOf(AcademicTypes.Roles, e.Role);
     }
 
     protected override void Apply(Association e, Values v)

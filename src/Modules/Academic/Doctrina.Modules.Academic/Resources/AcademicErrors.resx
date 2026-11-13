@@ -99,4 +99,49 @@
   <data name="Academic.CourseOffering.NotFound" xml:space="preserve">
     <value>Uitvoering niet gevonden</value>
   </data>
+  <data name="Academic.Organization.NotFound" xml:space="preserve">
+    <value>Organisatie niet gevonden</value>
+  </data>
+  <data name="Academic.Organization.DuplicateExternalId" xml:space="preserve">
+    <value>Organisatie bestaat al</value>
+  </data>
+  <data name="Academic.AcademicSession.NotFound" xml:space="preserve">
+    <value>Periode niet gevonden</value>
+  </data>
+  <data name="Academic.AcademicSession.DuplicateExternalId" xml:space="preserve">
+    <value>Periode bestaat al</value>
+  </data>
+  <data name="Academic.Course.NotFound" xml:space="preserve">
+    <value>Cursus niet gevonden</value>
+  </data>
+  <data name="Academic.Course.DuplicateExternalId" xml:space="preserve">
+    <value>Cursus bestaat al</value>
+  </data>
+  <data name="Academic.CourseOffering.DuplicateExternalId" xml:space="preserve">
+    <value>Uitvoering bestaat al</value>
+  </data>
+  <data name="Academic.Person.NotFound" xml:space="preserve">
+    <value>Persoon niet gevonden</value>
+  </data>
+  <data name="Academic.Person.DuplicateExternalId" xml:space="preserve">
+    <value>Persoon bestaat al</value>
+  </data>
+  <data name="Academic.Association.NotFound" xml:space="preserve">
+    <value>Inschrijving niet gevonden</value>
+  </data>
+  <data name="Academic.Association.DuplicateExternalId" xml:space="preserve">
+    <value>Inschrijving bestaat al</value>
+  </data>
+  <data name="Academic.Api.KeyMismatch" xml:space="preserve">
+    <value>Sleutel kan niet worden gewijzigd</value>
+  </data>
+  <data name="Academic.Api.InvalidQuery" xml:space="preserve">
+    <value>Ongeldige zoekvraag</value>
+  </data>
+  <data name="Academic.Api.BatchTooLarge" xml:space="preserve">
+    <value>Batch te groot</value>
+  </data>
+  <data name="Academic.Record.OtherSource" xml:space="preserve">
+    <value>Record van een andere bron</value>
+  </data>
 </root>

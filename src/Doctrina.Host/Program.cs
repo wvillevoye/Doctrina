@@ -31,6 +31,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, SessionRevalidatingAuthe
 builder.Services.AddSingleton(TimeProvider.System);
 // API-conventies (design D9): ProblemDetails met vertaalde titels, onverwachte fouten, OpenAPI, health checks.
 builder.Services.AddDoctrinaApi();
+builder.Services.AddDoctrinaRateLimits();
 builder.Services.AddDoctrinaEvents();
 builder.Services.AddHostedService<ModuleMigrationService>();
 // Vormgeving: white-label-instellingen, bij het opstarten gecontroleerd (design D4).
@@ -54,6 +55,7 @@ app.UseStatusCodePages();
 app.UseDoctrinaIdentityProviderUnavailable();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.UseAntiforgery();
 
 app.MapStaticAssets();

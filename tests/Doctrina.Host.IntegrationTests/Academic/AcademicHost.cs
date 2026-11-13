@@ -32,7 +32,18 @@ internal sealed class AcademicHost : IAsyncDisposable
     /// <param name="factory">The shared host factory.</param>
     /// <param name="cancellationToken">Cancels creating the database.</param>
     /// <param name="enable">Further modules to switch on next to Academic (known product modules by name, or test modules).</param>
-    public static async Task<AcademicHost> CreateAsync(DoctrinaHostFactory factory, CancellationToken cancellationToken, params object[] enable)
+    public static Task<AcademicHost> CreateAsync(DoctrinaHostFactory factory, CancellationToken cancellationToken, params object[] enable) =>
+        CreateCoreAsync(factory, [], enable, cancellationToken);
+
+    /// <summary>
+    /// As above, with extra settings (e.g. <c>Api:Sources:…</c>). API callers: role <c>test.read</c> has
+    /// <c>Academic.Read</c> (and <c>Groups.Read</c>), role <c>test.write</c> has <c>Academic.Write</c>.
+    /// </summary>
+    public static Task<AcademicHost> CreateAsync(DoctrinaHostFactory factory, (string Key, string? Value)[] settings, CancellationToken cancellationToken) =>
+        CreateCoreAsync(factory, settings, [], cancellationToken);
+
+    private static async Task<AcademicHost> CreateCoreAsync(
+        DoctrinaHostFactory factory, (string Key, string? Value)[] settings, object[] enable, CancellationToken cancellationToken)
     {
         var database = await TestDatabases.CreateAsync(cancellationToken);
         var modules = enable.OfType<Doctrina.Core.Modules.IModule>().ToList();
@@ -40,9 +51,15 @@ internal sealed class AcademicHost : IAsyncDisposable
         var host = factory.WithModules(modules, names).InEnvironment(
             DoctrinaConfigurationExtensions.TestEnvironment,
             database,
-            (ModuleMigrationService.MigrateOnStartupKey, "true"),
-            (AccessHosts.Mapping("student", 0), AcademicPermissions.MyCourses),
-            (AccessHosts.Mapping("employee", 0), AcademicPermissions.MyCourses));
+            [
+                (ModuleMigrationService.MigrateOnStartupKey, "true"),
+                (AccessHosts.Mapping("student", 0), AcademicPermissions.MyCourses),
+                (AccessHosts.Mapping("employee", 0), AcademicPermissions.MyCourses),
+                (AccessHosts.Mapping("test.read", 0), AcademicPermissions.Read),
+                (AccessHosts.Mapping("test.read", 1), "Groups.Read"),
+                (AccessHosts.Mapping("test.write", 0), AcademicPermissions.Write),
+                .. settings,
+            ]);
         host.Services.GetRequiredService<IServiceProvider>(); // start the host, which migrates
         return new AcademicHost(database, host);
     }
@@ -90,6 +107,15 @@ internal sealed class AcademicHost : IAsyncDisposable
         {
             return (response.StatusCode, WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync(ct)));
         }
+    }
+
+    /// <summary>An API client for system <paramref name="client"/> (claim <c>azp</c>) with <paramref name="roles"/>.</summary>
+    public HttpClient Api(DoctrinaHostFactory root, string client = "doctrina-sis-sync", params string[] roles)
+    {
+        var http = Host.CreateBrowser();
+        http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
+            "Bearer", root.Idp.CreateAccessToken(DoctrinaHostFactory.ApiAudience, client, roles.Length == 0 ? ["test.read", "test.write"] : roles));
+        return http;
     }
 
     public static Dictionary<string, string?> Record(params (string Name, string? Value)[] fields) =>

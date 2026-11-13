@@ -33,4 +33,7 @@
   <data name="Groups.Distribution.Invalid" xml:space="preserve">
     <value>Studenten kunnen niet worden verdeeld</value>
   </data>
+  <data name="Groups.Api.OfferingRequired" xml:space="preserve">
+    <value>Uitvoering verplicht</value>
+  </data>
 </root>

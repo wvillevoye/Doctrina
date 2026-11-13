@@ -55,6 +55,21 @@ Afspraken voor Doctrina:
 - Autorisatie alleen op `roles` — niet op `groups` (die verschillen per IdP).
 - Koppel een login aan een `Person` op **issuer + `oid`**, met als eerste koppeling **`personId` ↔ `ExternalId`** uit het SIS (anders e-mail). Een `oid` uit Keycloak is **niet** dezelfde als die uit Entra; `personId` wel, mits Entra het nummer als claim meegeeft.
 
+## API: scopes, permissions and source
+
+Systems call `/api/v1` with a client-credentials token. Their scopes (in `roles`) map to Doctrina permissions in
+`Authorization:RolePermissions` (change `add-rest-api`); in Development:
+
+| Scope | Permissions | Allows |
+|---|---|---|
+| `doctrina.persons.read`, `doctrina.courses.read` | `Academic.Read`, `Groups.Read` | `GET` on the Academic types and on `groups` |
+| `doctrina.persons.write`, `doctrina.courses.write` | `Academic.Write` | `POST`, `PUT …/by-external-id/{key}`, `PATCH`, `DELETE`, `POST …/batch` |
+
+What a system writes gets the **source** that `Api:Sources:{client}` (the client id from claim `azp`) configures,
+otherwise `SIS`; a `source` in the body is ignored. A system can only change or delete records of its own source
+(otherwise 403, `Academic.Record.OtherSource`). Upserts match on the key of the source system plus that source. Batches
+are limited per client (`Api:BatchesPerMinute`, default 60; above it 429).
+
 ## `appsettings.Development.json` en `appsettings.Secrets.json` voor Doctrina.Host
 
 ```json

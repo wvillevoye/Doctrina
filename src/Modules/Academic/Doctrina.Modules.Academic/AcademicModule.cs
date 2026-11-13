@@ -25,6 +25,7 @@ public sealed class AcademicModule : IModule
     [
         new(AcademicPermissions.Read, "View organizations, sessions, courses, offerings, persons and enrolments"),
         new(AcademicPermissions.Import, "Import academic data from CSV files"),
+        new(AcademicPermissions.Write, "Create, change and delete academic data through the API"),
         new(AcademicPermissions.MyCourses, "See your own courses"),
     ];
 
@@ -46,10 +47,7 @@ public sealed class AcademicModule : IModule
         services.AddHealthChecks().AddCheck<AcademicHealthCheck>("academic", tags: [ModuleHealthChecks.TagFor(Name)]);
     }
 
-    // No REST endpoints yet: they come with add-api-and-import (design D3).
-    public void MapEndpoints(IEndpointRouteBuilder api)
-    {
-    }
+    public void MapEndpoints(IEndpointRouteBuilder api) => Api.AcademicEndpoints.Map(api);
 }
 
 /// <summary>Permissions of the Academic module.</summary>
@@ -58,4 +56,5 @@ public static class AcademicPermissions
     public const string Read = "Academic.Read";
     public const string Import = "Academic.Import";
     public const string MyCourses = "Academic.MyCourses";
+    public const string Write = "Academic.Write";
 }

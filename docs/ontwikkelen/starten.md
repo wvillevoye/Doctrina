@@ -116,6 +116,31 @@ Invoke-RestMethod https://localhost:5001/api/v1/me -Headers @{ Authorization = "
 De documentatie van de API staat in Development op https://localhost:5001/scalar (OpenAPI-document:
 `/openapi/v1.json`). Health: `/health/live` en `/health/ready`.
 
+### Academic and group data through the API
+
+`doctrina-sis-sync` has the scopes `doctrina.persons.*` and `doctrina.courses.*`; in Development they give
+`Academic.Read`, `Groups.Read` and `Academic.Write`. What it writes gets source `SIS` (`Api:Sources:{client}` can
+change that per client). With the token from above:
+
+```powershell
+$h = @{ Authorization = "Bearer $token" }
+# Create or update a person by the key of the source system (201 when new, 200 otherwise)
+Invoke-RestMethod -Method Put https://localhost:5001/api/v1/persons/by-external-id/I6999001 -Headers $h `
+  -ContentType "application/json" -Body '{ "givenName": "Test", "surname": "Person", "mail": "test@example.test" }'
+# Changes since a moment (delta), 100 per page
+Invoke-RestMethod "https://localhost:5001/api/v1/persons?modifiedSince=2026-11-13T00:00:00Z" -Headers $h
+# Up to 500 records at once, with a result per record
+Invoke-RestMethod -Method Post https://localhost:5001/api/v1/courses/batch -Headers $h -ContentType "application/json" `
+  -Body '[ { "courseId": "TST100", "name": "Test course" }, { "courseId": "TST200" } ]' | ForEach-Object { $_ } | Format-Table
+# Groups of an offering (offeringId = the Doctrina id, e.g. from /api/v1/course-offerings)
+Invoke-RestMethod "https://localhost:5001/api/v1/groups?offeringId=<id>" -Headers $h
+```
+
+Every type has the same endpoints: `GET /api/v1/{type}`, `GET …/{id}`, `POST`, `PUT …/by-external-id/{key}`,
+`PATCH …/{id}`, `DELETE …/{id}` (sets status `toBeDeleted`) and `POST …/batch`. The fields are the CSV columns (§5);
+Scalar lists them per endpoint. Errors are ProblemDetails with a `code`, e.g. `Academic.Person.Invalid` with the fields in
+`errors`.
+
 ## 7. Inloggen via Microsoft Entra ID
 
 Keycloak kan Entra ID als identity provider doorgeven. Eenmalig inrichten: zie

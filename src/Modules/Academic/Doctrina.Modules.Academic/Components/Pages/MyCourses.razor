@@ -30,7 +30,7 @@ else if (_loaded)
 @code {
     private static readonly DcTableColumn<Row>[] Columns =
     [
-        new("Course", r => r.Course),
+        new("Course", Template: r => @<DcLink Href="@($"/courses/{r.OfferingId:D}")">@r.Course</DcLink>),
         new("Offering", r => r.Offering),
         new("Academic session", r => r.Session),
         new("Role", r => Labels.Role(r.Role)),
@@ -52,12 +52,12 @@ else if (_loaded)
             _rows = await Db.Associations
                 .Where(a => a.PersonId == _person.Id && a.Status == EntityStatus.Active && a.CourseOffering.Status == EntityStatus.Active)
                 .OrderByDescending(a => a.CourseOffering.AcademicSession.StartDate).ThenBy(a => a.CourseOffering.Course.Name)
-                .Select(a => new Row(a.CourseOffering.Course.Name, a.CourseOffering.Name, a.CourseOffering.AcademicSession.Name, a.Role))
+                .Select(a => new Row(a.CourseOfferingId, a.CourseOffering.Course.Name, a.CourseOffering.Name, a.CourseOffering.AcademicSession.Name, a.Role))
                 .ToListAsync();
         }
 
         _loaded = true;
     }
 
-    private sealed record Row(string Course, string Offering, string Session, AssociationRole Role);
+    private sealed record Row(Guid OfferingId, string Course, string Offering, string Session, AssociationRole Role);
 }

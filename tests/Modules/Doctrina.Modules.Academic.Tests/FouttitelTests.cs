@@ -13,7 +13,7 @@ public sealed class ElkeFoutcodeHeeftEenTitel
     public static TheoryData<string> Codes() =>
         [
             .. AcademicTypes.All.SelectMany(t => new[] { t.InvalidCode, t.ReferenceNotFoundCode, t.DuplicateCode, t.ConflictCode }),
-            CsvReader.EmptyCode, CsvReader.MissingColumnsCode, CsvReader.TooLargeCode, AcademicImporter.InvalidSourceCode,
+            CsvReader.EmptyCode, CsvReader.MissingColumnsCode, CsvReader.TooLargeCode, AcademicImporter.InvalidSourceCode, AcademicDirectory.OfferingNotFoundCode,
         ];
 
     [Theory]

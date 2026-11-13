@@ -1,0 +1,67 @@
+@using Doctrina.Modules.Academic.Contracts
+@using Doctrina.Modules.Groups.Application
+@inject GroupService Groups
+@inject GroupsAccess Access
+@inject IAcademicDirectory Directory
+
+@* Section "My groups" on the page of a course offering (spec groups, design D8 of add-groups): the user's group per
+   set that is visible to students, with the names of its members; for those who may manage, a link to group management. *@
+<DcCard Title="My groups" data-testid="my-groups">
+    @if (_mine.Count == 0)
+    {
+      <p>You are not in any groups yet.</p>
+    }
+    else
+    {
+      <dl class="dc-details">
+        @foreach (var (set, group, members) in _mine)
+        {
+          <dt>@set</dt>
+          <dd>
+            <strong>@group</strong>
+            <ul data-testid="group-members">
+              @foreach (var name in members)
+              {
+                <li>@name</li>
+              }
+            </ul>
+          </dd>
+        }
+      </dl>
+    }
+    @if (_canManage)
+    {
+      <div class="dc-form__actions"><DcButton Href="@($"/courses/{OfferingId:D}/groups")" Icon="settings" data-testid="manage-groups">Manage groups</DcButton></div>
+    }
+</DcCard>
+
+@code {
+    private List<(string Set, string Group, List<string> Members)> _mine = [];
+    private bool _canManage;
+
+    [Parameter]
+    public Guid OfferingId { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var ct = CancellationToken.None;
+        var user = AuthenticationState is null ? new ClaimsPrincipal() : (await AuthenticationState).User;
+        _canManage = await Access.CanManageAsync(user, OfferingId, ct);
+        var personId = await Directory.CurrentPersonIdAsync(user, ct);
+        if (personId is null)
+        {
+            return;
+        }
+
+        var names = (await Directory.MembersAsync(OfferingId, ct)).ToDictionary(m => m.PersonId, m => m.Name);
+        _mine = [.. (await Groups.SetsAsync(OfferingId, ct))
+            .Where(s => s.VisibleToStudents)
+            .SelectMany(s => s.Groups.Where(g => g.Members.Any(m => m.PersonId == personId)).Select(g => (
+                s.Name,
+                g.Name,
+                g.Members.Where(m => names.ContainsKey(m.PersonId)).Select(m => names[m.PersonId]).Order(StringComparer.CurrentCulture).ToList())))];
+    }
+}

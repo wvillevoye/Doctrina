@@ -162,3 +162,22 @@ public sealed class MyCoursesToontDeEigenActieveUitvoeringen(DoctrinaHostFactory
         Assert.Equal("My courses · Doctrina", page.Title); // back on /my-courses after signing in
     }
 }
+
+// Spec my-courses (add-groups), requirement ""My courses" linkt naar de pagina van elke uitvoering".
+public sealed class MyCoursesLinktNaarDePaginaVanElkeUitvoering(DoctrinaHostFactory factory) : IClassFixture<DoctrinaHostFactory>
+{
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
+
+    [Fact]
+    public async Task LinkNaarDeUitvoering()
+    {
+        await using var academic = await AcademicHost.CreateAsync(factory, Ct);
+        var id = await academic.WithStudentAsync();
+
+        var page = await academic.OpenAsync(factory, StubUser.Student, Ct);
+
+        var link = page.QuerySelector("[data-testid=my-courses] tbody tr td a");
+        Assert.Equal($"/courses/{id:D}", link?.GetAttribute("href"));
+        Assert.Equal("BIO101 course", link?.TextContent);
+    }
+}

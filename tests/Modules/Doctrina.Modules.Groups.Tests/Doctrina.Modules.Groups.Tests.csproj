@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <!-- Unit tests and LocalDB tests of the Groups module (change add-groups). -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Doctrina.Modules.Groups.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <PackageReference Include="bunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Modules\Groups\Doctrina.Modules.Groups\Doctrina.Modules.Groups.csproj" />
+    <ProjectReference Include="..\..\Doctrina.TestKit\Doctrina.TestKit.csproj" />
+  </ItemGroup>
+</Project>

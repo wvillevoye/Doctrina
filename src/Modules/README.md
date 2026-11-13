@@ -17,3 +17,4 @@ Step by step: [`docs/ontwikkelen/modules.md`](../../docs/ontwikkelen/modules.md)
 | Module | What | Change |
 |---|---|---|
 | [`Academic`](Academic/) | OOAPI core model (organizations, sessions, courses, offerings, persons, associations), CSV import, admin pages, "My courses" | `add-academic-core` |
+| [`Groups`](Groups/) | Group sets and groups in a course offering, manual and random assignment, "My groups" on the offering page | `add-groups` |

@@ -29,10 +29,15 @@ internal sealed class AcademicHost : IAsyncDisposable
 
     public WebApplicationFactory<Program> Host { get; }
 
-    public static async Task<AcademicHost> CreateAsync(DoctrinaHostFactory factory, CancellationToken cancellationToken)
+    /// <param name="factory">The shared host factory.</param>
+    /// <param name="cancellationToken">Cancels creating the database.</param>
+    /// <param name="enable">Further modules to switch on next to Academic (known product modules by name, or test modules).</param>
+    public static async Task<AcademicHost> CreateAsync(DoctrinaHostFactory factory, CancellationToken cancellationToken, params object[] enable)
     {
         var database = await TestDatabases.CreateAsync(cancellationToken);
-        var host = factory.WithModules([], AcademicModule.ModuleName).InEnvironment(
+        var modules = enable.OfType<Doctrina.Core.Modules.IModule>().ToList();
+        string[] names = [AcademicModule.ModuleName, .. enable.Select(e => e is Doctrina.Core.Modules.IModule m ? m.Name : (string)e)];
+        var host = factory.WithModules(modules, names).InEnvironment(
             DoctrinaConfigurationExtensions.TestEnvironment,
             database,
             (ModuleMigrationService.MigrateOnStartupKey, "true"),

@@ -26,6 +26,14 @@ internal static class Labels
         _ => "Coordinator",
     };
 
+    public static string Role(Doctrina.Modules.Academic.Contracts.OfferingRole role) => role switch
+    {
+        Doctrina.Modules.Academic.Contracts.OfferingRole.Student => "Student",
+        Doctrina.Modules.Academic.Contracts.OfferingRole.Lecturer => "Lecturer",
+        Doctrina.Modules.Academic.Contracts.OfferingRole.TeachingAssistant => "Teaching assistant",
+        _ => "Coordinator",
+    };
+
     public static string Date(DateOnly? date) => date?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) ?? "–";
 
     public static string Href(string typeName, Guid id) => $"/academic/{typeName}/{id:D}";

@@ -1,0 +1,382 @@
+@page "/courses/{OfferingId:guid}/groups"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using Doctrina.Core.Results
+@using Doctrina.Modules.Academic.Contracts
+@using Doctrina.Modules.Groups.Application
+@using Doctrina.Modules.Groups.Domain
+@using Microsoft.Extensions.DependencyInjection
+@inject IServiceScopeFactory Scopes
+@inject NavigationManager Navigation
+
+@* Group management of a course offering (spec groups, design D5 and D8 of add-groups). Interactive; every action
+   runs in its own scope, like a request, and then reloads. Access: lecturers and coordinators of the offering, and
+   Groups.Manage. *@
+@if (_offering is not null)
+{
+  <DcPageHeader Title="Groups" DocumentTitle="@($"Groups · {_offering.Name}")">
+    <Description><DcLink Href="@($"/courses/{OfferingId:D}")">@_offering.Name</DcLink> · @Students.Count student(s)</Description>
+  </DcPageHeader>
+
+  <div class="dc-stack">
+    @if (_message is not null)
+    {
+      <DcAlert Severity="DcSeverity.Success" data-testid="groups-message"><p>@_message</p></DcAlert>
+    }
+    <DcResult Error="_error" />
+
+    @foreach (var set in _sets)
+    {
+      <DcCard Title="@set.Name" data-testid="group-set">
+        <ChildContent>
+          <p>
+            <DcBadge Variant="@(set.VisibleToStudents ? DcBadgeVariant.Success : DcBadgeVariant.Neutral)">@(set.VisibleToStudents ? "Visible to students" : "Hidden from students")</DcBadge>
+            @if (set.MaxGroupSize is { } max)
+            {
+              <span> At most @max per group.</span>
+            }
+          </p>
+          @if (set.Groups.Count == 0)
+          {
+            <p>No groups yet.</p>
+          }
+          <dl class="dc-details">
+            @foreach (var group in set.Groups)
+            {
+              <dt data-testid="group-name">@group.Name (@group.Members.Count)</dt>
+              <dd>
+                <ul data-testid="group-members">
+                  @foreach (var member in group.Members.Select(m => Name(m.PersonId)).Order(StringComparer.CurrentCulture))
+                  {
+                    <li>@member</li>
+                  }
+                </ul>
+                <div class="dc-form__actions">
+                  <DcButton Variant="DcButtonVariant.Ghost" Icon="pencil" Label="@($"Rename {group.Name}")" OnClick="() => AskRename(group.Id, group.Name, isSet: false)" />
+                  <DcButton Variant="DcButtonVariant.Ghost" Icon="trash-2" Label="@($"Delete {group.Name}")" OnClick="() => AskDelete(group.Id, group.Name, isSet: false)" />
+                </div>
+              </dd>
+            }
+          </dl>
+          @{ var unassigned = Unassigned(set); }
+          <p data-testid="unassigned">Not in a group: @(unassigned.Count == 0 ? "nobody" : string.Join(", ", unassigned.Select(s => s.Name)))</p>
+        </ChildContent>
+        <Footer>
+          <DcButton Icon="pencil" OnClick="() => AskRename(set.Id, set.Name, isSet: true)">Rename set</DcButton>
+          <DcButton Variant="DcButtonVariant.Danger" Icon="trash-2" OnClick="() => AskDelete(set.Id, set.Name, isSet: true)">Delete set</DcButton>
+        </Footer>
+      </DcCard>
+    }
+
+    @if (_sets.Count > 0)
+    {
+      <DcCard Title="Add a group">
+        <DcForm Model="_newGroup" OnValidSubmit="AddGroupAsync" FormName="add-group" data-testid="add-group">
+          <DcSelect TValue="string" Label="Group set" Required @bind-Value="_newGroup.SetId">@SetOptions</DcSelect>
+          <DcTextField Label="Name" Required @bind-Value="_newGroup.Name" />
+          <div class="dc-form__actions"><DcButton Type="submit" Icon="plus">Add group</DcButton></div>
+        </DcForm>
+      </DcCard>
+
+      <DcCard Title="Put a student in a group">
+        <DcForm Model="_assign" OnValidSubmit="AssignAsync" FormName="assign" data-testid="assign">
+          <DcSelect TValue="string" Label="Student" Required @bind-Value="_assign.PersonId">
+            <option value="">Choose a student…</option>
+            @foreach (var student in Students)
+            {
+              <option value="@student.PersonId.ToString("D")">@student.Name (@student.ExternalId)</option>
+            }
+          </DcSelect>
+          <DcSelect TValue="string" Label="Group" Required @bind-Value="_assign.GroupId">
+            <option value="">Choose a group…</option>
+            @foreach (var set in _sets)
+            {
+              <optgroup label="@set.Name">
+                @foreach (var group in set.Groups)
+                {
+                  <option value="@group.Id.ToString("D")">@group.Name</option>
+                }
+                <option value="@($"none:{set.Id:D}")">Not in a group</option>
+              </optgroup>
+            }
+          </DcSelect>
+          <div class="dc-form__actions"><DcButton Type="submit">Save</DcButton></div>
+        </DcForm>
+      </DcCard>
+
+      <DcCard Title="Distribute randomly">
+        <DcForm Model="_distribute" OnValidSubmit="DistributeAsync" FormName="distribute" data-testid="distribute">
+          <p>Students who are not in a group of the set yet are spread at random over new groups ("Group 1", "Group 2", …).</p>
+          <DcSelect TValue="string" Label="Group set" Required @bind-Value="_distribute.SetId">@SetOptions</DcSelect>
+          <DcSelect TValue="string" Label="Make" Required @bind-Value="_distribute.Mode">
+            <option value="count">this number of groups</option>
+            <option value="size">groups of this size</option>
+          </DcSelect>
+          <DcTextField Label="Number" Type="number" Required @bind-Value="_distribute.Number" />
+          <div class="dc-form__actions"><DcButton Type="submit" Variant="DcButtonVariant.Primary">Distribute</DcButton></div>
+        </DcForm>
+      </DcCard>
+    }
+
+    <DcCard Title="New group set">
+      <DcForm Model="_newSet" OnValidSubmit="AddSetAsync" FormName="new-set" data-testid="new-set">
+        <DcTextField Label="Name" Required Hint="For example “Project teams” or “Lab groups”." @bind-Value="_newSet.Name" />
+        <DcCheckbox Label="Visible to students" @bind-Value="_newSet.VisibleToStudents" />
+        <DcTextField Label="Maximum group size" Type="number" Hint="Leave empty for no maximum." @bind-Value="_newSet.MaxGroupSize" />
+        <div class="dc-form__actions"><DcButton Type="submit" Variant="DcButtonVariant.Primary" Icon="plus">Create group set</DcButton></div>
+      </DcForm>
+    </DcCard>
+  </div>
+
+  <DcModal @ref="_renameModal" Title="Rename">
+    <ChildContent>
+      <DcForm Model="_rename" OnValidSubmit="RenameAsync" FormName="rename">
+        <DcTextField Label="Name" Required @bind-Value="_rename.Name" />
+        <div class="dc-form__actions"><DcButton Type="submit" Variant="DcButtonVariant.Primary">Save</DcButton></div>
+      </DcForm>
+    </ChildContent>
+  </DcModal>
+
+  <DcModal @ref="_deleteModal" Title="@($"Delete {_delete.Name}?")">
+    <ChildContent>
+      <p>@(_delete.IsSet ? "All groups in this set are deleted and their students are no longer in a group." : "The students in this group are no longer in a group of this set.")</p>
+    </ChildContent>
+    <Footer>
+      <DcButton OnClick="() => _deleteModal!.CloseAsync()">Cancel</DcButton>
+      <DcButton Variant="DcButtonVariant.Danger" OnClick="DeleteAsync">Delete</DcButton>
+    </Footer>
+  </DcModal>
+}
+
+@code {
+    private OfferingInfo? _offering;
+    private IReadOnlyList<GroupSet> _sets = [];
+    private IReadOnlyList<OfferingMember> _members = [];
+    private Error? _error;
+    private string? _message;
+    private readonly NewSetForm _newSet = new();
+    private readonly NewGroupForm _newGroup = new();
+    private readonly AssignForm _assign = new();
+    private readonly DistributeForm _distribute = new();
+    private readonly RenameForm _rename = new();
+    private (Guid Id, string Name, bool IsSet) _delete;
+    private DcModal? _renameModal;
+    private DcModal? _deleteModal;
+
+    [Parameter]
+    public Guid OfferingId { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    private List<OfferingMember> Students => [.. _members.Where(m => m.Role == OfferingRole.Student)];
+
+    private RenderFragment SetOptions => @<text>
+      <option value="">Choose a set…</option>
+      @foreach (var set in _sets)
+      {
+        <option value="@set.Id.ToString("D")">@set.Name</option>
+      }
+    </text>;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var scope = Scopes.CreateScope();
+        var directory = scope.ServiceProvider.GetRequiredService<IAcademicDirectory>();
+        var offering = await directory.FindOfferingAsync(OfferingId, CancellationToken.None);
+        if (offering.IsFailure)
+        {
+            Navigation.NotFound();
+            return;
+        }
+
+        var user = AuthenticationState is null ? new ClaimsPrincipal() : (await AuthenticationState).User;
+        if (!await scope.ServiceProvider.GetRequiredService<GroupsAccess>().CanManageAsync(user, OfferingId, CancellationToken.None))
+        {
+            Navigation.NavigateTo("/access-denied");
+            return;
+        }
+
+        await ReloadAsync();
+        _offering = offering.Value; // only now: the page renders once, with its data
+    }
+
+    private async Task ReloadAsync()
+    {
+        using var scope = Scopes.CreateScope();
+        _sets = await scope.ServiceProvider.GetRequiredService<GroupService>().SetsAsync(OfferingId, CancellationToken.None);
+        _members = await scope.ServiceProvider.GetRequiredService<IAcademicDirectory>().MembersAsync(OfferingId, CancellationToken.None);
+    }
+
+    /// <summary>Runs one change in its own scope, shows the outcome and reloads.</summary>
+    private async Task<bool> RunAsync(Func<GroupService, Task<Result>> change, string success)
+    {
+        _message = null;
+        using (var scope = Scopes.CreateScope())
+        {
+            var result = await change(scope.ServiceProvider.GetRequiredService<GroupService>());
+            _error = result.Error;
+            _message = result.IsSuccess ? success : null;
+        }
+
+        await ReloadAsync();
+        return _error is null;
+    }
+
+    private async Task AddSetAsync()
+    {
+        if (!TryParseOptional(_newSet.MaxGroupSize, "maxGroupSize", out var max))
+        {
+            return;
+        }
+
+        if (await RunAsync(async s => await s.CreateSetAsync(OfferingId, _newSet.Name, _newSet.VisibleToStudents, max, CancellationToken.None), $"Group set “{_newSet.Name}” created."))
+        {
+            _newSet.Name = _newSet.MaxGroupSize = null;
+            _newSet.VisibleToStudents = false;
+        }
+    }
+
+    private async Task AddGroupAsync()
+    {
+        if (await RunAsync(async s => await s.CreateGroupAsync(Guid.Parse(_newGroup.SetId!), _newGroup.Name, CancellationToken.None), $"Group “{_newGroup.Name}” added."))
+        {
+            _newGroup.Name = null;
+        }
+    }
+
+    private async Task AssignAsync()
+    {
+        var personId = Guid.Parse(_assign.PersonId!);
+        var name = Name(personId);
+        if (_assign.GroupId!.StartsWith("none:", StringComparison.Ordinal))
+        {
+            await RunAsync(s => s.UnassignAsync(Guid.Parse(_assign.GroupId[5..]), personId, CancellationToken.None), $"{name} is not in a group of this set anymore.");
+            return;
+        }
+
+        var groupId = Guid.Parse(_assign.GroupId);
+        var group = _sets.SelectMany(s => s.Groups).Single(g => g.Id == groupId);
+        await RunAsync(s => s.AssignAsync(groupId, personId, CancellationToken.None), $"{name} is now in {group.Name}.");
+    }
+
+    private async Task DistributeAsync()
+    {
+        if (!int.TryParse(_distribute.Number, out var number))
+        {
+            _error = GroupsErrors.Invalid(GroupsErrors.DistributionInvalid, "number", "Enter a whole number.");
+            return;
+        }
+
+        var bySize = _distribute.Mode == "size";
+        await RunAsync(
+            async s => await s.DistributeAsync(Guid.Parse(_distribute.SetId!), bySize ? null : number, bySize ? number : null, CancellationToken.None),
+            "Students distributed.");
+    }
+
+    private Task AskRename(Guid id, string name, bool isSet)
+    {
+        (_rename.Id, _rename.Name, _rename.IsSet) = (id, name, isSet);
+        return _renameModal!.ShowAsync();
+    }
+
+    private async Task RenameAsync()
+    {
+        var set = _rename.IsSet ? _sets.Single(s => s.Id == _rename.Id) : null;
+        await RunAsync(
+            s => set is null
+                ? s.RenameGroupAsync(_rename.Id, _rename.Name, CancellationToken.None)
+                : s.UpdateSetAsync(set.Id, _rename.Name, set.VisibleToStudents, set.MaxGroupSize, CancellationToken.None),
+            $"Renamed to “{_rename.Name}”.");
+        await _renameModal!.CloseAsync();
+    }
+
+    private Task AskDelete(Guid id, string name, bool isSet)
+    {
+        _delete = (id, name, isSet);
+        return _deleteModal!.ShowAsync();
+    }
+
+    private async Task DeleteAsync()
+    {
+        var (id, name, isSet) = _delete;
+        await RunAsync(s => isSet ? s.DeleteSetAsync(id, CancellationToken.None) : s.DeleteGroupAsync(id, CancellationToken.None), $"“{name}” deleted.");
+        await _deleteModal!.CloseAsync();
+    }
+
+    private string Name(Guid personId) => _members.FirstOrDefault(m => m.PersonId == personId)?.Name ?? "(no longer enrolled)";
+
+    private List<OfferingMember> Unassigned(GroupSet set)
+    {
+        var assigned = set.Groups.SelectMany(g => g.Members).Select(m => m.PersonId).ToHashSet();
+        return [.. Students.Where(s => !assigned.Contains(s.PersonId))];
+    }
+
+    private bool TryParseOptional(string? text, string field, out int? value)
+    {
+        value = null;
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return true;
+        }
+
+        if (int.TryParse(text, out var number))
+        {
+            value = number;
+            return true;
+        }
+
+        _error = GroupsErrors.Invalid(GroupsErrors.SetInvalid, field, "Enter a whole number.");
+        return false;
+    }
+
+    private sealed class NewSetForm
+    {
+        [Required(ErrorMessage = "Enter a name.")]
+        public string? Name { get; set; }
+
+        public bool VisibleToStudents { get; set; }
+
+        public string? MaxGroupSize { get; set; }
+    }
+
+    private sealed class NewGroupForm
+    {
+        [Required(ErrorMessage = "Choose a set.")]
+        public string? SetId { get; set; }
+
+        [Required(ErrorMessage = "Enter a name.")]
+        public string? Name { get; set; }
+    }
+
+    private sealed class AssignForm
+    {
+        [Required(ErrorMessage = "Choose a student.")]
+        public string? PersonId { get; set; }
+
+        [Required(ErrorMessage = "Choose a group.")]
+        public string? GroupId { get; set; }
+    }
+
+    private sealed class DistributeForm
+    {
+        [Required(ErrorMessage = "Choose a set.")]
+        public string? SetId { get; set; }
+
+        public string Mode { get; set; } = "count";
+
+        [Required(ErrorMessage = "Enter a number.")]
+        public string? Number { get; set; }
+    }
+
+    private sealed class RenameForm
+    {
+        public Guid Id { get; set; }
+
+        public bool IsSet { get; set; }
+
+        [Required(ErrorMessage = "Enter a name.")]
+        public string? Name { get; set; }
+    }
+}

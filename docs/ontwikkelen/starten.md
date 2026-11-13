@@ -89,6 +89,20 @@ The CSV files are generated together with the realm by `dev-stack/scripts/genera
 `dev-stack/README.md`). The format: one file per type, a header row with OOAPI field names, `,` or `;`, UTF-8 with or
 without BOM, dates as `YYYY-MM-DD`, and an optional `status` column (`active` or `toBeDeleted`).
 
+### Groups
+
+With the test data imported, try the **Groups** module (also switched on in Development):
+
+1. Sign in as `docent` and open **My courses** → **Cell biology** (`/courses/{offering}`). The page shows the course,
+   the period and your role, and a section **My groups** with the button **Manage groups**.
+2. On **Manage groups** (`/courses/{offering}/groups`): create a group set (for example "Project teams", visible to
+   students), then **Distribute randomly** over a number of groups, or add groups and put students in them one by one.
+   A student is in at most one group per set; a maximum group size is optional.
+3. Sign in as `student`: **My courses** → **Cell biology** shows your group and its members under **My groups**,
+   for sets that are visible to students.
+
+Only lecturers and coordinators of the offering, and users with `Groups.Manage` (role `admin`), can manage groups.
+
 ## 6. De API proberen
 
 De API (`/api/v1`) accepteert alleen bearer-tokens. Een systeemtoken (client credentials) haal je zo op:

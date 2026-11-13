@@ -96,4 +96,7 @@
   <data name="Academic.Import.InvalidSource" xml:space="preserve">
     <value>Ongeldige bron</value>
   </data>
+  <data name="Academic.CourseOffering.NotFound" xml:space="preserve">
+    <value>Uitvoering niet gevonden</value>
+  </data>
 </root>

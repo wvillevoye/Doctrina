@@ -34,8 +34,11 @@ public sealed class DoctrinaHostFactory : WebApplicationFactory<Program>
     public WebApplicationFactory<Program> WithModules(IEnumerable<IModule> known, params string[] enabled) =>
         WithWebHostBuilder(builder =>
         {
+            // Configuration arrays merge per index: blank the remaining positions, so a longer list from
+            // appsettings.{Environment}.json (e.g. [Academic, Groups] in Development) doesn't leak through.
             builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(
-                enabled.Select((name, i) => new KeyValuePair<string, string?>($"{ModuleCatalog.EnabledSection}:{i}", name))));
+                Enumerable.Range(0, Math.Max(enabled.Length, 16)).Select(i =>
+                    new KeyValuePair<string, string?>($"{ModuleCatalog.EnabledSection}:{i}", i < enabled.Length ? enabled[i] : string.Empty))));
             builder.ConfigureServices(services =>
             {
                 foreach (var module in known)

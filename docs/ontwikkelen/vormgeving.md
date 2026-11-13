@@ -14,7 +14,7 @@ Doctrina heeft één design system: design tokens (`--dc-*`), een licht en een d
 | Ingang van de stylesheet | `src/Doctrina.UI/Styles/doctrina.scss` → `wwwroot/css/doctrina.css` (gegenereerd) |
 | Bootstrap-SCSS, lettertypen, iconen (met licenties) | `Styles/vendor/bootstrap/`, `wwwroot/fonts/`, `Icons/` in `src/Doctrina.UI` |
 | Componenten | `src/Doctrina.UI/Components/` (namespace `Doctrina.UI.Components`) |
-| Stijlgids | https://localhost:5001/stijlgids (`src/Doctrina.Host/Components/Pages/Stijlgids/`) |
+| Stijlgids | https://localhost:5001/style-guide (`src/Doctrina.Host/Components/Pages/StyleGuide/`) |
 
 De SCSS wordt tijdens `dotnet build` gecompileerd door `AspNetCore.SassCompiler` (`src/Doctrina.UI/sasscompiler.json`);
 Node.js is niet nodig. `doctrina.css` staat niet in git. Na een wijziging in een `.scss`-bestand is een build genoeg.
@@ -44,7 +44,7 @@ controleren een vaste lijst tokenparen in beide thema's; voeg daar een paar toe 
 - **Licht, donker, systeem.** Het thema staat als `data-dc-theme="light|dark|system"` op `<html>`; bij licht of donker
   ook `data-bs-theme`. Zonder keuze volgt Doctrina de systeeminstelling (`prefers-color-scheme`).
 - **Keuze van de gebruiker.** De themakeuze in de header (`DcThemeSwitcher`) is een gewoon formulier naar
-  `POST /thema`. De keuze staat in de functionele cookie `doctrina.theme` (één jaar); "systeem" verwijdert de cookie.
+  `POST /theme`. De keuze staat in de functionele cookie `doctrina.theme` (één jaar); "systeem" verwijdert de cookie.
   Omdat de server het attribuut al in de HTML zet, is de eerste weergave meteen goed, zonder script en zonder flits.
 - **Thema op een deel van de pagina.** `data-dc-theme` werkt ook op een container: alles daarbinnen krijgt de tokens
   van dat thema. De stijlgids gebruikt dit om licht en donker naast elkaar te tonen.
@@ -140,13 +140,13 @@ host, en noemen bestand en regel van een overtreding.
 1. Maak het component in `src/Doctrina.UI/Components/` (`DcNaam.razor`, eventueel `DcNaam.razor.css` met alleen tokens).
    Fouten van ontwikkelaars (geen naam, geen label) geven een `InvalidOperationException`, niet een stille fout.
 2. Schrijf bUnit-tests in `tests/Doctrina.UI.Tests/Components/`, genoemd naar requirement en scenario.
-3. Voeg een sectie toe aan de stijlgids (`src/Doctrina.Host/Components/Pages/Stijlgids/Stijlgids.razor`) met een
+3. Voeg een sectie toe aan de stijlgids (`src/Doctrina.Host/Components/Pages/StyleGuide/StyleGuide.razor`) met een
    `StijlgidsSectie` voor het component. De test `DeStijlgidsToontElkComponent` faalt zolang die ontbreekt.
 4. Een nieuw icoon: kopieer `<naam>.svg` uit het pakket `lucide-static` naar `src/Doctrina.UI/Icons/` (zie `VERSION`).
 
 ## De stijlgids
 
-https://localhost:5001/stijlgids toont elk component in het lichte en het donkere thema naast elkaar. De pagina is
+https://localhost:5001/style-guide toont elk component in het lichte en het donkere thema naast elkaar. De pagina is
 beschikbaar in `Development`; daarbuiten alleen met `Ui:StyleGuide:Enabled` op `true` (anders 404). Gebruik haar
 ook voor de handmatige controle per release: dialoog (focus, Escape, focus terug), menu's op een smal venster en met
 het toetsenbord, themawissel, en "minder beweging".

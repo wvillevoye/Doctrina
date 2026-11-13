@@ -26,7 +26,7 @@ public static class AccessHosts
     public static async Task<string> ProfileOfAsync(this WebApplicationFactory<Program> host, DoctrinaHostFactory root, StubUser user, CancellationToken ct)
     {
         using var browser = host.CreateBrowser();
-        return WebUtility.HtmlDecode(await browser.SignInAndGetAsync("/profiel", root.Idp, user, ct));
+        return WebUtility.HtmlDecode(await browser.SignInAndGetAsync("/profile", root.Idp, user, ct));
     }
 
     public static HttpClient ApiClient(this WebApplicationFactory<Program> host, DoctrinaHostFactory root, params string[] roles)
@@ -103,7 +103,7 @@ public sealed class RollenWordenViaConfiguratieAanPermissiesGekoppeld(DoctrinaHo
         var profile = await host.ProfileOfAsync(factory, new StubUser("sub-gg", "Gijs Gast", ["gast"]), Ct);
 
         Assert.Contains("data-testid=\"name\">Gijs Gast<", profile, StringComparison.Ordinal);
-        Assert.Contains("data-testid=\"permissions\">geen<", profile, StringComparison.Ordinal);
+        Assert.Contains("data-testid=\"permissions\">none<", profile, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -153,16 +153,16 @@ public sealed class PaginasEnEndpointsVereisenPermissies(DoctrinaHostFactory fac
     {
         using var host = factory.WithModules([new SampleModule()], SampleModule.ModuleName);
         using var browser = host.CreateBrowser();
-        await browser.SignInAndGetAsync("/profiel", factory.Idp, StubUser.Student, Ct);
+        await browser.SignInAndGetAsync("/profile", factory.Idp, StubUser.Student, Ct);
 
-        using var refused = await browser.GetAsync(new Uri("/sample/beheer", UriKind.Relative), Ct);
+        using var refused = await browser.GetAsync(new Uri("/sample/manage", UriKind.Relative), Ct);
         Assert.Equal(HttpStatusCode.Redirect, refused.StatusCode);
-        Assert.StartsWith("/geen-toegang", refused.Headers.Location!.PathAndQuery, StringComparison.Ordinal);
+        Assert.StartsWith("/access-denied", refused.Headers.Location!.PathAndQuery, StringComparison.Ordinal);
         using var page = await browser.GetAsync(new Uri(refused.Headers.Location.PathAndQuery, UriKind.Relative), Ct);
-        using var stillSignedIn = await browser.GetAsync(new Uri("/profiel", UriKind.Relative), Ct);
+        using var stillSignedIn = await browser.GetAsync(new Uri("/profile", UriKind.Relative), Ct);
 
         Assert.Equal(HttpStatusCode.Forbidden, page.StatusCode);
-        Assert.Matches("<h1[^>]*>Geen toegang</h1>", await page.Content.ReadAsStringAsync(Ct));
+        Assert.Matches("<h1[^>]*>Access denied</h1>", await page.Content.ReadAsStringAsync(Ct));
         Assert.Equal(HttpStatusCode.OK, stillSignedIn.StatusCode);
     }
 
@@ -187,7 +187,7 @@ public sealed class PaginasEnEndpointsVereisenPermissies(DoctrinaHostFactory fac
         using var host = factory.WithModules([new SampleModule()], SampleModule.ModuleName);
         using var browser = host.CreateBrowser();
 
-        var html = await browser.SignInAndGetAsync("/sample/beheer", factory.Idp, StubUser.Beheerder, Ct);
+        var html = await browser.SignInAndGetAsync("/sample/manage", factory.Idp, StubUser.Beheerder, Ct);
 
         Assert.Contains($"<h1>{SampleModule.ManagePageTitle}</h1>", html, StringComparison.Ordinal);
     }

@@ -47,7 +47,7 @@ public sealed class KnoppenEnLinksHebbenAltijdEenToegankelijkeNaam : IDisposable
 
         Assert.True(button.HasAttribute("disabled"));
         Assert.Equal("true", button.GetAttribute("aria-busy"));
-        Assert.Contains("(bezig)", button.TextContent, StringComparison.Ordinal);
+        Assert.Contains("(busy)", button.TextContent, StringComparison.Ordinal);
         button.Click();
         Assert.Equal(0, clicks);
     }
@@ -118,7 +118,7 @@ public sealed class KnoppenEnLinksHebbenAltijdEenToegankelijkeNaam : IDisposable
         Assert.Equal("_blank", link.GetAttribute("target"));
         Assert.Equal("noopener noreferrer", link.GetAttribute("rel"));
         Assert.Contains("SURF", link.TextContent, StringComparison.Ordinal);
-        Assert.Contains("(opent in een nieuw venster)", link.TextContent, StringComparison.Ordinal);
+        Assert.Contains("(opens in a new window)", link.TextContent, StringComparison.Ordinal);
     }
 
     [Fact]

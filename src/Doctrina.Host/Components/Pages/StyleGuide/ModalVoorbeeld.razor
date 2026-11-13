@@ -1,0 +1,21 @@
+@* Dialoog voor de stijlgids (en de handmatige controle van focus en Escape, taak 8.2 van add-design-system). *@
+<DcButton Variant="DcButtonVariant.Danger" Icon="trash-2" OnClick="() => _modal.ShowAsync()">Delete course…</DcButton>
+@if (_closed > 0)
+{
+  <p class="dc-styleguide__note" role="status">Dialog closed @(_closed)×.</p>
+}
+
+<DcModal @ref="_modal" Title="Delete course?" OnClose="() => _closed++">
+  <ChildContent>
+    <p>The course and all enrolments will be deleted. This cannot be undone.</p>
+  </ChildContent>
+  <Footer>
+    <DcButton OnClick="() => _modal.CloseAsync()">Cancel</DcButton>
+    <DcButton Variant="DcButtonVariant.Danger" OnClick="() => _modal.CloseAsync()">Delete</DcButton>
+  </Footer>
+</DcModal>
+
+@code {
+    private DcModal _modal = default!;
+    private int _closed;
+}

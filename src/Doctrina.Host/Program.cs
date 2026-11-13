@@ -45,12 +45,12 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// /api → ProblemDetails (UnexpectedExceptionHandler); pagina's → /fout (zonder details).
-app.UseExceptionHandler(new ExceptionHandlerOptions { ExceptionHandlingPath = "/fout", CreateScopeForErrors = true });
+// /api → ProblemDetails (UnexpectedExceptionHandler); pagina's → /error (zonder details).
+app.UseExceptionHandler(new ExceptionHandlerOptions { ExceptionHandlingPath = "/error", CreateScopeForErrors = true });
 app.UseHttpsRedirection();
 app.UseDoctrinaRequestLocalization();
 app.UseStatusCodePages();
-// Unreachable identity provider → notice page instead of /fout (change add-idp-unavailable-notice).
+// Unreachable identity provider → notice page instead of /error (change add-idp-unavailable-notice).
 app.UseDoctrinaIdentityProviderUnavailable();
 app.UseAuthentication();
 app.UseAuthorization();

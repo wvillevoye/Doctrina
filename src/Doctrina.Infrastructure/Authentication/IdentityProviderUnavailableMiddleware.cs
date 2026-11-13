@@ -21,7 +21,7 @@ public sealed partial class IdentityProviderUnavailableMiddleware(
     ILogger<IdentityProviderUnavailableMiddleware> logger)
 {
     public const string ReturnUrlParameter = "returnUrl";
-    public const string SignedOutParameter = "uitgelogd";
+    public const string SignedOutParameter = "signedOut";
     public const string TraceIdParameter = "traceId";
 
     public async Task InvokeAsync(HttpContext context)

@@ -72,11 +72,11 @@ public sealed class EenOnbereikbareInlogdienstGeeftEenDuidelijkeMelding : IClass
         using var browser = _factory.CreateBrowser();
         _factory.Idp.IsReachable = false;
 
-        using var signIn = await browser.GetAsync(new Uri("/inloggen?returnUrl=%2Fprofiel%3Ftab%3D2", UriKind.Relative), Ct);
+        using var signIn = await browser.GetAsync(new Uri("/sign-in?returnUrl=%2Fprofile%3Ftab%3D2", UriKind.Relative), Ct);
 
         Assert.Equal(HttpStatusCode.Redirect, signIn.StatusCode);
         var location = signIn.Headers.Location!;
-        Assert.StartsWith($"{AuthenticationEndpoints.UnavailablePath}?returnUrl=%2Fprofiel%3Ftab%3D2", location.OriginalString, StringComparison.Ordinal);
+        Assert.StartsWith($"{AuthenticationEndpoints.UnavailablePath}?returnUrl=%2Fprofile%3Ftab%3D2", location.OriginalString, StringComparison.Ordinal);
 
         using var notice = await browser.GetAsync(location, Ct);
         var html = await notice.Content.ReadAsStringAsync(Ct);
@@ -84,7 +84,7 @@ public sealed class EenOnbereikbareInlogdienstGeeftEenDuidelijkeMelding : IClass
         Assert.Equal(HttpStatusCode.ServiceUnavailable, notice.StatusCode);
         Assert.Equal(TimeSpan.FromSeconds(60), notice.Headers.RetryAfter?.Delta);
         Assert.Equal("Sign-in unavailable", page.QuerySelector("main h1")?.TextContent);
-        Assert.Equal("/inloggen?returnUrl=%2Fprofiel%3Ftab%3D2", page.QuerySelector("main a[data-testid=retry]")?.GetAttribute("href"));
+        Assert.Equal("/sign-in?returnUrl=%2Fprofile%3Ftab%3D2", page.QuerySelector("main a[data-testid=retry]")?.GetAttribute("href"));
         Assert.DoesNotContain("IDX", html, StringComparison.Ordinal);
         Assert.DoesNotContain("Connection refused", html, StringComparison.Ordinal);
     }
@@ -95,17 +95,17 @@ public sealed class EenOnbereikbareInlogdienstGeeftEenDuidelijkeMelding : IClass
         using var browser = _factory.CreateBrowser();
         _factory.Idp.IsReachable = false;
 
-        using var response = await browser.GetAsync(new Uri("/profiel", UriKind.Relative), Ct);
+        using var response = await browser.GetAsync(new Uri("/profile", UriKind.Relative), Ct);
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-        Assert.StartsWith($"{AuthenticationEndpoints.UnavailablePath}?returnUrl=%2Fprofiel", response.Headers.Location!.OriginalString, StringComparison.Ordinal);
+        Assert.StartsWith($"{AuthenticationEndpoints.UnavailablePath}?returnUrl=%2Fprofile", response.Headers.Location!.OriginalString, StringComparison.Ordinal);
     }
 
     [Fact]
     public async Task TerugkeerVanDeProviderMisluktDoorEenNetwerkfout()
     {
         using var browser = _factory.CreateBrowser();
-        using var challenge = await browser.GetAsync(new Uri("/profiel", UriKind.Relative), Ct);
+        using var challenge = await browser.GetAsync(new Uri("/profile", UriKind.Relative), Ct);
         _factory.Idp.IsTokenEndpointReachable = false;
 
         using var callback = await browser.CompleteSignInAsync(challenge, _factory.Idp, StubUser.Student, Ct);
@@ -116,7 +116,7 @@ public sealed class EenOnbereikbareInlogdienstGeeftEenDuidelijkeMelding : IClass
             callback.Headers.TryGetValues("Set-Cookie", out var cookies) ? cookies : [],
             c => c.StartsWith("doctrina.session=", StringComparison.Ordinal) && !c.StartsWith("doctrina.session=;", StringComparison.Ordinal));
         _factory.Idp.IsTokenEndpointReachable = true;
-        using var profile = await browser.GetAsync(new Uri("/profiel", UriKind.Relative), Ct);
+        using var profile = await browser.GetAsync(new Uri("/profile", UriKind.Relative), Ct);
         Assert.Equal(HttpStatusCode.Redirect, profile.StatusCode);
     }
 
@@ -127,7 +127,7 @@ public sealed class EenOnbereikbareInlogdienstGeeftEenDuidelijkeMelding : IClass
         using var browser = host.CreateBrowser();
         _factory.Idp.IsReachable = false;
 
-        using var response = await browser.GetAsync(new Uri("/sample/fout", UriKind.Relative), Ct);
+        using var response = await browser.GetAsync(new Uri("/sample/error", UriKind.Relative), Ct);
 
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
     }
@@ -142,7 +142,7 @@ public sealed class EenOnbereikbareInlogdienstGeeftEenDuidelijkeMelding : IClass
         var page = Html.Parse(await response.Content.ReadAsStringAsync(Ct));
 
         Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        Assert.Equal("/inloggen?returnUrl=%2F", page.QuerySelector("main a[data-testid=retry]")?.GetAttribute("href"));
+        Assert.Equal("/sign-in?returnUrl=%2F", page.QuerySelector("main a[data-testid=retry]")?.GetAttribute("href"));
         Assert.Null(page.QuerySelector("[data-testid=trace-id]"));
     }
 }
@@ -163,7 +163,7 @@ public sealed class UitloggenBeeindigtDeSessieOokAlsDeInlogdienstOnbereikbaarIs 
     public async Task UitloggenTerwijlDeInlogdienstOnbereikbaarIs()
     {
         using var browser = _factory.CreateBrowser();
-        var start = await browser.SignInAndGetAsync("/inloggen?returnUrl=%2F", _factory.Idp, StubUser.Student, Ct);
+        var start = await browser.SignInAndGetAsync("/sign-in?returnUrl=%2F", _factory.Idp, StubUser.Student, Ct);
         using var form = new FormUrlEncodedContent(new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["__RequestVerificationToken"] = BrowserSignIn.ReadAntiforgeryToken(start),
@@ -171,7 +171,7 @@ public sealed class UitloggenBeeindigtDeSessieOokAlsDeInlogdienstOnbereikbaarIs 
         });
         _factory.Idp.IsReachable = false;
 
-        using var signOut = await browser.PostAsync(new Uri("/uitloggen", UriKind.Relative), form, Ct);
+        using var signOut = await browser.PostAsync(new Uri("/sign-out", UriKind.Relative), form, Ct);
 
         Assert.Equal(HttpStatusCode.Redirect, signOut.StatusCode);
         Assert.Contains(signOut.Headers.GetValues("Set-Cookie"), c => c.StartsWith("doctrina.session=;", StringComparison.Ordinal));
@@ -181,7 +181,7 @@ public sealed class UitloggenBeeindigtDeSessieOokAlsDeInlogdienstOnbereikbaarIs 
         var page = Html.Parse(await notice.Content.ReadAsStringAsync(Ct));
         Assert.Contains("You have been signed out of Doctrina", page.QuerySelector("main")?.TextContent, StringComparison.Ordinal);
 
-        using var profile = await browser.GetAsync(new Uri("/profiel", UriKind.Relative), Ct);
+        using var profile = await browser.GetAsync(new Uri("/profile", UriKind.Relative), Ct);
         Assert.Equal(HttpStatusCode.Redirect, profile.StatusCode);
     }
 }
@@ -196,7 +196,7 @@ public sealed class EenOnbereikbareInlogdienstWordtGelogdZonderPersoonsgegevens(
         var logs = new CapturingLoggerProvider();
         using var host = factory.WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddSingleton<ILoggerProvider>(logs)));
         using var browser = host.CreateBrowser();
-        using var challenge = await browser.GetAsync(new Uri("/profiel", UriKind.Relative), Ct);
+        using var challenge = await browser.GetAsync(new Uri("/profile", UriKind.Relative), Ct);
         var state = QueryHelpers.ParseQuery(challenge.Headers.Location!.Query)["state"].ToString();
         factory.Idp.IsTokenEndpointReachable = false;
 

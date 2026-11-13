@@ -8,14 +8,14 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Doctrina.Infrastructure.Authentication;
 
-/// <summary>Endpoints <c>GET /inloggen</c> en <c>POST /uitloggen</c>.</summary>
+/// <summary>Endpoints <c>GET /sign-in</c> en <c>POST /sign-out</c>.</summary>
 public static class AuthenticationEndpoints
 {
-    public const string SignInPath = "/inloggen";
-    public const string SignOutPath = "/uitloggen";
+    public const string SignInPath = "/sign-in";
+    public const string SignOutPath = "/sign-out";
 
     /// <summary>Notice shown when the identity provider can't be reached (page in the host).</summary>
-    public const string UnavailablePath = "/inloggen-onbereikbaar";
+    public const string UnavailablePath = "/sign-in-unavailable";
 
     public static IEndpointRouteBuilder MapDoctrinaAuthenticationEndpoints(this IEndpointRouteBuilder endpoints)
     {

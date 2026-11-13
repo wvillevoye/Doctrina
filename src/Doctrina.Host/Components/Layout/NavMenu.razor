@@ -15,13 +15,13 @@
     protected override async Task OnParametersSetAsync()
     {
         var user = AuthenticationState is null ? new ClaimsPrincipal() : (await AuthenticationState).User;
-        var items = new List<DcNavItem> { new("Start", "/", MatchAll: true) };
+        var items = new List<DcNavItem> { new("Home", "/", MatchAll: true) };
         items.AddRange(Modules.Navigation
             .Where(item => item.RequiredPermission is null || user.HasClaim(DoctrinaClaimTypes.Permission, item.RequiredPermission))
             .Select(item => new DcNavItem(item.Title, item.Href)));
         if (user.Identity?.IsAuthenticated == true)
         {
-            items.Add(new DcNavItem("Mijn profiel", "/profiel"));
+            items.Add(new DcNavItem("My profile", "/profile"));
         }
 
         _items = items;

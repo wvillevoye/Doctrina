@@ -16,7 +16,7 @@ public sealed class LichtEnDonkerThemaNaarKeuzeVanDeGebruiker(DoctrinaHostFactor
 
         var html = await browser.GetStringAsync(new Uri("/", UriKind.Relative), Ct);
 
-        Assert.Contains("<html lang=\"nl\" data-dc-theme=\"system\">", html, StringComparison.Ordinal);
+        Assert.Contains("<html lang=\"en\" data-dc-theme=\"system\">", html, StringComparison.Ordinal);
         Assert.DoesNotContain("data-bs-theme", html, StringComparison.Ordinal);
     }
 
@@ -25,19 +25,19 @@ public sealed class LichtEnDonkerThemaNaarKeuzeVanDeGebruiker(DoctrinaHostFactor
     {
         using var browser = factory.CreateBrowser();
 
-        using var response = await ChooseAsync(browser, "dark", returnUrl: "/geen-toegang");
+        using var response = await ChooseAsync(browser, "dark", returnUrl: "/access-denied");
         var cookie = Assert.Single(response.Headers.GetValues("Set-Cookie"), c => c.StartsWith(DcThemes.CookieName + "=", StringComparison.Ordinal));
         var html = await browser.GetStringAsync(new Uri("/", UriKind.Relative), Ct);
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-        Assert.Equal("/geen-toegang", response.Headers.Location?.OriginalString);
+        Assert.Equal("/access-denied", response.Headers.Location?.OriginalString);
         Assert.StartsWith("doctrina.theme=dark;", cookie, StringComparison.Ordinal);
         Assert.Contains("max-age=31536000", cookie, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("secure", cookie, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("httponly", cookie, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("samesite=lax", cookie, StringComparison.OrdinalIgnoreCase);
         // Eerste weergave meteen donker: het attribuut staat al in de HTML van de server, zonder script.
-        Assert.Contains("<html lang=\"nl\" data-dc-theme=\"dark\" data-bs-theme=\"dark\">", html, StringComparison.Ordinal);
+        Assert.Contains("<html lang=\"en\" data-dc-theme=\"dark\" data-bs-theme=\"dark\">", html, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public sealed class LichtEnDonkerThemaNaarKeuzeVanDeGebruiker(DoctrinaHostFactor
         var html = await browser.GetStringAsync(new Uri("/", UriKind.Relative), Ct);
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-        Assert.Contains("<html lang=\"nl\" data-dc-theme=\"system\">", html, StringComparison.Ordinal);
+        Assert.Contains("<html lang=\"en\" data-dc-theme=\"system\">", html, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public sealed class LichtEnDonkerThemaNaarKeuzeVanDeGebruiker(DoctrinaHostFactor
         var page = await browser.GetStringAsync(new Uri("/?tab=2", UriKind.Relative), Ct);
 
         // Gewoon HTML-formulier met submitknoppen; de huidige pagina gaat mee als terugkeeradres.
-        Assert.Contains("<form method=\"post\" action=\"/thema\"", page, StringComparison.Ordinal);
+        Assert.Contains("<form method=\"post\" action=\"/theme\"", page, StringComparison.Ordinal);
         Assert.Contains("name=\"returnUrl\" value=\"/?tab=2\"", page, StringComparison.Ordinal);
         Assert.Contains("type=\"submit\" name=\"theme\" value=\"light\"", page, StringComparison.Ordinal);
 
@@ -133,6 +133,6 @@ public sealed class DeThemakeuzeStaatInDeHeader(DoctrinaHostFactory factory) : I
 
         Assert.Equal(["light", "dark", "system"], options.Select(b => b.GetAttribute("value")));
         Assert.Equal(["false", "true", "false"], options.Select(b => b.GetAttribute("aria-pressed")));
-        Assert.Equal("Donker", options[1].TextContent.Trim());
+        Assert.Equal("Dark",options[1].TextContent.Trim());
     }
 }

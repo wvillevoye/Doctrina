@@ -1,35 +1,35 @@
-@page "/profiel"
+@page "/profile"
 @attribute [Authorize]
 @inject Doctrina.Infrastructure.Authorization.PermissionRegistry Registry
 
-<DcPageHeader Title="Mijn profiel">
-  <Description>Wie je bent volgens de inlogdienst, en wat je in Doctrina mag.</Description>
+<DcPageHeader Title="My profile">
+  <Description>Who you are according to the sign-in service, and what you are allowed to do in Doctrina.</Description>
 </DcPageHeader>
 
 @if (_user is not null)
 {
-  <DcCard Title="Gegevens en rechten">
+  <DcCard Title="Details and permissions">
     <dl class="dc-details">
-      <dt>Naam</dt>
+      <dt>Name</dt>
       <dd data-testid="name">@_user.Identity?.Name</dd>
 
-      <dt>Persoon-id</dt>
+      <dt>Person ID</dt>
       <dd data-testid="person-id">@(_user.FindFirst(DoctrinaClaimTypes.PersonId)?.Value ?? "–")</dd>
 
-      <dt>E-mail</dt>
+      <dt>Email</dt>
       <dd>@(_user.FindFirst(DoctrinaClaimTypes.Email)?.Value ?? "–")</dd>
 
-      <dt>Ingelogd via (issuer)</dt>
+      <dt>Signed in via (issuer)</dt>
       <dd data-testid="issuer">@_issuer</dd>
 
-      <dt>Gebruikers-id (sub)</dt>
+      <dt>User ID (sub)</dt>
       <dd>@(_user.FindFirst(DoctrinaClaimTypes.Subject)?.Value ?? "–")</dd>
 
-      <dt>Rollen</dt>
+      <dt>Roles</dt>
       <dd>
         @if (_roles.Count == 0)
         {
-          <span>geen</span>
+          <span>none</span>
         }
         else
         {
@@ -42,32 +42,32 @@
         }
       </dd>
 
-      <dt>Permissies per rol</dt>
+      <dt>Permissions per role</dt>
       <dd>
         <ul data-testid="role-permissions">
           @foreach (var role in _roles)
           {
             var granted = Registry.PermissionsFor([role]);
-            <li>@role: @(granted.Count == 0 ? "geen" : string.Join(", ", granted))</li>
+            <li>@role: @(granted.Count == 0 ? "none" : string.Join(", ", granted))</li>
           }
         </ul>
       </dd>
 
-      <dt>Beheerder</dt>
-      <dd data-testid="is-admin">@(_user.IsInRole("admin") ? "ja" : "nee")</dd>
+      <dt>Administrator</dt>
+      <dd data-testid="is-admin">@(_user.IsInRole("admin") ? "yes" : "no")</dd>
 
-      <dt>Permissies</dt>
+      <dt>Permissions</dt>
       <dd>
         @if (_permissions.Count == 0)
         {
-          <span data-testid="permissions">geen</span>
+          <span data-testid="permissions">none</span>
         }
         else
         {
           <ul data-testid="permissions">
             @foreach (var permission in _permissions)
             {
-              <li><code>@permission</code> – @(Registry.Find(permission)?.Description ?? "onbekend")</li>
+              <li><code>@permission</code> – @(Registry.Find(permission)?.Description ?? "unknown")</li>
             }
           </ul>
         }

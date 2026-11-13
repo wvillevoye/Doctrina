@@ -1,11 +1,11 @@
-@page "/geen-toegang"
+@page "/access-denied"
 
-<DcPageHeader Title="Geen toegang" />
+<DcPageHeader Title="Access denied" />
 
 <DcAlert Severity="DcSeverity.Warning">
-  <p>Je bent ingelogd, maar je hebt geen rechten voor deze pagina.</p>
+  <p>You are signed in, but you don't have permission to view this page.</p>
 </DcAlert>
-<DcButton Href="/" Icon="arrow-left">Terug naar de startpagina</DcButton>
+<DcButton Href="/" Icon="arrow-left">Back to the home page</DcButton>
 
 @code {
     [CascadingParameter]

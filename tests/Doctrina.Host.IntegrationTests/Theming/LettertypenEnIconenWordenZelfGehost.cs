@@ -32,7 +32,7 @@ public sealed partial class LettertypenEnIconenWordenZelfGehost(DoctrinaHostFact
         var pages = new[]
         {
             await browser.GetStringAsync(new Uri("/", UriKind.Relative), Ct),
-            await browser.SignInAndGetAsync("/profiel", factory.Idp, StubUser.Student, Ct),
+            await browser.SignInAndGetAsync("/profile", factory.Idp, StubUser.Student, Ct),
         };
 
         var external = new List<string>();

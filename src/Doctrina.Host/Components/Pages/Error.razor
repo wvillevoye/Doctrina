@@ -1,18 +1,18 @@
-@page "/fout"
+@page "/error"
 @using System.Diagnostics
 
 @* Foutpagina voor pagina's (niet voor /api: die krijgen ProblemDetails). Toont geen exceptiondetails, alleen een
    trace-id waarmee beheer de fout in de logs terugvindt. *@
-<DcPageHeader Title="Er ging iets mis" />
+<DcPageHeader Title="Something went wrong" />
 
 <DcAlert Severity="DcSeverity.Danger">
-  <p>Er is een onverwachte fout opgetreden. Probeer het later opnieuw.</p>
+  <p>An unexpected error occurred. Please try again later.</p>
   @if (!string.IsNullOrEmpty(_traceId))
   {
-    <p>Geef bij een melding deze code door: <code data-testid="trace-id">@_traceId</code></p>
+    <p>If you report this, mention this code: <code data-testid="trace-id">@_traceId</code></p>
   }
 </DcAlert>
-<DcButton Href="/" Icon="arrow-left">Terug naar de startpagina</DcButton>
+<DcButton Href="/" Icon="arrow-left">Back to the home page</DcButton>
 
 @code {
     private string? _traceId;

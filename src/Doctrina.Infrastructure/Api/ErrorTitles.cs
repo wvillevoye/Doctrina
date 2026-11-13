@@ -20,6 +20,7 @@ public sealed record ErrorTitleSource(ResourceManager Resources);
 public sealed class ErrorTitles(IEnumerable<ErrorTitleSource> sources) : IErrorTitles
 {
     private readonly ErrorTitleSource[] _sources = [.. sources];
+    private static readonly CultureInfo English = CultureInfo.GetCultureInfo("en");
 
     /// <summary>De vertaling van <paramref name="code"/> in <paramref name="culture"/>, of <paramref name="fallback"/>.</summary>
     public string For(string code, string fallback, CultureInfo? culture = null)
@@ -39,7 +40,8 @@ public sealed class ErrorTitles(IEnumerable<ErrorTitleSource> sources) : IErrorT
     }
 
     /// <inheritdoc />
-    string IErrorTitles.For(string code, string fallback) => For(code, fallback);
+    /// <remarks>The UI is English (change switch-ui-to-english, design D2); the API keeps following the request culture.</remarks>
+    string IErrorTitles.For(string code, string fallback) => For(code, fallback, English);
 }
 
 /// <summary>ProblemDetails-afspraken voor alle fouten van de host.</summary>

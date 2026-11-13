@@ -1,6 +1,6 @@
 @* Tekstlink met de huisstijl (onderstreept, offset). Opent een externe link in een nieuw venster en zegt dat. *@
 <a href="@Href" class="dc-link" target="@(External ? "_blank" : null)" rel="@(External ? "noopener noreferrer" : null)"
-   @attributes="AdditionalAttributes">@if (Icon is not null) { <DcIcon Name="@Icon" /> }@ChildContent@if (External) { <DcIcon Name="external-link" /><span class="visually-hidden"> (opent in een nieuw venster)</span> }</a>
+   @attributes="AdditionalAttributes">@if (Icon is not null) { <DcIcon Name="@Icon" /> }@ChildContent@if (External) { <DcIcon Name="external-link" /><span class="visually-hidden"> (opens in a new window)</span> }</a>
 
 @code {
     [Parameter, EditorRequired]

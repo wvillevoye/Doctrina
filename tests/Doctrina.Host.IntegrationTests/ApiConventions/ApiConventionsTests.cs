@@ -83,7 +83,7 @@ public sealed class DeApiIsGedocumenteerdMetOpenApi(DoctrinaHostFactory factory)
 
         var paths = document.GetProperty("paths");
         Assert.True(paths.TryGetProperty("/api/v1/samples", out var samples));
-        Assert.False(paths.TryGetProperty("/inloggen", out _));
+        Assert.False(paths.TryGetProperty("/sign-in", out _));
         var scheme = document.GetProperty("components").GetProperty("securitySchemes").GetProperty(ApiDocumentation.SchemeName);
         Assert.Equal("http", scheme.GetProperty("type").GetString());
         Assert.Equal("bearer", scheme.GetProperty("scheme").GetString());
@@ -199,7 +199,8 @@ public sealed class FouttitelsZijnVertaald(DoctrinaHostFactory factory) : IClass
             var titles = scope.ServiceProvider.GetRequiredService<IErrorTitles>();
 
             Assert.Same(scope.ServiceProvider.GetRequiredService<ErrorTitles>(), titles);
-            Assert.Equal("Voorbeelditem niet gevonden", titles.For("Sample.Item.NotFound", "terugval"));
+            // switch-ui-to-english design D2: de UI krijgt altijd de Engelse titel, ook bij cultuur nl.
+            Assert.Equal("Sample item not found", titles.For("Sample.Item.NotFound", "terugval"));
             Assert.Equal("terugval", titles.For("Sample.Bestaat.Niet", "terugval"));
         }
         finally

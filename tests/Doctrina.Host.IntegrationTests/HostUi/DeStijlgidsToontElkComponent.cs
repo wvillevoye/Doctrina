@@ -22,12 +22,12 @@ public sealed class DeStijlgidsToontElkComponent(DoctrinaHostFactory factory) : 
         using var host = factory.InEnvironment(Environments.Development);
         using var browser = host.CreateBrowser();
 
-        using var response = await browser.GetAsync(new Uri("/stijlgids", UriKind.Relative), Ct);
+        using var response = await browser.GetAsync(new Uri("/style-guide", UriKind.Relative), Ct);
         var page = Html.Parse(await response.Content.ReadAsStringAsync(Ct));
         var sections = page.QuerySelectorAll("main section[id^='dc-']").Select(s => s.Id!).ToHashSet(StringComparer.Ordinal);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("Stijlgids · Doctrina", page.Title);
+        Assert.Equal("Style guide · Doctrina", page.Title);
         Assert.Equal(19, PublicComponents.Count());
         Assert.All(PublicComponents, c => Assert.True(sections.Contains(SectionId(c)), $"Sectie '{SectionId(c)}' voor {c.Name} ontbreekt in de stijlgids."));
         // Elk voorbeeld staat in een lichte en een donkere container.
@@ -45,7 +45,7 @@ public sealed class DeStijlgidsToontElkComponent(DoctrinaHostFactory factory) : 
         using var host = factory.InEnvironment(Environments.Production);
         using var browser = host.CreateBrowser();
 
-        using var response = await browser.GetAsync(new Uri("/stijlgids", UriKind.Relative), Ct);
+        using var response = await browser.GetAsync(new Uri("/style-guide", UriKind.Relative), Ct);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -56,7 +56,7 @@ public sealed class DeStijlgidsToontElkComponent(DoctrinaHostFactory factory) : 
         using var host = factory.InEnvironment(Environments.Production, ("Ui:StyleGuide:Enabled", "true"));
         using var browser = host.CreateBrowser();
 
-        using var response = await browser.GetAsync(new Uri("/stijlgids", UriKind.Relative), Ct);
+        using var response = await browser.GetAsync(new Uri("/style-guide", UriKind.Relative), Ct);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }

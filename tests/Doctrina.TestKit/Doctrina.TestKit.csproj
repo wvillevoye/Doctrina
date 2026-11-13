@@ -17,5 +17,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Doctrina.Core\Doctrina.Core.csproj" />
     <ProjectReference Include="..\..\src\Doctrina.Infrastructure\Doctrina.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Doctrina.UI\Doctrina.UI.csproj" />
   </ItemGroup>
 </Project>

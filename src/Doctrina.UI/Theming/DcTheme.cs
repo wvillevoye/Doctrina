@@ -20,7 +20,7 @@ public static class DcThemes
     public const string CookieName = "doctrina.theme";
 
     /// <summary>Formulier-endpoint dat de keuze opslaat (POST, antiforgery, <c>theme</c> + <c>returnUrl</c>).</summary>
-    public const string EndpointPath = "/thema";
+    public const string EndpointPath = "/theme";
 
     /// <summary>Waarde voor <c>data-dc-theme</c> en het formulierveld <c>theme</c>.</summary>
     public static string ToValue(this DcTheme theme) => theme switch
@@ -33,9 +33,9 @@ public static class DcThemes
     /// <summary>Nederlandse naam voor de themakeuze.</summary>
     public static string ToDisplayName(this DcTheme theme) => theme switch
     {
-        DcTheme.Light => "Licht",
-        DcTheme.Dark => "Donker",
-        _ => "Systeem",
+        DcTheme.Light => "Light",
+        DcTheme.Dark => "Dark",
+        _ => "System",
     };
 
     /// <summary>Leest een waarde uit cookie of formulier; onbekend of leeg wordt <see langword="null"/>.</summary>

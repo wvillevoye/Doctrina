@@ -38,9 +38,9 @@
 
     private string SeverityText => Severity switch
     {
-        DcSeverity.Success => "Gelukt",
-        DcSeverity.Warning => "Let op",
-        DcSeverity.Danger => "Fout",
-        _ => "Informatie",
+        DcSeverity.Success => "Success",
+        DcSeverity.Warning => "Warning",
+        DcSeverity.Danger => "Error",
+        _ => "Information",
     };
 }

@@ -91,10 +91,10 @@ public sealed class DcAlertTests : IDisposable
     private readonly BunitContext _context = new();
 
     [Theory]
-    [InlineData(DcSeverity.Info, "status", "Informatie")]
-    [InlineData(DcSeverity.Success, "status", "Gelukt")]
-    [InlineData(DcSeverity.Warning, "alert", "Let op")]
-    [InlineData(DcSeverity.Danger, "alert", "Fout")]
+    [InlineData(DcSeverity.Info, "status", "Information")]
+    [InlineData(DcSeverity.Success, "status", "Success")]
+    [InlineData(DcSeverity.Warning, "alert", "Warning")]
+    [InlineData(DcSeverity.Danger, "alert", "Error")]
     public void RolEnErnstPerSoort(DcSeverity severity, string role, string severityText)
     {
         var cut = _context.Render<DcAlert>(p => p.Add(a => a.Severity, severity).Add(a => a.Title, "Titel").AddChildContent("Tekst"));

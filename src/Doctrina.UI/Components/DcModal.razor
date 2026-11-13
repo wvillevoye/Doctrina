@@ -7,7 +7,7 @@
 <dialog @ref="_dialog" class="dc-modal" aria-labelledby="@_titleId" data-testid="modal">
   <div class="dc-modal__header">
     <h2 id="@_titleId" class="dc-modal__title">@Title</h2>
-    <DcButton Variant="DcButtonVariant.Ghost" Icon="x" Label="Sluiten" OnClick="CloseAsync" class="dc-modal__close" />
+    <DcButton Variant="DcButtonVariant.Ghost" Icon="x" Label="Close" OnClick="CloseAsync" class="dc-modal__close" />
   </div>
   <div class="dc-modal__body">@ChildContent</div>
   @if (Footer is not null)

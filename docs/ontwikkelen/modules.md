@@ -76,7 +76,7 @@ Afspraken:
 - **Pagina's** staan in de module (`Components/`) en vragen een permissie met
   `@attribute [RequirePermission("Academic.Manage")]`. Ze geven alleen vorm met `Dc*`-componenten uit `Doctrina.UI`
   en `--dc-*`-tokens: geen ruwe Bootstrap-classes en geen letterlijke kleuren (de architectuurtests controleren dit).
-  Begin elke pagina met `DcPageHeader`; zie [vormgeving.md](vormgeving.md) en de stijlgids op `/stijlgids`.
+  Begin elke pagina met `DcPageHeader`; zie [vormgeving.md](vormgeving.md) en de stijlgids op `/style-guide`.
 - **Navigatie-items** met `RequiredPermission` zie je alleen als je die permissie hebt.
 - **Health checks** krijgen de tag `ModuleHealthChecks.TagFor(Name)`, zodat `/health/ready` ze per module toont.
 

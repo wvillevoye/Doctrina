@@ -1,0 +1,221 @@
+@page "/style-guide"
+@rendermode InteractiveServer
+@using Doctrina.Core.Results
+@inject IWebHostEnvironment Environment
+@inject IConfiguration Configuration
+@inject NavigationManager Navigation
+
+@* Stijlgids (spec ui-components "De stijlgids toont elk component", design D11): elk Dc*-component in zijn varianten,
+   licht en donker naast elkaar. Alleen in Development of met Ui:StyleGuide:Enabled; anders 404. Interactief, zodat
+   de dialoog en de formulieren werken. *@
+@if (_enabled)
+{
+  <DcPageHeader Title="Style guide">
+    <Description>All components of Doctrina.UI, in the light and the dark theme. Rules and examples are in docs/ontwikkelen/vormgeving.md.</Description>
+  </DcPageHeader>
+
+  <nav aria-label="Components" class="dc-styleguide__toc">
+    <ul>
+      @foreach (var component in Components)
+      {
+        <li><a href="@($"style-guide#{StijlgidsSectie.SectionId(component)}")">@component.Name.Split('`')[0]</a></li>
+      }
+    </ul>
+  </nav>
+
+  <StijlgidsSectie Component="typeof(DcButton)" Description="Button for actions; with Href a link styled as a button. Always text or a Label.">
+    <Sample>
+      <div class="dc-styleguide__row">
+        <DcButton Variant="DcButtonVariant.Primary" Icon="plus">Add course</DcButton>
+        <DcButton>Edit</DcButton>
+        <DcButton Variant="DcButtonVariant.Ghost">Cancel</DcButton>
+        <DcButton Variant="DcButtonVariant.Danger" Icon="trash-2">Delete</DcButton>
+        <DcButton Variant="DcButtonVariant.Ghost" Icon="pencil" Label="Edit" />
+        <DcButton Variant="DcButtonVariant.Primary" Busy>Save</DcButton>
+        <DcButton Disabled>Disabled</DcButton>
+        <DcButton Href="/style-guide" Icon="arrow-right">Link as button</DcButton>
+      </div>
+    </Sample>
+  </StijlgidsSectie>
+
+  <StijlgidsSectie Component="typeof(DcLink)" Description="Text link, underlined with an offset; an external link opens in a new window and says so.">
+    <Sample>
+      <p>Read the <DcLink Href="/style-guide">rules for modules</DcLink> or go to<DcLink Href="https://www.surf.nl/" External>SURF</DcLink>.</p>
+    </Sample>
+  </StijlgidsSectie>
+
+  <StijlgidsSectie Component="typeof(DcIcon)" Description="Lucide icons as inline SVG; decorative unless there is a Label.">
+    <Sample>
+      <div class="dc-styleguide__row dc-styleguide__icons">
+        @foreach (var name in Doctrina.UI.Icons.DcIconSet.Names)
+        {
+          <span title="@name"><DcIcon Name="@name" Label="@name" /></span>
+        }
+      </div>
+    </Sample>
+  </StijlgidsSectie>
+
+  <StijlgidsSectie Component="typeof(DcPageHeader)" Description="Page heading: the only h1, description and actions; sets the window title. (Shown here without a second h1.)">
+    <Sample>
+      <div class="dc-styleguide__frame" role="presentation">
+        <p class="dc-styleguide__note">The heading of this page ("Style guide") is a DcPageHeader; below is the structure without a second h1.</p>
+        <DcCard Title="Courses" HeadingLevel="3">
+          <p>Description below the heading.</p>
+          <div class="dc-styleguide__row"><DcButton Variant="DcButtonVariant.Primary" Icon="plus">New course</DcButton></div>
+        </DcCard>
+      </div>
+    </Sample>
+  </StijlgidsSectie>
+
+  <StijlgidsSectie Component="typeof(DcCard)" Description="Surface with a thin border; with a title it is a named section, optionally with a footer for actions.">
+    <Sample>
+      <DcCard Title="Cell biology (BIO101)">
+        <ChildContent><p>Introduction to the structure and function of cells. 6 EC, period 1.</p></ChildContent>
+        <Footer><DcButton Variant="DcButtonVariant.Primary">Enrol</DcButton><DcButton Variant="DcButtonVariant.Ghost">Details</DcButton></Footer>
+      </DcCard>
+      <DcCard><p>Card without a title.</p></DcCard>
+    </Sample>
+  </StijlgidsSectie>
+
+  <StijlgidsSectie Component="typeof(DcAlert)" Description="Alert; info and success are announced politely, warning and error immediately.">
+    <Sample>
+      <DcAlert Severity="DcSeverity.Info"><p>The import is running in the background.</p></DcAlert>
+      <DcAlert Severity="DcSeverity.Success" Title="Saved"><p>The course has been updated.</p></DcAlert>
+      <DcAlert Severity="DcSeverity.Warning"><p>This course has no teacher yet.</p></DcAlert>
+      <DcAlert Severity="DcSeverity.Danger" Title="Failed"><p>The connection to the timetabling system is not responding.</p></DcAlert>
+    </Sample>
+  </StijlgidsSectie>
+
+  <StijlgidsSectie Component="typeof(DcBadge)" Description="Label for a status or category; the meaning is in the text.">
+    <Sample>
+      <div class="dc-styleguide__row">
+        <DcBadge>Draft</DcBadge>
+        <DcBadge Variant="DcBadgeVariant.Accent">New</DcBadge>
+        <DcBadge Variant="DcBadgeVariant.Success">Active</DcBadge>
+        <DcBadge Variant="DcBadgeVariant.Warning">Almost full</DcBadge>
+        <DcBadge Variant="DcBadgeVariant.Danger">Blocked</DcBadge>
+        <DcBadge Variant="DcBadgeVariant.Info">External</DcBadge>
+      </div>
+    </Sample>
+  </StijlgidsSectie>
+
+  <StijlgidsSectie Component="typeof(DcTable<>)" Description="Semantic table with a caption and column headers; a message when there are no rows.">
+    <Sample>
+      <DcTable TItem="Cursus" Caption="Courses" Columns="CourseColumns" Items="Courses" EmptyText="No courses yet." />
+      <DcTable TItem="Cursus" Caption="Archived courses" Columns="CourseColumns" Items="NoCourses" EmptyText="No archived courses yet." />
+    </Sample>
+  </StijlgidsSectie>
+
+  <StijlgidsSectie Component="typeof(DcForm)" Description="Form around EditForm with DataAnnotations; errors from a Result appear next to the fields.">
+    <Sample>
+      <FormulierVoorbeeld Variant="@context" />
+    </Sample>
+  </StijlgidsSectie>
+
+  <StijlgidsSectie Component="typeof(DcTextField)" Description="Text field with a visible label, required marker and hint. See also DcForm.">
+    <Sample>
+      <FormulierVoorbeeld Variant="@($"tekst-{context}")" />
+    </Sample>
+  </StijlgidsSectie>
+
+  <StijlgidsSectie Component="typeof(DcSelect<>)" Description="Select list with a label; options as plain option elements. See the form at DcForm.">
+    <Sample>
+      <FormulierVoorbeeld Variant="@($"keuze-{context}")" />
+    </Sample>
+  </StijlgidsSectie>
+
+  <StijlgidsSectie Component="typeof(DcCheckbox)" Description="Checkbox with a clickable label after it. See the form at DcForm.">
+    <Sample>
+      <FormulierVoorbeeld Variant="@($"vinkje-{context}")" />
+    </Sample>
+  </StijlgidsSectie>
+
+  <StijlgidsSectie Component="typeof(DcFieldError)" Description="Error message for a field, linked with aria-describedby; here from a validation error in a Result.">
+    <Sample>
+      <FormulierVoorbeeld Variant="@($"fout-{context}")" WithErrors />
+    </Sample>
+  </StijlgidsSectie>
+
+  <StijlgidsSectie Component="typeof(DcResult)" Description="Expected error from a Result: the title for the error code.">
+    <Sample>
+      <DcResult Error="SampleError" />
+    </Sample>
+  </StijlgidsSectie>
+
+  <StijlgidsSectie Component="typeof(DcModal)" Description="Dialog using the native dialog: focus trapped, Escape and close button, focus returns to the button.">
+    <Sample>
+      <ModalVoorbeeld />
+    </Sample>
+  </StijlgidsSectie>
+
+  <StijlgidsSectie Component="typeof(DcNavMenu)" Description="Main menu; on narrow screens behind the Menu button (Popover API), always visible on wide screens.">
+    <Sample>
+      <DcNavMenu Id="@($"voorbeeldmenu-{context}")" Label="@($"Sample menu {context}")" Items="NavItems" />
+    </Sample>
+  </StijlgidsSectie>
+
+  <StijlgidsSectie Component="typeof(DcAccountMenu)" Description="Account area: Sign in for anonymous visitors, otherwise the name with a menu.">
+    <Sample>
+      <div class="dc-styleguide__row">
+        <DcAccountMenu SignInHref="/sign-in?returnUrl=%2Fstyle-guide" SignOutAction="/sign-out" />
+        <DcAccountMenu UserName="Sanne Student" MenuId="@($"voorbeeldaccount-{context}")" SignInHref="/sign-in" SignOutAction="/sign-out" />
+      </div>
+    </Sample>
+  </StijlgidsSectie>
+
+  <StijlgidsSectie Component="typeof(DcThemeSwitcher)" Description="Theme switcher light, dark or system; a plain form, the active choice has aria-pressed.">
+    <Sample>
+      <DcThemeSwitcher Current="DcTheme.Dark" ReturnUrl="/style-guide" />
+    </Sample>
+  </StijlgidsSectie>
+
+  <StijlgidsSectie Component="typeof(DcAppShell)" Description="The layout of every page: skip link, header with brand, main menu, theme switcher and account, and the main content.">
+    <Sample>
+      <p class="dc-styleguide__note">This page itself is inside the DcAppShell: look at the header above, and make the window narrower for the menu button.</p>
+    </Sample>
+  </StijlgidsSectie>
+}
+
+@code {
+    private static readonly Type[] Components =
+    [
+        typeof(DcButton), typeof(DcLink), typeof(DcIcon), typeof(DcPageHeader), typeof(DcCard), typeof(DcAlert),
+        typeof(DcBadge), typeof(DcTable<>), typeof(DcForm), typeof(DcTextField), typeof(DcSelect<>), typeof(DcCheckbox),
+        typeof(DcFieldError), typeof(DcResult), typeof(DcModal), typeof(DcNavMenu), typeof(DcAccountMenu),
+        typeof(DcThemeSwitcher), typeof(DcAppShell),
+    ];
+
+    private static readonly DcTableColumn<Cursus>[] CourseColumns =
+    [
+        new("Code", c => c.Code),
+        new("Name", c => c.Name),
+        new("EC", c => c.Credits),
+        new("Status", Template: c => @<DcBadge Variant="@(c.Active ? DcBadgeVariant.Success : DcBadgeVariant.Neutral)">@(c.Active ? "Active" : "Draft")</DcBadge>),
+    ];
+
+    private static readonly Cursus[] Courses =
+    [
+        new("BIO101", "Cell biology", 6, true),
+        new("WIS201", "Calculus 2", 5, true),
+        new("FIL110", "Introduction to philosophy", 5, false),
+    ];
+
+    private static readonly Cursus[] NoCourses = [];
+
+    private static readonly DcNavItem[] NavItems = [new("Home", "/", MatchAll: true), new("Style guide", "/style-guide"), new("My profile", "/profile")];
+
+    private static readonly Error SampleError = Error.Forbidden("Auth.Forbidden", "No access to this course.");
+
+    private bool _enabled;
+
+    protected override void OnInitialized()
+    {
+        _enabled = Environment.IsDevelopment() || Configuration.GetValue<bool>("Ui:StyleGuide:Enabled");
+        if (!_enabled)
+        {
+            Navigation.NotFound();
+        }
+    }
+
+    private sealed record Cursus(string Code, string Name, int Credits, bool Active);
+}

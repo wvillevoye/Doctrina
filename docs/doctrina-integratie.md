@@ -111,7 +111,7 @@ curl.exe -d grant_type=client_credentials -d client_id=doctrina-sis-sync -d clie
 Kan Doctrina de provider niet bereiken (geen verbinding, time-out of andere netwerkfout bij het ophalen van
 `.well-known/openid-configuration` of bij het token-endpoint), dan ziet de gebruiker geen algemene foutpagina maar:
 
-- **Inloggen** (knop, beveiligde pagina of terugkeer van de provider): een redirect naar `/inloggen-onbereikbaar`. Die
+- **Inloggen** (knop, beveiligde pagina of terugkeer van de provider): een redirect naar `/sign-in-unavailable`. Die
   pagina "Sign-in unavailable" geeft status **503** met `Retry-After: 60` en een knop "Try again" die opnieuw inlogt met
   het oorspronkelijke terugkeeradres. Na een mislukte terugkeer is dat de startpagina.
 - **Uitloggen**: de Doctrina-sessie wordt toch beëindigd. De pagina meldt dat de gebruiker bij Doctrina is uitgelogd,
@@ -121,12 +121,12 @@ Per geval schrijft Doctrina één waarschuwing (categorie
 `Doctrina.Infrastructure.Authentication.IdentityProviderUnavailableMiddleware`, EventId 1001):
 
 ```
-Identity provider idp.example.org/realms/doctrina can't be reached during sign-in of /inloggen (trace 00-…-01, SocketException).
+Identity provider idp.example.org/realms/doctrina can't be reached during sign-in of /sign-in (trace 00-…-01, SocketException).
 ```
 
 De actie is `sign-in`, `callback` of `sign-out`. De trace-id staat ook op de pagina, zodat een melding van een gebruiker
 terug te vinden is. De regel bevat geen query (dus geen `code` of `state`), geen claims en geen gebruikersnaam.
-Andere fouten blijven de foutpagina `/fout` met status 500 geven.
+Andere fouten blijven de foutpagina `/error` met status 500 geven.
 
 ## Entra koppelen (lokaal, via Keycloak)
 

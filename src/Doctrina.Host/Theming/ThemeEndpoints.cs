@@ -13,7 +13,7 @@ public static class ThemeEndpoints
     public static DcTheme CurrentTheme(this HttpContext? context) =>
         DcThemes.TryParse(context?.Request.Cookies[DcThemes.CookieName]) ?? DcTheme.System;
 
-    /// <summary><c>POST /thema</c>: slaat de keuze op en stuurt terug naar de pagina (werkt zonder scripts).</summary>
+    /// <summary><c>POST /theme</c>: slaat de keuze op en stuurt terug naar de pagina (werkt zonder scripts).</summary>
     public static IEndpointRouteBuilder MapDoctrinaThemeEndpoint(this IEndpointRouteBuilder endpoints)
     {
         // [FromForm]: antiforgery-validatie is verplicht.

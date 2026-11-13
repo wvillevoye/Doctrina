@@ -102,7 +102,7 @@ public sealed class FormulierveldenZijnGekoppeldAanLabelEnFoutmelding : IDisposa
 
         Assert.True(input.HasAttribute("required"));
         Assert.Equal("true", input.GetAttribute("aria-required"));
-        Assert.Contains("(verplicht)", label.TextContent, StringComparison.Ordinal);
+        Assert.Contains("(required)", label.TextContent, StringComparison.Ordinal);
         Assert.False(optional.HasAttribute("required"));
     }
 
@@ -260,7 +260,7 @@ public sealed class DialogenHoudenDeFocusVast : IDisposable
 
         // De sluitknop heeft een naam en sluit via het script.
         var close = cut.Find("dialog .dc-modal__close");
-        Assert.Equal("Sluiten", close.TextContent.Trim());
+        Assert.Equal("Close", close.TextContent.Trim());
         close.Click();
         Assert.Single(module.Invocations["close"]);
     }

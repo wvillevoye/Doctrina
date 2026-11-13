@@ -3,11 +3,11 @@
 <form method="post" action="@DcThemes.EndpointPath" class="dc-theme-switcher" data-testid="theme-switcher">
   <AntiforgeryToken />
   <input type="hidden" name="returnUrl" value="@ReturnUrl" />
-  <div role="group" aria-label="Thema" class="dc-theme-switcher__options">
+  <div role="group" aria-label="Theme" class="dc-theme-switcher__options">
     @foreach (var (theme, icon) in Options)
     {
       <button type="submit" name="theme" value="@theme.ToValue()" class="dc-theme-switcher__option"
-              aria-pressed="@(theme == Current ? "true" : "false")" title="@($"Thema: {theme.ToDisplayName().ToLowerInvariant()}")">
+              aria-pressed="@(theme == Current ? "true" : "false")" title="@($"Theme: {theme.ToDisplayName().ToLowerInvariant()}")">
         <DcIcon Name="@icon" />
         <span class="visually-hidden">@theme.ToDisplayName()</span>
       </button>

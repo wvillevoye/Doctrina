@@ -3,17 +3,17 @@
 
 @* Formulier voor de stijlgids: alle velden, optioneel met een validatiefout uit een Result. *@
 <DcForm Model="_model" Error="_error" FormName="@($"stijlgids-{Variant}")">
-  <DcTextField Label="E-mailadres" Type="email" Required Hint="Je adres bij de instelling." @bind-Value="_model.Email" />
-  <DcTextField Label="Voornaam" @bind-Value="_model.GivenName" />
-  <DcSelect TValue="string" Label="Rol" @bind-Value="_model.Role">
-    <option value="">Kies een rol…</option>
+  <DcTextField Label="Email address" Type="email" Required Hint="Your address at the institution." @bind-Value="_model.Email" />
+  <DcTextField Label="First name" @bind-Value="_model.GivenName" />
+  <DcSelect TValue="string" Label="Role" @bind-Value="_model.Role">
+    <option value="">Choose a role…</option>
     <option value="student">Student</option>
-    <option value="docent">Docent</option>
+    <option value="teacher">Teacher</option>
   </DcSelect>
-  <DcCheckbox Label="Stuur mij meldingen per e-mail" @bind-Value="_model.Notify" />
+  <DcCheckbox Label="Send me notifications by email" @bind-Value="_model.Notify" />
   <div class="dc-form__actions">
-    <DcButton Type="submit" Variant="DcButtonVariant.Primary">Opslaan</DcButton>
-    <DcButton Type="reset">Annuleren</DcButton>
+    <DcButton Type="submit" Variant="DcButtonVariant.Primary">Save</DcButton>
+    <DcButton Type="reset">Cancel</DcButton>
   </div>
 </DcForm>
 
@@ -31,17 +31,17 @@
 
     protected override void OnInitialized() =>
         _error = WithErrors
-            ? Error.Validation("Stijlgids.Persoon.Invalid", "Controleer de gemarkeerde velden.", new Dictionary<string, string[]>(StringComparer.Ordinal)
+            ? Error.Validation("Stijlgids.Persoon.Invalid", "Check the highlighted fields.", new Dictionary<string, string[]>(StringComparer.Ordinal)
             {
-                ["email"] = ["Ongeldig e-mailadres."],
-                ["givenName"] = ["Vul een voornaam in."],
+                ["email"] = ["Invalid email address."],
+                ["givenName"] = ["Enter a first name."],
             })
             : null;
 
     private sealed class Model
     {
-        [Required(ErrorMessage = "Vul een e-mailadres in.")]
-        [EmailAddress(ErrorMessage = "Ongeldig e-mailadres.")]
+        [Required(ErrorMessage = "Enter an email address.")]
+        [EmailAddress(ErrorMessage = "Invalid email address.")]
         public string? Email { get; set; }
 
         public string? GivenName { get; set; }

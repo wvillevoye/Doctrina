@@ -1,14 +1,14 @@
 @inject NavigationManager Navigation
 
 @* Inhoud van de router als een pagina niet mag (navigeren binnen een geopende Blazor-pagina). Bij het laden van een
-   pagina regelt de server dit al: anoniem → inloggen, ingelogd zonder permissie → /geen-toegang (403). *@
+   pagina regelt de server dit al: anoniem → inloggen, ingelogd zonder permissie → /access-denied (403). *@
 @if (_authenticated)
 {
-  <DcPageHeader Title="Geen toegang" />
+  <DcPageHeader Title="Access denied" />
   <DcAlert Severity="DcSeverity.Warning">
-    <p>Je bent ingelogd, maar je hebt geen rechten voor deze pagina.</p>
+    <p>You are signed in, but you don't have permission to view this page.</p>
   </DcAlert>
-  <DcButton Href="/" Icon="arrow-left">Terug naar de startpagina</DcButton>
+  <DcButton Href="/" Icon="arrow-left">Back to the home page</DcButton>
 }
 
 @code {

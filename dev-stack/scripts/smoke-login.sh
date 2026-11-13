@@ -27,32 +27,32 @@ field() { grep -o "data-testid=\"$1\">[^<]*" | sed 's/.*>//'; }
 
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
 
-echo "== student (via /profiel)"
-login student student "$tmp/s" /profiel
-html=$(curl -sk -b "$tmp/s" "$APP/profiel")
-check "naam op /profiel" "$(field name <<<"$html")" "Sanne Student"
-check "personId op /profiel" "$(field person-id <<<"$html")" "I6000001"
+echo "== student (via /profile)"
+login student student "$tmp/s" /profile
+html=$(curl -sk -b "$tmp/s" "$APP/profile")
+check "naam op /profile" "$(field name <<<"$html")" "Sanne Student"
+check "personId op /profile" "$(field person-id <<<"$html")" "I6000001"
 check "issuer" "$(field issuer <<<"$html")" "$KC"
-check "beheerder?" "$(field is-admin <<<"$html")" "nee"
+check "beheerder?" "$(field is-admin <<<"$html")" "no"
 check "API weigert sessiecookie" "$(curl -sk -b "$tmp/s" -o /dev/null -w '%{http_code}' "$APP/api/v1/me")" "401"
 
 echo "== beheerder"
-login beheerder beheerder "$tmp/b" /profiel
-check "beheerder?" "$(curl -sk -b "$tmp/b" "$APP/profiel" | field is-admin)" "ja"
+login beheerder beheerder "$tmp/b" /profile
+check "beheerder?" "$(curl -sk -b "$tmp/b" "$APP/profile" | field is-admin)" "yes"
 
 echo "== nepgebruiker femke.coenen"
-login femke.coenen test123 "$tmp/f" /profiel
-html=$(curl -sk -b "$tmp/f" "$APP/profiel")
+login femke.coenen test123 "$tmp/f" /profile
+html=$(curl -sk -b "$tmp/f" "$APP/profile")
 check "naam" "$(field name <<<"$html")" "Femke Coenen"
 check "personId" "$(field person-id <<<"$html")" "I6834263"
 
 echo "== uitloggen (student)"
-tokenf=$(curl -sk -c "$tmp/s" -b "$tmp/s" "$APP/" | grep -o 'name="__RequestVerificationToken" value="[^"]*"' | sed 's/.*value="//;s/"$//')
-loc=$(curl -sk -c "$tmp/s" -b "$tmp/s" -o /dev/null -w '%{redirect_url}' --data-urlencode "__RequestVerificationToken=$tokenf" --data-urlencode "returnUrl=/" "$APP/uitloggen")
+tokenf=$(curl -sk -c "$tmp/s" -b "$tmp/s" "$APP/" | grep -o 'name="__RequestVerificationToken" value="[^"]*"' | head -1 | sed 's/.*value="//;s/"$//')
+loc=$(curl -sk -c "$tmp/s" -b "$tmp/s" -o /dev/null -w '%{redirect_url}' --data-urlencode "__RequestVerificationToken=$tokenf" --data-urlencode "returnUrl=/" "$APP/sign-out")
 check "doorgestuurd naar Keycloak-logout" "${loc%%\?*}" "$KC/protocol/openid-connect/logout"
 end=$(curl -sk -c "$tmp/s" -b "$tmp/s" -o /dev/null -w '%{redirect_url}' "$loc")
 check "Keycloak stuurt terug naar Doctrina" "${end%%\?*}" "$APP/signout-callback-oidc"
-check "/profiel vraagt weer om inloggen" "$(curl -sk -b "$tmp/s" -o /dev/null -w '%{http_code}' "$APP/profiel")" "302"
+check "/profile vraagt weer om inloggen" "$(curl -sk -b "$tmp/s" -o /dev/null -w '%{http_code}' "$APP/profile")" "302"
 
 echo "== systeem doctrina-sis-sync (client credentials)"
 cc=$(curl -s -d grant_type=client_credentials -d client_id=doctrina-sis-sync -d client_secret=doctrina-sis-sync-secret "$KC/protocol/openid-connect/token" | sed 's/.*"access_token":"\([^"]*\)".*/\1/')

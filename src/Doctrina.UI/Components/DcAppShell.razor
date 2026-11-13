@@ -1,6 +1,6 @@
 @* Layout van elke pagina (spec app-shell, design D9): skiplink, header met merk, hoofdmenu, themakeuze en
    accountgedeelte, en de hoofdinhoud. Werkt bij statische weergave zonder scripts. *@
-<a href="#inhoud" class="dc-skip-link">Naar de inhoud</a>
+<a href="#content" class="dc-skip-link">Skip to content</a>
 
 <header class="dc-shell__header">
   <div class="dc-shell__bar">
@@ -22,7 +22,7 @@
   </div>
 </header>
 
-<main id="inhoud" tabindex="-1" class="dc-shell__main">
+<main id="content" tabindex="-1" class="dc-shell__main">
   @ChildContent
 </main>
 
@@ -60,5 +60,5 @@
     public string SignOutAction { get; set; } = string.Empty;
 
     [Parameter]
-    public string ProfileHref { get; set; } = "/profiel";
+    public string ProfileHref { get; set; } = "/profile";
 }

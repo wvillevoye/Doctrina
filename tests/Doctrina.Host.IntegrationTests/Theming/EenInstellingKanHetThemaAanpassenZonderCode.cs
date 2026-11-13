@@ -52,9 +52,9 @@ public sealed partial class EenInstellingKanHetThemaAanpassenZonderCode(Doctrina
     }
 
     [Theory]
-    [InlineData("Theme:StylesheetPath", "https://cdn.example/thema.css", null, null)]
-    [InlineData("Theme:StylesheetPath", "//cdn.example/thema.css", null, null)]
-    [InlineData("Theme:StylesheetPath", "theme/thema.css", null, null)]
+    [InlineData("Theme:StylesheetPath", "https://cdn.example/theme.css", null, null)]
+    [InlineData("Theme:StylesheetPath", "//cdn.example/theme.css", null, null)]
+    [InlineData("Theme:StylesheetPath", "theme/theme.css", null, null)]
     [InlineData("Theme:LogoPath", "https://cdn.example/logo.svg", "Theme:LogoAlt", "Logo")]
     [InlineData("Theme:LogoPath", "/theme/logo.svg", null, null)]
     public void OngeldigeThemaInstellingLaatHetOpstartenMislukken(string key, string value, string? otherKey, string? otherValue)

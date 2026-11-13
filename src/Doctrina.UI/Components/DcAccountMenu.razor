@@ -1,8 +1,8 @@
-@* Accountgedeelte (spec app-shell "Het accountgedeelte toont wie er is ingelogd"). Anoniem: knop "Inloggen" met de
-   huidige pagina als terugkeeradres. Ingelogd: naam met een menu (Popover API) met "Mijn profiel" en "Uitloggen". *@
+@* Account area (spec app-shell "Het accountgedeelte toont wie er is ingelogd"). Anonymous: a "Sign in" button with the
+   current page as return address. Signed in: the name with a menu (Popover API) with "My profile" and "Sign out". *@
 @if (UserName is null)
 {
-  <DcButton Href="@SignInHref" Variant="DcButtonVariant.Primary" Icon="log-in" data-testid="sign-in">Inloggen</DcButton>
+  <DcButton Href="@SignInHref" Variant="DcButtonVariant.Primary" Icon="log-in" data-testid="sign-in">Sign in</DcButton>
 }
 else
 {
@@ -14,12 +14,12 @@ else
     </button>
     <div id="@MenuId" popover class="dc-account__menu">
       <ul class="dc-account__list" aria-label="Account">
-        <li><a href="@ProfileHref" class="dc-account__item"><DcIcon Name="user" />Mijn profiel</a></li>
+        <li><a href="@ProfileHref" class="dc-account__item"><DcIcon Name="user" />My profile</a></li>
         <li>
           <form method="post" action="@SignOutAction" class="dc-account__form">
             <AntiforgeryToken />
             <input type="hidden" name="returnUrl" value="/" />
-            <button type="submit" class="dc-account__item"><DcIcon Name="log-out" />Uitloggen</button>
+            <button type="submit" class="dc-account__item"><DcIcon Name="log-out" />Sign out</button>
           </form>
         </li>
       </ul>
@@ -45,5 +45,5 @@ else
     public string SignOutAction { get; set; } = string.Empty;
 
     [Parameter]
-    public string ProfileHref { get; set; } = "/profiel";
+    public string ProfileHref { get; set; } = "/profile";
 }

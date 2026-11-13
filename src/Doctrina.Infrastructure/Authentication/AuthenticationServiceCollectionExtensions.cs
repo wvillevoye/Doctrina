@@ -52,7 +52,7 @@ public static class AuthenticationServiceCollectionExtensions
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.ExpireTimeSpan = oidc.Value.SessionLifetime;
                 options.SlidingExpiration = false;
-                options.AccessDeniedPath = "/geen-toegang";
+                options.AccessDeniedPath = "/access-denied";
                 options.Events.OnSigningIn = context =>
                 {
                     // Einde sessie als claim, zodat Blazor-circuits na afloop opnieuw moeten inloggen (design D7).

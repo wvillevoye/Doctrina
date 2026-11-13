@@ -1,11 +1,11 @@
 namespace Doctrina.Core.Results;
 
 /// <summary>
-/// Vertaalde titels voor foutcodes, in de taal van de gebruiker. Abstractie zodat ook de componentenbibliotheek
-/// (<c>DcResult</c>) fouten kan tonen zonder van de infrastructuur af te hangen (design D8 van add-design-system).
+/// Titles for error codes in the language of the UI (English, change switch-ui-to-english). An abstraction so the
+/// component library (<c>DcResult</c>) can show errors without depending on the infrastructure (design D8 of add-design-system).
 /// </summary>
 public interface IErrorTitles
 {
-    /// <summary>De vertaling van <paramref name="code"/>, of <paramref name="fallback"/> als die er niet is.</summary>
+    /// <summary>The English title for <paramref name="code"/>, or <paramref name="fallback"/> if there is none.</summary>
     string For(string code, string fallback);
 }

@@ -48,7 +48,7 @@
 ## 8. Integratiecontrole
 
 - [x] 8.1 Draai `dotnet test` voor de hele solution en maak de traceerbaarheidstabel (elk scenario van `theming`, `ui-components` en `app-shell` heeft een slagende test) in `verificatie.md` van deze change
-- [ ] 8.2 Handmatige browsercontrole in de stijlgids (Edge/Chrome en Firefox): dialoog (focus, Escape, focusherstel), menu en accountmenu als popover op een smal venster en met het toetsenbord, themawissel licht/donker/systeem zonder flits, `prefers-reduced-motion`; leg de uitkomst vast in `verificatie.md`
+- [x] 8.2 Handmatige browsercontrole in de stijlgids (Edge/Chrome en Firefox): dialoog (focus, Escape, focusherstel), menu en accountmenu als popover op een smal venster en met het toetsenbord, themawissel licht/donker/systeem zonder flits, `prefers-reduced-motion`; leg de uitkomst vast in `verificatie.md`
 
 ## Vervolg in de workflow
 

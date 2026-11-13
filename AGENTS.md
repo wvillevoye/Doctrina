@@ -8,9 +8,14 @@ Achtergrond: [docs/Doctrina-voorstel.md](docs/Doctrina-voorstel.md). Inloggen/cl
 - Projectcontext en regels voor artefacten: `openspec/config.yaml`.
 - Nieuwe functionaliteit: eerst een change (`/opsx:propose` of `openspec new change <id>`), pas bouwen na akkoord (`/opsx:apply`).
 - Valideren: `openspec validate <change-id> --strict`. Afronden: `/opsx:archive`.
-- Alle OpenSpec-artefacten (proposal, design, tasks, specs) en gebruikersdocumentatie in het Nederlands. De structuurwoorden
-  die de validator nodig heeft blijven Engels: `## Why`, `## What Changes`, `## Purpose`, `## ADDED Requirements`,
-  `### Requirement:`, `#### Scenario:`, SHALL/MUST en GIVEN/WHEN/THEN.
+- Talen (besluit 2026-11-12):
+  - OpenSpec-artefacten (proposal, design, tasks, specs) in het Nederlands. De structuurwoorden die de validator nodig
+    heeft blijven Engels: `## Why`, `## What Changes`, `## Purpose`, `## ADDED Requirements`, `### Requirement:`,
+    `#### Scenario:`, SHALL/MUST en GIVEN/WHEN/THEN. Testnamen volgen de (Nederlandse) requirement- en scenarionamen.
+  - Nieuwe documentatie (`docs/`, README's) en codecommentaar in het Engels; bestaande Nederlandse documentatie blijft
+    staan tot ze om een andere reden wordt herschreven.
+  - De gebruikersinterface is Engels (teksten op pagina's en in `Dc*`-componenten). De omzetting van de bestaande
+    Nederlandse UI gebeurt in een eigen change.
 
 ## Huisregels
 

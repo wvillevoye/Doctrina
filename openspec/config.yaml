@@ -25,6 +25,8 @@ context: |
   Ontwikkelaars werken op Windows met Docker Desktop; scripts en documentatie moeten daar werken.
   Toegankelijkheid WCAG 2.2 AA, privacy by design (AVG): geen persoonsgegevens in logs.
   Alle OpenSpec-artefacten zijn in het Nederlands (design D12 van add-modular-foundation).
+  De gebruikersinterface is Engels; nieuwe documentatie en codecommentaar ook (besluit 2026-11-12, zie AGENTS.md).
+  Zichtbare UI-teksten in scenario's dus in het Engels, tussen aanhalingstekens.
 
 rules:
   proposal:
@@ -40,4 +42,4 @@ rules:
   tasks:
     - Schrijf in het Nederlands.
     - Elk spec-scenario wordt gedekt door minstens één testtaak; noem de test naar de requirement/het scenario (Nederlandse namen, testklasse = requirement, methode = scenario).
-    - Gebruikersdocumentatie is in het Nederlands.
+    - Nieuwe documentatie (docs/, README's) en codecommentaar zijn in het Engels; bestaande Nederlandse documentatie blijft staan.

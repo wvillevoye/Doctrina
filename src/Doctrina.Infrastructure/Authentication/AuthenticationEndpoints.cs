@@ -14,6 +14,9 @@ public static class AuthenticationEndpoints
     public const string SignInPath = "/inloggen";
     public const string SignOutPath = "/uitloggen";
 
+    /// <summary>Notice shown when the identity provider can't be reached (page in the host).</summary>
+    public const string UnavailablePath = "/inloggen-onbereikbaar";
+
     public static IEndpointRouteBuilder MapDoctrinaAuthenticationEndpoints(this IEndpointRouteBuilder endpoints)
     {
         endpoints.MapGet(SignInPath, (string? returnUrl) =>

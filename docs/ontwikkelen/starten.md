@@ -119,7 +119,7 @@ Die logt in als `student` en `beheerder`, controleert `/profiel` en roept de API
 | Melding of symptoom | Oplossing |
 |---|---|
 | `Authentication:Oidc:ClientSecret ontbreekt` | stap 1: `appsettings.Secrets.example.json` kopiëren naar `appsettings.Secrets.json` |
-| Inloggen hangt of geeft een fout over `.well-known/openid-configuration` | dev-stack draait niet of Keycloak is nog niet gezond: `docker ps` |
+| Pagina "Sign-in unavailable" (`/inloggen-onbereikbaar`) bij inloggen of uitloggen | dev-stack draait niet of Keycloak is nog niet gezond: `docker ps`, zo nodig `cd dev-stack; docker compose up -d`, daarna "Try again" |
 | Browser waarschuwt voor het certificaat | `dotnet dev-certs https --trust` en de browser opnieuw starten |
 | `/health/ready` geeft 503 met `"database": "Unhealthy"` | database `Doctrina` bestaat nog niet (zie stap 2) of LocalDB is gestopt |
 | Fout over `(localdb)\MSSQLLocalDB` | `sqllocaldb start MSSQLLocalDB` (zie [database.md](database.md#problemen)) |

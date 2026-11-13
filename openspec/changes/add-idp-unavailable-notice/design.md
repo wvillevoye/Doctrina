@@ -52,7 +52,9 @@ Zo leidt een netwerkfout van iets anders (bv. een module die een externe API aan
 per versie.
 
 ### D3 — Doorsturen naar een pagina in de host; de pagina zet 503
-De middleware stuurt met 302 door naar `/inloggen-onbereikbaar?returnUrl=…` (bij uitloggen `&uitgelogd=1`). Het pad
+De middleware stuurt met 302 door naar `/inloggen-onbereikbaar?returnUrl=…&traceId=…` (bij uitloggen `&uitgelogd=1`).
+De trace-id is die van het mislukte verzoek, zodat de code op de pagina overeenkomt met de logregel (D6). De pagina toont
+hem alleen als hij uit veilige tekens bestaat. Het pad
 staat als constante naast `SignInPath`/`SignOutPath` in `AuthenticationEndpoints`. De pagina staat in de host (Razor,
 `Dc*`-componenten), is anoniem toegankelijk en zet zelf status 503 met `Retry-After: 60`, net zoals `/geen-toegang` 403
 zet. Is het antwoord al begonnen (`Response.HasStarted`), dan gooit de middleware de exceptie opnieuw.
@@ -104,7 +106,8 @@ change wordt omgezet. De paden (`/inloggen-onbereikbaar`, `uitgelogd=1`) volgen 
 | Paginatitel (`DcPageHeader`) | Sign-in unavailable |
 | Melding (`DcAlert`, Warning) | The sign-in service can't be reached right now. This is usually temporary; please try again in a minute. |
 | Knop (`DcButton`) | Try again |
-| Melding bij `uitgelogd=1` | You have been signed out of Doctrina, but you may still be signed in at the sign-in service. On a shared computer, close your browser. |
+| Melding bij `uitgelogd=1` (zonder knop "Try again": opnieuw inloggen is dan niet de bedoeling) | You have been signed out of Doctrina, but you may still be signed in at the sign-in service. On a shared computer, close your browser. |
+| Trace-id | If you report this, mention this code: … |
 
 ## Risico's / Afwegingen
 

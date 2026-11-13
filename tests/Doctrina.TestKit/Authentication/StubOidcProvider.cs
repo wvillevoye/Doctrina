@@ -1,8 +1,10 @@
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http.Json;
+using System.Net.Sockets;
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 
@@ -79,8 +81,31 @@ public sealed class StubOidcProvider : IDisposable
         return CreateToken(issuer, audience, claims, lifetime ?? TimeSpan.FromMinutes(5));
     }
 
+    /// <summary>
+    /// Switch for the scenarios where the provider can't be reached (design D7 of add-idp-unavailable-notice): when
+    /// <see langword="false"/>, fetching the configuration and calling the token endpoint fail with a network error.
+    /// </summary>
+    public bool IsReachable { get; set; } = true;
+
+    /// <summary>When <see langword="false"/>, only the token endpoint fails (the callback after signing in at the provider).</summary>
+    public bool IsTokenEndpointReachable { get; set; } = true;
+
     /// <summary>HttpClient voor het backchannel van de OIDC-handler (token-endpoint).</summary>
     public HttpClient CreateBackchannelClient() => new(new TokenEndpointHandler(this), disposeHandler: true);
+
+    /// <summary>
+    /// Configuration for the OIDC and bearer handlers: the static configuration while <see cref="IsReachable"/>, otherwise
+    /// a real <see cref="ConfigurationManager{T}"/> whose HTTP calls fail, so the exception comes from
+    /// Microsoft.IdentityModel just like in production.
+    /// </summary>
+    public IConfigurationManager<OpenIdConnectConfiguration> CreateConfigurationManager() => new SwitchableConfigurationManager(this);
+
+    /// <summary>A real configuration manager for this provider that can't reach it.</summary>
+    public static ConfigurationManager<OpenIdConnectConfiguration> CreateUnreachableConfigurationManager() =>
+        new($"{Issuer}/.well-known/openid-configuration", new OpenIdConnectConfigurationRetriever(), new HttpDocumentRetriever(new HttpClient(new UnreachableHandler())));
+
+    internal static HttpRequestException ConnectionRefused() =>
+        new("Connection refused (idp.test:443)", new SocketException((int)SocketError.ConnectionRefused));
 
     public void Dispose() => _rsa.Dispose();
 
@@ -126,10 +151,34 @@ public sealed class StubOidcProvider : IDisposable
 
     private sealed record PendingSignIn(StubUser User, string Nonce, string ClientId);
 
+    private sealed class UnreachableHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
+            throw ConnectionRefused();
+    }
+
+    private sealed class SwitchableConfigurationManager(StubOidcProvider provider) : IConfigurationManager<OpenIdConnectConfiguration>
+    {
+        private readonly StaticConfigurationManager<OpenIdConnectConfiguration> _reachable = new(provider.Configuration);
+        private readonly ConfigurationManager<OpenIdConnectConfiguration> _unreachable = CreateUnreachableConfigurationManager();
+
+        public Task<OpenIdConnectConfiguration> GetConfigurationAsync(CancellationToken cancel) =>
+            provider.IsReachable ? _reachable.GetConfigurationAsync(cancel) : _unreachable.GetConfigurationAsync(cancel);
+
+        public void RequestRefresh()
+        {
+        }
+    }
+
     private sealed class TokenEndpointHandler(StubOidcProvider provider) : HttpMessageHandler
     {
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            if (!provider.IsReachable || !provider.IsTokenEndpointReachable)
+            {
+                throw ConnectionRefused();
+            }
+
             if (request.Method != HttpMethod.Post || request.RequestUri?.ToString() != provider.Configuration.TokenEndpoint || request.Content is null)
             {
                 return new HttpResponseMessage(HttpStatusCode.NotFound);

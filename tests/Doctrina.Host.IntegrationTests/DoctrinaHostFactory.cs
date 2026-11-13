@@ -58,7 +58,7 @@ public sealed class DoctrinaHostFactory : WebApplicationFactory<Program>
 
         builder.ConfigureTestServices(services =>
         {
-            var configurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(Idp.Configuration);
+            var configurationManager = Idp.CreateConfigurationManager();
             services.PostConfigure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
             {
                 options.ConfigurationManager = configurationManager;

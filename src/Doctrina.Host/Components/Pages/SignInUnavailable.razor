@@ -1,0 +1,54 @@
+@page "/inloggen-onbereikbaar"
+
+@* Notice when the identity provider can't be reached (change add-idp-unavailable-notice, design D3 and D8). Anonymous and
+   never calls the provider. The trace id is the one of the failed request, so it matches the warning in the log. *@
+<DcPageHeader Title="Sign-in unavailable" />
+
+<DcAlert Severity="DcSeverity.Warning">
+  @if (SignedOut == "1")
+  {
+    <p>You have been signed out of Doctrina, but you may still be signed in at the sign-in service. On a shared computer, close your browser.</p>
+  }
+  else
+  {
+    <p>The sign-in service can't be reached right now. This is usually temporary; please try again in a minute.</p>
+  }
+  @if (ShowTraceId)
+  {
+    <p>If you report this, mention this code: <code data-testid="trace-id">@TraceId</code></p>
+  }
+</DcAlert>
+@if (SignedOut != "1")
+{
+  <DcButton Href="@RetryUrl" Icon="log-in" Variant="DcButtonVariant.Primary" data-testid="retry">Try again</DcButton>
+}
+
+@code {
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    [SupplyParameterFromQuery(Name = IdentityProviderUnavailableMiddleware.ReturnUrlParameter)]
+    private string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromQuery(Name = IdentityProviderUnavailableMiddleware.SignedOutParameter)]
+    private string? SignedOut { get; set; }
+
+    [SupplyParameterFromQuery(Name = IdentityProviderUnavailableMiddleware.TraceIdParameter)]
+    private string? TraceId { get; set; }
+
+    private string RetryUrl =>
+        $"{AuthenticationEndpoints.SignInPath}?returnUrl={Uri.EscapeDataString(AuthenticationEndpoints.LocalPathOrRoot(ReturnUrl))}";
+
+    protected override void OnInitialized()
+    {
+        if (HttpContext is not null)
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+            HttpContext.Response.Headers.RetryAfter = "60";
+        }
+    }
+
+    // W3C trace context or a TraceIdentifier: never show arbitrary text from the query string.
+    private bool ShowTraceId =>
+        TraceId is { Length: > 0 and <= 128 } id && id.All(c => char.IsAsciiLetterOrDigit(c) || c is ':' or '.' or '|' or '-');
+}

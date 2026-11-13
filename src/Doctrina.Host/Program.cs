@@ -50,6 +50,8 @@ app.UseExceptionHandler(new ExceptionHandlerOptions { ExceptionHandlingPath = "/
 app.UseHttpsRedirection();
 app.UseDoctrinaRequestLocalization();
 app.UseStatusCodePages();
+// Unreachable identity provider → notice page instead of /fout (change add-idp-unavailable-notice).
+app.UseDoctrinaIdentityProviderUnavailable();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();

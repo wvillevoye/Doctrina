@@ -4,24 +4,24 @@
 
 ### Requirement: Een onbereikbare inlogdienst geeft een duidelijke melding
 Kan Doctrina de provider bij inloggen niet bereiken (geen verbinding, time-out of netwerkfout), dan SHALL de gebruiker
-de pagina "Inloggen lukt nu niet" krijgen in plaats van de algemene foutpagina. Die pagina SHALL status 503 met
+de pagina "Sign-in unavailable" krijgen in plaats van de algemene foutpagina. Die pagina SHALL status 503 met
 `Retry-After` geven, SHALL een tijdelijke storing van de inlogdienst melden zonder technische details, en SHALL opnieuw
 laten proberen met terugkeer naar de oorspronkelijke pagina. Andere fouten SHALL de algemene foutpagina blijven geven.
 
 #### Scenario: Inloggen terwijl de inlogdienst onbereikbaar is
 - **GIVEN** een provider die niet bereikbaar is
 - **WHEN** een anonieme bezoeker op `/profiel?tab=2` inloggen kiest
-- **THEN** krijgt de bezoeker de pagina "Inloggen lukt nu niet" met status 503 en `Retry-After`, en gaat "Opnieuw proberen" naar inloggen met `/profiel?tab=2` als terugkeeradres
+- **THEN** krijgt de bezoeker de pagina "Sign-in unavailable" met status 503 en `Retry-After`, en gaat "Try again" naar inloggen met `/profiel?tab=2` als terugkeeradres
 
 #### Scenario: Beveiligde pagina openen terwijl de inlogdienst onbereikbaar is
 - **GIVEN** een provider die niet bereikbaar is
 - **WHEN** een anonieme bezoeker een pagina opent waarvoor inloggen nodig is
-- **THEN** krijgt de bezoeker de pagina "Inloggen lukt nu niet" in plaats van de algemene foutpagina
+- **THEN** krijgt de bezoeker de pagina "Sign-in unavailable" in plaats van de algemene foutpagina
 
 #### Scenario: Terugkeer van de provider mislukt door een netwerkfout
 - **GIVEN** een gebruiker die zich bij de provider heeft geauthenticeerd, terwijl het token-endpoint niet bereikbaar is
 - **WHEN** de provider de gebruiker terugstuurt naar Doctrina
-- **THEN** krijgt de gebruiker de pagina "Inloggen lukt nu niet" en is de gebruiker niet ingelogd
+- **THEN** krijgt de gebruiker de pagina "Sign-in unavailable" en is de gebruiker niet ingelogd
 
 #### Scenario: Andere fouten blijven de foutpagina geven
 - **WHEN** een pagina een onverwachte fout geeft die niets met de inlogdienst te maken heeft
@@ -33,7 +33,7 @@ gebruiker een melding krijgen dat de sessie bij de inlogdienst mogelijk nog best
 
 #### Scenario: Uitloggen terwijl de inlogdienst onbereikbaar is
 - **GIVEN** een ingelogde gebruiker en een provider die niet meer bereikbaar is
-- **WHEN** de gebruiker kiest voor "Uitloggen"
+- **WHEN** de gebruiker kiest voor uitloggen
 - **THEN** is de sessiecookie van Doctrina verwijderd en zegt de pagina dat de gebruiker bij Doctrina is uitgelogd, maar mogelijk nog niet bij de inlogdienst
 
 ### Requirement: Een onbereikbare inlogdienst wordt gelogd zonder persoonsgegevens

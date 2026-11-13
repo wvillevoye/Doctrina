@@ -13,10 +13,10 @@ na `add-design-system`, waarvan ze de componenten gebruikt.
 
 ## What Changes
 
-- Is de inlogdienst onbereikbaar bij **inloggen**, dan ziet de gebruiker de pagina "Inloggen lukt nu niet" in plaats
+- Is de inlogdienst onbereikbaar bij **inloggen**, dan ziet de gebruiker de pagina "Sign-in unavailable" in plaats
   van de foutpagina. Dat geldt voor de knop "Inloggen" én voor het openen van een pagina waarvoor inloggen nodig is.
-  De pagina geeft status 503 met `Retry-After` en een knop "Opnieuw proberen" die terugkeert naar de oorspronkelijke
-  pagina.
+  De pagina geeft status 503 met `Retry-After` en een knop "Try again" die terugkeert naar de oorspronkelijke
+  pagina. De pagina is Engels (taalafspraak 2026-11-12); de bestaande UI wordt in een eigen change omgezet.
 - Hetzelfde geldt als de **terugkeer van de provider** mislukt, omdat Doctrina het token-endpoint niet kan bereiken.
 - Is de inlogdienst onbereikbaar bij **uitloggen**, dan beëindigt Doctrina toch de eigen sessie. De pagina zegt dat de
   gebruiker bij Doctrina is uitgelogd, maar mogelijk nog niet bij de inlogdienst, met het advies de browser te sluiten

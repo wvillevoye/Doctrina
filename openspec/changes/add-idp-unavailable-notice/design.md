@@ -60,7 +60,7 @@ zet. Is het antwoord al begonnen (`Response.HasStarted`), dan gooit de middlewar
 te renderen buiten de router; de redirect is eenvoudiger en de pagina is los te testen.
 
 ### D4 — Terugkeeradres
-"Opnieuw proberen" gaat naar `/inloggen?returnUrl=<terugkeeradres>`. Het terugkeeradres komt bij `/inloggen` uit de
+"Try again" gaat naar `/inloggen?returnUrl=<terugkeeradres>`. Het terugkeeradres komt bij `/inloggen` uit de
 query `returnUrl` en bij een beveiligde pagina uit pad + query van het verzoek. Bij de callback is het `/`, omdat het
 oorspronkelijke adres in de versleutelde `state` zit en een terugval naar de startpagina daar volstaat. Elk adres gaat
 door `AuthenticationEndpoints.LocalPathOrRoot` (geen open redirect).
@@ -93,6 +93,18 @@ De testfactory krijgt een variant met een **schakelbare provider**:
 Zo dekt één host alle scenario's: eerst inloggen met een werkende provider, daarna de provider "uitzetten" en
 uitloggen. De logscenario's gebruiken een vastleggende `ILoggerProvider`, zoals de bestaande test
 `OnverwachteFoutenLekkenGeenDetails`.
+
+### D8 — Teksten
+De UI is Engels (taalafspraak 2026-11-12). De pagina is daarmee Engels, terwijl de rest van de UI pas in een eigen
+change wordt omgezet. De paden (`/inloggen-onbereikbaar`, `uitgelogd=1`) volgen de bestaande routes `/inloggen` en
+`/uitloggen` en gaan mee in die omzetting.
+
+| Onderdeel | Tekst |
+|---|---|
+| Paginatitel (`DcPageHeader`) | Sign-in unavailable |
+| Melding (`DcAlert`, Warning) | The sign-in service can't be reached right now. This is usually temporary; please try again in a minute. |
+| Knop (`DcButton`) | Try again |
+| Melding bij `uitgelogd=1` | You have been signed out of Doctrina, but you may still be signed in at the sign-in service. On a shared computer, close your browser. |
 
 ## Risico's / Afwegingen
 

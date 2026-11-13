@@ -1,0 +1,17 @@
+@* Search as a plain GET form (q), so lists work without scripts and can be shared (design D8).
+   ponytail: module-local; move to Doctrina.UI (DcSearchForm, with a style-guide section) when a second module needs it. *@
+<form method="get" action="@Action" class="academic-search" role="search">
+  <label for="academic-search-q" class="academic-search__label">Search</label>
+  <div class="academic-search__row">
+    <input id="academic-search-q" type="search" name="q" value="@Query" class="academic-search__input" placeholder="Name or ID" />
+    <DcButton Type="submit" Icon="search">Search</DcButton>
+  </div>
+</form>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Action { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Query { get; set; }
+}

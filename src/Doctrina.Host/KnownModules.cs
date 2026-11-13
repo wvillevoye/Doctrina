@@ -1,3 +1,6 @@
+using Doctrina.Infrastructure.Modules;
+using Doctrina.Modules.Academic;
+
 namespace Doctrina.Host;
 
 /// <summary>
@@ -8,8 +11,7 @@ internal static class KnownModules
 {
     public static IServiceCollection AddKnownModules(this IServiceCollection services)
     {
-        // Nog geen productmodules; de eerste komt met change add-academic-core, bv.:
-        // services.AddDoctrinaModule<AcademicModule>();
+        services.AddDoctrinaModule<AcademicModule>();
         return services;
     }
 }

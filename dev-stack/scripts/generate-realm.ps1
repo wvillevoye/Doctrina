@@ -189,6 +189,88 @@ function Write-Realm($obj, $file) {
     Write-Host "Geschreven: $out  ($($obj.users.Count) gebruikers)"
 }
 
+# ---------------------------------------------------------------- Doctrina CSV files (change add-academic-core, design D9)
+# The same people as in realm doctrina (same personId), plus organizations, sessions, courses, offerings and
+# enrolments, so the test accounts see courses under "My courses" after importing. Own random seed: the realm JSON
+# does not change because of this. Import order: organizations, academic-sessions, courses, course-offerings, persons, associations.
+$courses = @(
+    @{ id = "MED1001"; name = "Anatomy and physiology";             fac = "FHML";  ects = 6 },
+    @{ id = "BMS2002"; name = "Molecular biology";                  fac = "FHML";  ects = 6 },
+    @{ id = "EBC1010"; name = "Microeconomics";                     fac = "SBE";   ects = 6.5 },
+    @{ id = "EBC2020"; name = "Statistics for business";            fac = "SBE";   ects = 6.5 },
+    @{ id = "LAW1003"; name = "European constitutional law";        fac = "FdR";   ects = 6 },
+    @{ id = "PSY1001"; name = "Introduction to psychology";         fac = "FPN";   ects = 6 },
+    @{ id = "PSY2004"; name = "Cognitive neuroscience";             fac = "FPN";   ects = 6 },
+    @{ id = "ESS1001"; name = "History of European integration";    fac = "FASoS"; ects = 5 },
+    @{ id = "KEN1110"; name = "Introduction to computer science";   fac = "FSE";   ects = 6 },
+    @{ id = "KEN1130"; name = "Discrete mathematics";               fac = "FSE";   ects = 6 },
+    @{ id = "SCI1004"; name = "Cell biology";                       fac = "FSE";   ects = 5 }
+)
+
+function Csv-Value($v) {
+    $s = "$v"
+    if ($s -match '[",\r\n]') { return '"' + ($s -replace '"', '""') + '"' }
+    return $s
+}
+
+function Write-Csv($file, [string[]]$columns, $rows) {
+    $dir = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\data"))
+    [void][IO.Directory]::CreateDirectory($dir)
+    $lines = @($columns -join ",") + @($rows | ForEach-Object { $r = $_; ($columns | ForEach-Object { Csv-Value $r[$_] }) -join "," })
+    [IO.File]::WriteAllText((Join-Path $dir $file), (($lines -join "`n") + "`n"), (New-Object Text.UTF8Encoding $false))
+    Write-Host "Geschreven: $(Join-Path $dir $file)  ($(@($rows).Count) regels)"
+}
+
+function Write-AcademicCsv($people) {
+    $null = Get-Random -SetSeed ($Seed + 1)
+    Write-Csv "organizations.csv" @("organizationId","name","shortName","organizationType","parentOrganizationId") (
+        @(@{ organizationId = "UM"; name = "Maastricht University"; shortName = "UM"; organizationType = "root" }) +
+        @($faculties | ForEach-Object { @{ organizationId = $_.code; name = $_.name; shortName = $_.code; organizationType = "faculty"; parentOrganizationId = "UM" } }))
+
+    $sessions = @(
+        @{ academicSessionId = "2026-2027"; name = "Academic year 2026-2027"; academicSessionType = "academic year"; startDate = "2026-09-01"; endDate = "2027-08-31" },
+        @{ academicSessionId = "2026-P1"; name = "Period 1 2026-2027"; academicSessionType = "period"; startDate = "2026-09-01"; endDate = "2026-10-23"; parentAcademicSessionId = "2026-2027" },
+        @{ academicSessionId = "2026-P2"; name = "Period 2 2026-2027"; academicSessionType = "period"; startDate = "2026-10-26"; endDate = "2026-12-18"; parentAcademicSessionId = "2026-2027" })
+    Write-Csv "academic-sessions.csv" @("academicSessionId","name","academicSessionType","startDate","endDate","parentAcademicSessionId") $sessions
+
+    Write-Csv "courses.csv" @("courseId","name","abbreviation","studyLoad","organizationId") (
+        $courses | ForEach-Object { @{ courseId = $_.id; name = $_.name; abbreviation = $_.id; studyLoad = ([string]$_.ects).Replace(",", "."); organizationId = $_.fac } })
+
+    # Every course runs once, alternating between period 1 and 2.
+    $i = 0
+    $offerings = @($courses | ForEach-Object {
+        $period = if ($i++ % 2 -eq 0) { "2026-P1" } else { "2026-P2" }
+        @{ offeringId = "$($_.id)-$period"; name = "$($_.name) ($period)"; courseId = $_.id; academicSessionId = $period; fac = $_.fac } })
+    Write-Csv "course-offerings.csv" @("offeringId","name","courseId","academicSessionId") $offerings
+
+    Write-Csv "persons.csv" @("personId","givenName","surnamePrefix","surname","mail") ($people | ForEach-Object {
+        $prefix = if ($_.lastName -match '^((van der|van den|van|de) )') { $Matches[2] } else { "" }
+        @{ personId = $_.attributes.personId[0]; givenName = $_.firstName; surnamePrefix = $prefix
+           surname = ($_.lastName -replace '^(van der|van den|van|de) ', ''); mail = $_.email } })
+
+    $enrolments = New-Object System.Collections.ArrayList
+    function Enrol($person, $offering, $role) {
+        [void]$enrolments.Add(@{ associationId = "$person-$offering-$role"; personId = $person; offeringId = $offering; role = $role })
+    }
+    # Fixed test accounts: student in three offerings (one with docent as lecturer), docent lecturer in two, beheerder coordinator.
+    function Of($course) { ($offerings | Where-Object { $_.courseId -eq $course }).offeringId }
+    Enrol "I6000001" (Of "SCI1004") "student"; Enrol "I6000001" (Of "KEN1130") "student"; Enrol "I6000001" (Of "PSY1001") "student"
+    Enrol "P7000002" (Of "SCI1004") "lecturer"; Enrol "P7000002" (Of "ESS1001") "lecturer"
+    Enrol "P7000001" (Of "SCI1004") "coordinator"
+    foreach ($p in $people | Where-Object { $_.attributes.personId[0] -notin @("I6000001","P7000001","P7000002") }) {
+        $id = $p.attributes.personId[0]; $dep = $p.attributes.department[0]
+        $own = @($offerings | Where-Object { $_.fac -eq $dep })
+        if ($id.StartsWith("I6")) {
+            # Students: two offerings, preferably of their own faculty.
+            $pool = if ($own.Count -ge 2) { $own } else { $offerings }
+            $pool | Get-Random -Count 2 | ForEach-Object { Enrol $id $_.offeringId "student" }
+        } elseif ($own.Count -gt 0 -and (Get-Random -Maximum 1.0) -lt 0.3) {
+            Enrol $id ($own | Get-Random).offeringId (@("lecturer","lecturer","teaching-assistant") | Get-Random)
+        }
+    }
+    Write-Csv "associations.csv" @("associationId","personId","offeringId","role") $enrolments
+}
+
 $studentCount = [math]::Round($Count * $StudentRatio)
 
 # ================================================================ realm: demo
@@ -288,5 +370,6 @@ if ($Realm -in "all","doctrina") {
         clientRoles = @{ "doctrina-api" = @("doctrina.persons.read","doctrina.persons.write","doctrina.courses.read","doctrina.courses.write","doctrina.import") }
     })
     Write-Realm $realmObj "doctrina-realm.json"
+    Write-AcademicCsv ($realmObj.users | Where-Object { $_.attributes -and $_.attributes.personId })
 }
 Write-Host "Per realm: $studentCount studenten + $($Count - $studentCount) medewerkers + 3 vaste testaccounts."

@@ -1,0 +1,31 @@
+.academic-search {
+  margin-bottom: var(--dc-space-5);
+}
+
+.academic-search__label {
+  display: block;
+  margin-bottom: var(--dc-space-1);
+  font-weight: var(--dc-font-weight-semibold);
+}
+
+.academic-search__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dc-space-2);
+}
+
+.academic-search__input {
+  flex: 1 1 16rem;
+  min-width: 0;
+  padding: var(--dc-space-2) var(--dc-space-3);
+  border: var(--dc-border-width) solid var(--dc-border-strong);
+  border-radius: var(--dc-radius);
+  color: var(--dc-text);
+  background-color: var(--dc-surface);
+  font: inherit;
+}
+
+.academic-search__input:focus-visible {
+  outline: var(--dc-focus-width) solid var(--dc-focus);
+  outline-offset: var(--dc-focus-offset);
+}

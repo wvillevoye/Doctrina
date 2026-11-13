@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Academic.Organization.Invalid" xml:space="preserve">
+    <value>Invalid organization</value>
+  </data>
+  <data name="Academic.Organization.ReferenceNotFound" xml:space="preserve">
+    <value>Referenced record not found for this organization</value>
+  </data>
+  <data name="Academic.Organization.Duplicate" xml:space="preserve">
+    <value>Duplicate organization</value>
+  </data>
+  <data name="Academic.Organization.Conflict" xml:space="preserve">
+    <value>The organization was changed at the same time</value>
+  </data>
+  <data name="Academic.AcademicSession.Invalid" xml:space="preserve">
+    <value>Invalid academic session</value>
+  </data>
+  <data name="Academic.AcademicSession.ReferenceNotFound" xml:space="preserve">
+    <value>Referenced record not found for this academic session</value>
+  </data>
+  <data name="Academic.AcademicSession.Duplicate" xml:space="preserve">
+    <value>Duplicate academic session</value>
+  </data>
+  <data name="Academic.AcademicSession.Conflict" xml:space="preserve">
+    <value>The academic session was changed at the same time</value>
+  </data>
+  <data name="Academic.Course.Invalid" xml:space="preserve">
+    <value>Invalid course</value>
+  </data>
+  <data name="Academic.Course.ReferenceNotFound" xml:space="preserve">
+    <value>Referenced record not found for this course</value>
+  </data>
+  <data name="Academic.Course.Duplicate" xml:space="preserve">
+    <value>Duplicate course</value>
+  </data>
+  <data name="Academic.Course.Conflict" xml:space="preserve">
+    <value>The course was changed at the same time</value>
+  </data>
+  <data name="Academic.CourseOffering.Invalid" xml:space="preserve">
+    <value>Invalid course offering</value>
+  </data>
+  <data name="Academic.CourseOffering.ReferenceNotFound" xml:space="preserve">
+    <value>Referenced record not found for this course offering</value>
+  </data>
+  <data name="Academic.CourseOffering.Duplicate" xml:space="preserve">
+    <value>Duplicate course offering</value>
+  </data>
+  <data name="Academic.CourseOffering.Conflict" xml:space="preserve">
+    <value>The course offering was changed at the same time</value>
+  </data>
+  <data name="Academic.Person.Invalid" xml:space="preserve">
+    <value>Invalid person</value>
+  </data>
+  <data name="Academic.Person.ReferenceNotFound" xml:space="preserve">
+    <value>Referenced record not found for this person</value>
+  </data>
+  <data name="Academic.Person.Duplicate" xml:space="preserve">
+    <value>Duplicate person</value>
+  </data>
+  <data name="Academic.Person.Conflict" xml:space="preserve">
+    <value>The person was changed at the same time</value>
+  </data>
+  <data name="Academic.Association.Invalid" xml:space="preserve">
+    <value>Invalid enrolment</value>
+  </data>
+  <data name="Academic.Association.ReferenceNotFound" xml:space="preserve">
+    <value>Referenced record not found for this enrolment</value>
+  </data>
+  <data name="Academic.Association.Duplicate" xml:space="preserve">
+    <value>Duplicate enrolment</value>
+  </data>
+  <data name="Academic.Association.Conflict" xml:space="preserve">
+    <value>The enrolment was changed at the same time</value>
+  </data>
+  <data name="Academic.Import.Empty" xml:space="preserve">
+    <value>Empty file</value>
+  </data>
+  <data name="Academic.Import.MissingColumns" xml:space="preserve">
+    <value>Required columns missing</value>
+  </data>
+  <data name="Academic.Import.TooLarge" xml:space="preserve">
+    <value>File too large</value>
+  </data>
+  <data name="Academic.Import.InvalidSource" xml:space="preserve">
+    <value>Invalid source</value>
+  </data>
+</root>

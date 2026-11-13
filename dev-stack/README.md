@@ -60,6 +60,18 @@ Opnieuw genereren (ander aantal / verhouding):
     powershell -ExecutionPolicy Bypass -File scripts\generate-realm.ps1 -Count 250 -StudentRatio 0.8
     docker compose down -v; docker compose up -d
 
+### Academic CSV files
+
+For realm `doctrina` the script also writes `data/*.csv` in Doctrina's import format (change `add-academic-core`):
+the same people with the same `personId`, the UM faculties, academic year 2026-2027 with periods 1 and 2, eleven courses
+with one offering each, and enrolments. Fixed accounts: `student` is enrolled in three offerings, `docent` is lecturer
+in two, `beheerder` is coordinator of one. Generated students get two offerings, preferably of their own faculty.
+
+Import them in Doctrina at `/academic/import` (as `beheerder`, source `SIS`) in this order: `organizations`,
+`academic-sessions`, `courses`, `course-offerings`, `persons`, `associations`. Steps:
+[docs/ontwikkelen/starten.md](../docs/ontwikkelen/starten.md) §5. After regenerating, import again: unchanged rows say
+`unchanged`; records that are no longer in a file stay (use `status` = `toBeDeleted` to hide them).
+
 ## Entra ID koppelen
 
     copy .env.example .env      # ENTRA_TENANT_ID / ENTRA_CLIENT_ID / ENTRA_CLIENT_SECRET invullen
@@ -77,7 +89,8 @@ Na `docker compose down -v` het script opnieuw draaien.
 
     docker-compose.yml
     realm/                      demo-realm.json, doctrina-realm.json (gegenereerd)
-    scripts/generate-realm.ps1  genereert de realms
+    data/                       Academic CSV files for Doctrina (generated, same people as realm doctrina)
+    scripts/generate-realm.ps1  genereert de realms en data/*.csv
     scripts/configure-entra.ps1 Entra als identity provider
     samples/Doctrina.AuthCheck  .NET 10 referentie-app (OIDC + API) + test-e2e.sh
     ../docs/                    Doctrina-voorstel, integratie (in de repo-root)

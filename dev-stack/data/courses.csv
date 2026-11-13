@@ -1,0 +1,12 @@
+courseId,name,abbreviation,studyLoad,organizationId
+MED1001,Anatomy and physiology,MED1001,6,FHML
+BMS2002,Molecular biology,BMS2002,6,FHML
+EBC1010,Microeconomics,EBC1010,6.5,SBE
+EBC2020,Statistics for business,EBC2020,6.5,SBE
+LAW1003,European constitutional law,LAW1003,6,FdR
+PSY1001,Introduction to psychology,PSY1001,6,FPN
+PSY2004,Cognitive neuroscience,PSY2004,6,FPN
+ESS1001,History of European integration,ESS1001,5,FASoS
+KEN1110,Introduction to computer science,KEN1110,6,FSE
+KEN1130,Discrete mathematics,KEN1130,6,FSE
+SCI1004,Cell biology,SCI1004,5,FSE

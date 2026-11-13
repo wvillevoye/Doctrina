@@ -1,0 +1,63 @@
+@page "/my-courses"
+@attribute [RequirePermission(AcademicPermissions.MyCourses)]
+@using Doctrina.Core.Entities
+@using Doctrina.Modules.Academic.Application
+@using Doctrina.Modules.Academic.Components
+@using Doctrina.Modules.Academic.Domain
+@using Doctrina.Modules.Academic.Infrastructure
+@using Microsoft.EntityFrameworkCore
+@inject CurrentPerson CurrentPerson
+@inject AcademicDbContext Db
+
+@* The active offerings of the signed-in person with their own role (spec my-courses, person-linking). *@
+<DcPageHeader Title="My courses" />
+
+@if (_loaded && _person is null)
+{
+  <DcAlert Severity="DcSeverity.Warning" Title="We can't find your details in Doctrina yet" data-testid="no-person">
+    <p>Your courses appear here once the student information system has sent your details to Doctrina. If this takes longer than a day, contact the service desk.</p>
+  </DcAlert>
+}
+else if (_loaded && _rows.Count == 0)
+{
+  <DcAlert Severity="DcSeverity.Info" data-testid="no-courses"><p>You are not enrolled in any courses.</p></DcAlert>
+}
+else if (_loaded)
+{
+  <DcTable TItem="Row" Caption="My courses" HideCaption Columns="Columns" Items="_rows" EmptyText="You are not enrolled in any courses." data-testid="my-courses" />
+}
+
+@code {
+    private static readonly DcTableColumn<Row>[] Columns =
+    [
+        new("Course", r => r.Course),
+        new("Offering", r => r.Offering),
+        new("Academic session", r => r.Session),
+        new("Role", r => Labels.Role(r.Role)),
+    ];
+
+    private Person? _person;
+    private List<Row> _rows = [];
+    private bool _loaded;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = AuthenticationState is null ? new ClaimsPrincipal() : (await AuthenticationState).User;
+        _person = await CurrentPerson.FindAsync(user, CancellationToken.None);
+        if (_person is not null)
+        {
+            _rows = await Db.Associations
+                .Where(a => a.PersonId == _person.Id && a.Status == EntityStatus.Active && a.CourseOffering.Status == EntityStatus.Active)
+                .OrderByDescending(a => a.CourseOffering.AcademicSession.StartDate).ThenBy(a => a.CourseOffering.Course.Name)
+                .Select(a => new Row(a.CourseOffering.Course.Name, a.CourseOffering.Name, a.CourseOffering.AcademicSession.Name, a.Role))
+                .ToListAsync();
+        }
+
+        _loaded = true;
+    }
+
+    private sealed record Row(string Course, string Offering, string Session, AssociationRole Role);
+}

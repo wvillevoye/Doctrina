@@ -117,6 +117,18 @@ public sealed class RollenWordenViaConfiguratieAanPermissiesGekoppeld(DoctrinaHo
         Assert.NotNull(failure);
         Assert.Contains($"Rol 'admin' in {PermissionRegistry.RolePermissionsSection} verwijst naar onbekende permissie 'Unknown.Do'.", failure.Errors);
     }
+
+    [Fact]
+    public async Task KoppelingNaarEenPermissieVanEenUitgeschakeldeModuleWordtGenegeerd()
+    {
+        // add-academic-core: Academic is a known product module but not enabled here.
+        using var host = factory.WithModules([new SampleModule()], SampleModule.ModuleName)
+            .WithAppSettings((AccessHosts.Mapping("student", 0), "Academic.MyCourses"));
+
+        Assert.Null(host.StartupFailure());
+        var profile = await host.ProfileOfAsync(factory, new StubUser("sub-ux", "Uma Uit", ["student"]), Ct);
+        Assert.Contains("data-testid=\"permissions\">none<", profile, StringComparison.Ordinal);
+    }
 }
 
 public sealed class SysteempermissiesGebruikenDezelfdeKoppeling(DoctrinaHostFactory factory) : IClassFixture<DoctrinaHostFactory>

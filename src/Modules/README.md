@@ -1,16 +1,19 @@
 # Modules
 
-Elke feature is een module (zie `docs/Doctrina-voorstel.md` §3.2 en de huisregels in `AGENTS.md`):
+Every feature is a module (see `docs/Doctrina-voorstel.md` §3.2 and the house rules in `AGENTS.md`):
 
 ```
-Modules/<Naam>/
-├─ Doctrina.Modules.<Naam>/             implementatie (IModule, Domain, Application, Infrastructure, Api, Components, Events)
-└─ Doctrina.Modules.<Naam>.Contracts/   publieke interfaces, DTO's en events voor andere modules
+Modules/<Name>/
+├─ Doctrina.Modules.<Name>/             implementation (IModule, Domain, Application, Infrastructure, Api, Components, Events)
+└─ Doctrina.Modules.<Name>.Contracts/   public interfaces, DTOs and events for other modules
 ```
 
-- Eigen SQL-schema (`<naam>` in kleine letters), eigen DbContext en migraties.
-- Andere modules alleen via `.Contracts` of events — nooit via de implementatie (architectuurtests bewaken dit).
-- Bekendmaken in `src/Doctrina.Host/KnownModules.cs`, aanzetten via `Modules:Enabled` in `appsettings.json`.
+- Own SQL schema (`<name>` in lower case), own DbContext and migrations.
+- Other modules only through `.Contracts` or events, never through the implementation (the architecture tests check this).
+- Register in `src/Doctrina.Host/KnownModules.cs`, switch on with `Modules:Enabled` in `appsettings.json`.
 
-Stap voor stap: [`docs/ontwikkelen/modules.md`](../../docs/ontwikkelen/modules.md).
-Er zijn nog geen productmodules; de eerste komt met change `add-academic-core`.
+Step by step: [`docs/ontwikkelen/modules.md`](../../docs/ontwikkelen/modules.md).
+
+| Module | What | Change |
+|---|---|---|
+| [`Academic`](Academic/) | OOAPI core model (organizations, sessions, courses, offerings, persons, associations), CSV import, admin pages, "My courses" | `add-academic-core` |

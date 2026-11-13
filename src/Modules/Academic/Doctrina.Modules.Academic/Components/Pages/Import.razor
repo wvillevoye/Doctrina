@@ -1,0 +1,103 @@
+@page "/academic/import"
+@rendermode InteractiveServer
+@attribute [RequirePermission(AcademicPermissions.Import)]
+@using System.ComponentModel.DataAnnotations
+@using Doctrina.Core.Results
+@using Doctrina.Modules.Academic.Application
+@using Microsoft.Extensions.DependencyInjection
+@inject IServiceScopeFactory Scopes
+
+@* CSV import of one type, processed synchronously, with a report per row (spec academic-csv-import, design D6).
+   Interactive, because the file is uploaded with InputFile and the report is only shown, not stored. *@
+<DcPageHeader Title="Import">
+  <Description>Upload a CSV file for one type. Import in this order: organizations, academic sessions, courses, course offerings, persons, associations.</Description>
+</DcPageHeader>
+
+<DcForm Model="_form" Error="_error" OnValidSubmit="ImportAsync" data-testid="import-form">
+  <DcSelect TValue="string" Label="Type" Required @bind-Value="_form.Type">
+    @foreach (var type in AcademicTypes.All)
+    {
+      <option value="@type.Name">@DisplayName(type)</option>
+    }
+  </DcSelect>
+  <DcTextField Label="Source" Required Hint="The system the data comes from; records are matched on ID and source." @bind-Value="_form.Source" />
+  <div class="dc-field">
+    <label for="import-file" class="dc-field__label">CSV file<span class="dc-field__required">(required)</span></label>
+    <InputFile id="import-file" accept=".csv,text/csv" OnChange="FileChanged" />
+  </div>
+  <div class="dc-form__actions">
+    <DcButton Type="submit" Variant="DcButtonVariant.Primary" Busy="_busy">Import</DcButton>
+  </div>
+</DcForm>
+
+@if (_report is not null)
+{
+  var failed = _report.Count(ImportRowOutcome.Failed);
+  <DcAlert Severity="@(failed > 0 ? DcSeverity.Warning : DcSeverity.Success)" Title="Import finished" data-testid="import-summary">
+    <p>@DisplayName(AcademicTypes.Find(_report.Type)!) from @_report.Source: @_report.Count(ImportRowOutcome.Created) created,
+      @_report.Count(ImportRowOutcome.Updated) updated, @_report.Count(ImportRowOutcome.Unchanged) unchanged, @failed failed.</p>
+  </DcAlert>
+  @foreach (var warning in _report.Warnings)
+  {
+    <DcAlert Severity="DcSeverity.Info" data-testid="import-warning"><p>@warning</p></DcAlert>
+  }
+  <DcTable TItem="ImportRowResult" Caption="Result per row" Columns="Columns" Items="_report.Rows" EmptyText="The file has no data rows." data-testid="import-report" />
+}
+
+@code {
+    private static readonly DcTableColumn<ImportRowResult>[] Columns =
+    [
+        new("Line", r => r.Line),
+        new("ID", r => r.ExternalId),
+        new("Result", r => r.Outcome.ToString().ToLowerInvariant()),
+        new("Error code", Template: r => @<code>@r.Error?.Code</code>),
+        new("Message", r => r.Message),
+    ];
+
+    private readonly ImportForm _form = new();
+    private IBrowserFile? _file;
+    private Error? _error;
+    private ImportReport? _report;
+    private bool _busy;
+
+    private static string DisplayName(AcademicType type) =>
+        char.ToUpperInvariant(type.Name[0]) + type.Name[1..].Replace('-', ' ');
+
+    private void FileChanged(InputFileChangeEventArgs e) => _file = e.File;
+
+    private async Task ImportAsync()
+    {
+        _report = null;
+        _error = null;
+        if (_file is null)
+        {
+            _error = CsvReader.FileError(CsvReader.EmptyCode, "Choose a CSV file.");
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            using var scope = Scopes.CreateScope();
+            var importer = scope.ServiceProvider.GetRequiredService<AcademicImporter>();
+            // The reader stops after the configured maximum, so the stream limit itself is not the guard.
+            await using var stream = _file.OpenReadStream(long.MaxValue);
+            var result = await importer.ImportAsync(AcademicTypes.Find(_form.Type)!, _form.Source, stream, CancellationToken.None);
+            _report = result.Value;
+            _error = result.Error;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private sealed class ImportForm
+    {
+        [Required(ErrorMessage = "Choose a type.")]
+        public string Type { get; set; } = AcademicTypes.All[0].Name;
+
+        [Required(ErrorMessage = "Enter a source.")]
+        public string Source { get; set; } = "SIS";
+    }
+}

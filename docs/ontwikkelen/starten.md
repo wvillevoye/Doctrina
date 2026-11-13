@@ -58,18 +58,38 @@ Klik op **Sign in**. Je komt bij Keycloak; log in met een testaccount:
 
 | Account | Wachtwoord | Rollen | Wat je ziet |
 |---|---|---|---|
-| `student` | `student` | `student` | profiel zonder permissies |
-| `docent` | `docent` | `employee` | profiel zonder permissies |
-| `beheerder` | `beheerder` | `admin`, `employee` | alle permissies van ingeschakelde modules (`admin` → `*`) |
+| `student` | `student` | `student` | **My courses** (na het importeren van de testdata, zie §5) |
+| `docent` | `docent` | `employee` | **My courses**, als lecturer |
+| `beheerder` | `beheerder` | `admin`, `employee` | alle permissies van ingeschakelde modules (`admin` → `*`), ook **Academic** en **Import** |
 | bv. `femke.coenen` | `test123` | wisselend | een van de 250 nepgebruikers |
 
 Na het inloggen ga je naar **My profile** (`/profile`): naam, persoonsnummer (`personId`, bv. `I6000001`), de issuer
 (`http://localhost:8080/realms/doctrina`), je rollen en je permissies, met per rol waar ze vandaan komen. **Sign out**
 beëindigt de sessie bij Doctrina én bij Keycloak.
 
-Welke rol welke permissies geeft, staat in `Authorization:RolePermissions` in `appsettings.json`.
+Welke rol welke permissies geeft, staat in `Authorization:RolePermissions` in `appsettings.json` (en voor de module
+Academic in `appsettings.Development.json`).
 
-## 5. De API proberen
+## 5. Academic test data
+
+In Development the **Academic** module is switched on (`Modules:Enabled` in `appsettings.Development.json`); its
+schema `academic` is created on start-up. The database starts empty. The dev-stack has CSV files with the same people
+as in Keycloak (same `personId`), plus organizations, sessions, courses, offerings and enrolments:
+
+1. Sign in as `beheerder` and open **Academic** → **Import** (`/academic/import`).
+2. Import the files from `dev-stack/data/` one by one, with source `SIS`, in this order (later files refer to earlier ones):
+   `organizations.csv`, `academic-sessions.csv`, `courses.csv`, `course-offerings.csv`, `persons.csv`, `associations.csv`.
+   Choose the matching type each time. Every row should say `created`; importing a file again says `unchanged`.
+3. Sign out and sign in as `student`: **My courses** (`/my-courses`) shows three courses. As `docent` you see two, as lecturer.
+
+Under **Academic** (`/academic`) the admin pages list every type with search and a detail page per record. They are
+read-only: changes go through the source (CSV now, REST later).
+
+The CSV files are generated together with the realm by `dev-stack/scripts/generate-realm.ps1` (see
+`dev-stack/README.md`). The format: one file per type, a header row with OOAPI field names, `,` or `;`, UTF-8 with or
+without BOM, dates as `YYYY-MM-DD`, and an optional `status` column (`active` or `toBeDeleted`).
+
+## 6. De API proberen
 
 De API (`/api/v1`) accepteert alleen bearer-tokens. Een systeemtoken (client credentials) haal je zo op:
 
@@ -82,7 +102,7 @@ Invoke-RestMethod https://localhost:5001/api/v1/me -Headers @{ Authorization = "
 De documentatie van de API staat in Development op https://localhost:5001/scalar (OpenAPI-document:
 `/openapi/v1.json`). Health: `/health/live` en `/health/ready`.
 
-## 6. Inloggen via Microsoft Entra ID
+## 7. Inloggen via Microsoft Entra ID
 
 Keycloak kan Entra ID als identity provider doorgeven. Eenmalig inrichten: zie
 [doctrina-integratie.md](../doctrina-integratie.md#entra-koppelen-lokaal-via-keycloak) en draai daarna
@@ -97,7 +117,7 @@ Daarna overslaan van het Keycloak-scherm, zodat je direct naar Microsoft gaat: z
 
 Laat de waarde leeg om weer met de testaccounts in te loggen. Doctrina zelf verandert niet: alleen de configuratie.
 
-## 7. Tests draaien
+## 8. Tests draaien
 
 ```powershell
 dotnet test                              # alle tests: geen Keycloak en geen Docker nodig (nagebootste provider, LocalDB)

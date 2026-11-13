@@ -133,6 +133,6 @@ public sealed class DeThemakeuzeStaatInDeHeader(DoctrinaHostFactory factory) : I
 
         Assert.Equal(["light", "dark", "system"], options.Select(b => b.GetAttribute("value")));
         Assert.Equal(["false", "true", "false"], options.Select(b => b.GetAttribute("aria-pressed")));
-        Assert.Equal("Dark",options[1].TextContent.Trim());
+        Assert.Equal("Dark", options[1].TextContent.Trim());
     }
 }

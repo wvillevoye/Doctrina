@@ -43,7 +43,7 @@ public sealed class ElkePaginaHeeftDezelfdeToegankelijkeOpbouw(DoctrinaHostFacto
         Assert.Equal("#content", first.GetAttribute("href"));
         Assert.Single(page.QuerySelectorAll("body > header"));
         Assert.NotNull(page.QuerySelector("header nav[aria-label='Main menu']"));
-        Assert.Equal("content",page.QuerySelector("body > main")?.Id);
+        Assert.Equal("content", page.QuerySelector("body > main")?.Id);
         Assert.Single(page.QuerySelectorAll("main h1"));
         Assert.Equal("Home · Doctrina", page.Title);
     }
@@ -57,7 +57,7 @@ public sealed class ElkePaginaHeeftDezelfdeToegankelijkeOpbouw(DoctrinaHostFacto
 
         Assert.Single(page.QuerySelectorAll("title"));
         Assert.Equal("My profile · Doctrina", page.Title);
-        Assert.Equal("My profile",page.QuerySelector("main h1")?.TextContent);
+        Assert.Equal("My profile", page.QuerySelector("main h1")?.TextContent);
     }
 
     [Fact]
@@ -92,7 +92,7 @@ public sealed class HetAccountgedeelteToontWieErIsIngelogd(DoctrinaHostFactory f
         var signIn = page.QuerySelector("header [data-testid=sign-in]");
 
         Assert.NotNull(signIn);
-        Assert.Equal("Sign in",signIn.TextContent.Trim());
+        Assert.Equal("Sign in", signIn.TextContent.Trim());
         Assert.Equal("/sign-in?returnUrl=%2F%3Ftab%3D2", signIn.GetAttribute("href"));
         Assert.Null(page.QuerySelector("[data-testid=account-name]"));
     }
@@ -109,8 +109,8 @@ public sealed class HetAccountgedeelteToontWieErIsIngelogd(DoctrinaHostFactory f
         Assert.NotNull(toggle);
         Assert.NotNull(menu);
         Assert.Equal("Sanne Student", toggle.QuerySelector("[data-testid=account-name]")?.TextContent);
-        Assert.Equal("My profile",menu.QuerySelector("a[href='/profile']")?.TextContent.Trim());
-        Assert.Equal("Sign out",menu.QuerySelector("form[action='/sign-out'] button[type=submit]")?.TextContent.Trim());
+        Assert.Equal("My profile", menu.QuerySelector("a[href='/profile']")?.TextContent.Trim());
+        Assert.Equal("Sign out", menu.QuerySelector("form[action='/sign-out'] button[type=submit]")?.TextContent.Trim());
         Assert.Null(page.QuerySelector("[data-testid=sign-in]"));
     }
 }
@@ -127,7 +127,7 @@ public sealed class HetHoofdmenuWerktOpElkSchermformaat(DoctrinaHostFactory fact
         var page = Html.Parse(await browser.SignInAndGetAsync("/profile", factory.Idp, StubUser.Student, Ct));
         var current = page.QuerySelectorAll("nav[aria-label='Main menu'] a[aria-current=page]");
 
-        Assert.Equal("My profile",Assert.Single(current).TextContent);
+        Assert.Equal("My profile", Assert.Single(current).TextContent);
         Assert.Equal("Menu", page.QuerySelector("nav[aria-label='Main menu'] button[popovertarget]")?.TextContent.Trim());
     }
 }
@@ -143,7 +143,7 @@ public sealed class NietToegestaanInDeRouter : IDisposable
 
         var view = _context.Render<NotAuthorized>();
 
-        Assert.Equal("Access denied",view.Find("h1").TextContent);
+        Assert.Equal("Access denied", view.Find("h1").TextContent);
     }
 
     [Fact]

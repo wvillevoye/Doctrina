@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Academic.Organization.Invalid" xml:space="preserve">
+    <value>Ongeldige organisatie</value>
+  </data>
+  <data name="Academic.Organization.ReferenceNotFound" xml:space="preserve">
+    <value>Verwezen record niet gevonden voor deze organisatie</value>
+  </data>
+  <data name="Academic.Organization.Duplicate" xml:space="preserve">
+    <value>Dubbele organisatie</value>
+  </data>
+  <data name="Academic.Organization.Conflict" xml:space="preserve">
+    <value>De organisatie is tegelijk gewijzigd</value>
+  </data>
+  <data name="Academic.AcademicSession.Invalid" xml:space="preserve">
+    <value>Ongeldige periode</value>
+  </data>
+  <data name="Academic.AcademicSession.ReferenceNotFound" xml:space="preserve">
+    <value>Verwezen record niet gevonden voor deze periode</value>
+  </data>
+  <data name="Academic.AcademicSession.Duplicate" xml:space="preserve">
+    <value>Dubbele periode</value>
+  </data>
+  <data name="Academic.AcademicSession.Conflict" xml:space="preserve">
+    <value>De periode is tegelijk gewijzigd</value>
+  </data>
+  <data name="Academic.Course.Invalid" xml:space="preserve">
+    <value>Ongeldige cursus</value>
+  </data>
+  <data name="Academic.Course.ReferenceNotFound" xml:space="preserve">
+    <value>Verwezen record niet gevonden voor deze cursus</value>
+  </data>
+  <data name="Academic.Course.Duplicate" xml:space="preserve">
+    <value>Dubbele cursus</value>
+  </data>
+  <data name="Academic.Course.Conflict" xml:space="preserve">
+    <value>De cursus is tegelijk gewijzigd</value>
+  </data>
+  <data name="Academic.CourseOffering.Invalid" xml:space="preserve">
+    <value>Ongeldige uitvoering</value>
+  </data>
+  <data name="Academic.CourseOffering.ReferenceNotFound" xml:space="preserve">
+    <value>Verwezen record niet gevonden voor deze uitvoering</value>
+  </data>
+  <data name="Academic.CourseOffering.Duplicate" xml:space="preserve">
+    <value>Dubbele uitvoering</value>
+  </data>
+  <data name="Academic.CourseOffering.Conflict" xml:space="preserve">
+    <value>De uitvoering is tegelijk gewijzigd</value>
+  </data>
+  <data name="Academic.Person.Invalid" xml:space="preserve">
+    <value>Ongeldige persoon</value>
+  </data>
+  <data name="Academic.Person.ReferenceNotFound" xml:space="preserve">
+    <value>Verwezen record niet gevonden voor deze persoon</value>
+  </data>
+  <data name="Academic.Person.Duplicate" xml:space="preserve">
+    <value>Dubbele persoon</value>
+  </data>
+  <data name="Academic.Person.Conflict" xml:space="preserve">
+    <value>De persoon is tegelijk gewijzigd</value>
+  </data>
+  <data name="Academic.Association.Invalid" xml:space="preserve">
+    <value>Ongeldige inschrijving</value>
+  </data>
+  <data name="Academic.Association.ReferenceNotFound" xml:space="preserve">
+    <value>Verwezen record niet gevonden voor deze inschrijving</value>
+  </data>
+  <data name="Academic.Association.Duplicate" xml:space="preserve">
+    <value>Dubbele inschrijving</value>
+  </data>
+  <data name="Academic.Association.Conflict" xml:space="preserve">
+    <value>De inschrijving is tegelijk gewijzigd</value>
+  </data>
+  <data name="Academic.Import.Empty" xml:space="preserve">
+    <value>Leeg bestand</value>
+  </data>
+  <data name="Academic.Import.MissingColumns" xml:space="preserve">
+    <value>Verplichte kolommen ontbreken</value>
+  </data>
+  <data name="Academic.Import.TooLarge" xml:space="preserve">
+    <value>Bestand te groot</value>
+  </data>
+  <data name="Academic.Import.InvalidSource" xml:space="preserve">
+    <value>Ongeldige bron</value>
+  </data>
+</root>

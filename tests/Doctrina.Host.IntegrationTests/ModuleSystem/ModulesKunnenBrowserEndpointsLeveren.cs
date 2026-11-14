@@ -58,7 +58,7 @@ public sealed class ModulesKunnenBrowserEndpointsLeveren(DoctrinaHostFactory fac
     }
 
     [Fact]
-    public async Task BrowserEndpointKanExpliciotAnoniemZijn()
+    public async Task BrowserEndpointKanExplicietAnoniemZijn()
     {
         using var host = factory.WithModules([Module()], SampleModule.ModuleName);
         using var browser = host.CreateBrowser();

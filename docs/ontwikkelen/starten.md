@@ -132,6 +132,14 @@ Files are kept in a folder (`Content:Files:Path`, by default `App_Data/content` 
 ignored by Git), as `{offering}/{item}`, with the file name and size in the database. **Back up that folder together
 with the database**, and use a shared folder when more than one web server runs Doctrina.
 
+#### Start a new offering from an earlier one
+
+An offering without sections shows the card **Copy content** on its **Manage content** page when the course has other
+offerings. Choose the offering to copy from and press **Copy content**: all sections and items (pages, files, links and
+tool links) are copied as **drafts**, so students see nothing until you publish. Files are copied too. Items that cannot
+be copied (a tool that no longer exists, a file that is gone) are skipped and counted in the message. The source stays
+as it is, and you must be allowed to manage the content of both offerings.
+
 ### LTI tools
 
 With **Lti** switched on (it is in Development), Doctrina is an LTI 1.3 platform: a teacher starts an external tool from

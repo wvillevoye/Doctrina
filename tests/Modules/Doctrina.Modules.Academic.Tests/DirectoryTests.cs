@@ -75,3 +75,37 @@ public sealed class RollenVanDeIngelogdeGebruikerInEenUitvoering
         Assert.Empty(await Roles(lecturer.PersonId, Guid.NewGuid()));
     }
 }
+
+// Spec course-content of change add-course-templates; task 1.1. Class = requirement, method = scenario.
+public sealed class ContentKopierenNaarEenLegeUitvoering
+{
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
+
+    [Fact]
+    public async Task AcademicGeeftDeAndereUitvoeringenVanDezelfdeCursus()
+    {
+        await using var db = await AcademicDatabase.CreateAsync(Ct);
+        await using var context = db.CreateContext();
+        var course = new Doctrina.Modules.Academic.Domain.Course { ExternalId = "BIO101", Source = "SIS", Name = "Cell biology" };
+        var other = new Doctrina.Modules.Academic.Domain.Course { ExternalId = "WIS201", Source = "SIS", Name = "Algebra" };
+        Doctrina.Modules.Academic.Domain.AcademicSession Session(string id, int year) => new()
+        {
+            ExternalId = id, Source = "SIS", Name = id, AcademicSessionType = Doctrina.Modules.Academic.Domain.AcademicSessionType.AcademicYear,
+            StartDate = new DateOnly(year, 9, 1), EndDate = new DateOnly(year + 1, 8, 31),
+        };
+        Doctrina.Modules.Academic.Domain.CourseOffering Offering(string id, Doctrina.Modules.Academic.Domain.Course c, int year) =>
+            new() { ExternalId = id, Source = "SIS", Name = id, Course = c, AcademicSession = Session("S" + id, year) };
+        var (y24, y25, y26) = (Offering("BIO-2024", course, 2024), Offering("BIO-2025", course, 2025), Offering("BIO-2026", course, 2026));
+        var gone = Offering("BIO-GONE", course, 2023);
+        gone.Status = Doctrina.Core.Entities.EntityStatus.ToBeDeleted;
+        context.AddRange(y24, y25, y26, gone, Offering("WIS-2026", other, 2026));
+        await context.SaveChangesAsync(Ct);
+        var directory = new AcademicDirectory(context, new CurrentPerson(context));
+
+        var siblings = await directory.SiblingOfferingsAsync(y25.Id, Ct);
+        var unknown = await directory.SiblingOfferingsAsync(Guid.NewGuid(), Ct);
+
+        Assert.Equal(["BIO-2026", "BIO-2024"], siblings.Select(o => o.ExternalId));
+        Assert.Empty(unknown);
+    }
+}

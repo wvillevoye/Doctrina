@@ -27,6 +27,23 @@
     }
     <DcResult Error="_error" />
 
+    @if (_sections.Count == 0 && _siblings.Count > 0)
+    {
+      <DcCard Title="Copy content">
+        <DcForm Model="_copy" OnValidSubmit="CopyAsync" FormName="copy-content" data-testid="copy-content">
+          <p>Start from the content of another run of this course. Everything is copied as a draft.</p>
+          <DcSelect TValue="string" Label="Copy from" Required @bind-Value="_copy.SourceId">
+            <option value="">Choose an offering…</option>
+            @foreach (var sibling in _siblings)
+            {
+              <option value="@sibling.Id.ToString("D")">@sibling.Name</option>
+            }
+          </DcSelect>
+          <div class="dc-form__actions"><DcButton Type="submit" Icon="plus" Busy="_copying">Copy content</DcButton></div>
+        </DcForm>
+      </DcCard>
+    }
+
     @foreach (var section in _sections)
     {
       <DcCard Title="@section.Title" data-testid="section">
@@ -172,6 +189,9 @@
     private string? _message;
     private int _maxSizeMb;
     private bool _uploading;
+    private bool _copying;
+    private IReadOnlyList<OfferingInfo> _siblings = [];
+    private readonly CopyForm _copy = new();
     private IBrowserFile? _file;
     private readonly TitleForm _newSection = new();
     private readonly NewItemForm _newPage = new();
@@ -231,6 +251,36 @@
         _sections = await scope.ServiceProvider.GetRequiredService<ContentService>().SectionsAsync(OfferingId, includeDrafts: true, CancellationToken.None);
         var catalog = scope.ServiceProvider.GetService<ILtiToolCatalog>();
         _tools = catalog is null ? null : await catalog.ListAsync(CancellationToken.None);
+        _siblings = _sections.Count == 0
+            ? await scope.ServiceProvider.GetRequiredService<IAcademicDirectory>().SiblingOfferingsAsync(OfferingId, CancellationToken.None)
+            : [];
+    }
+
+    private async Task CopyAsync()
+    {
+        _copying = true;
+        try
+        {
+            _message = null;
+            var user = AuthenticationState is null ? new ClaimsPrincipal() : (await AuthenticationState).User;
+            using (var scope = Scopes.CreateScope())
+            {
+                var result = await scope.ServiceProvider.GetRequiredService<ContentService>().CopyFromAsync(user, OfferingId, Guid.Parse(_copy.SourceId!), CancellationToken.None);
+                _error = result.Error;
+                if (result.Value is { } copied)
+                {
+                    _message = $"Copied {copied.Sections} sections and {copied.Items} items as drafts."
+                        + (copied.Skipped > 0 ? $" {copied.Skipped} items could not be copied." : string.Empty);
+                    _copy.SourceId = null;
+                }
+            }
+
+            await ReloadAsync();
+        }
+        finally
+        {
+            _copying = false;
+        }
     }
 
     /// <summary>Runs one change in its own scope, shows the outcome and reloads.</summary>
@@ -381,6 +431,12 @@
     {
         [Required(ErrorMessage = "Enter a web address.")]
         public string? Url { get; set; }
+    }
+
+    private sealed class CopyForm
+    {
+        [Required(ErrorMessage = "Choose an offering.")]
+        public string? SourceId { get; set; }
     }
 
     private sealed class NewToolLinkForm : NewItemForm

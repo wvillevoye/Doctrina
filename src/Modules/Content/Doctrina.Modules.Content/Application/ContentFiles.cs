@@ -79,6 +79,21 @@ internal sealed partial class ContentFileStore(IOptions<ContentFileOptions> opti
             : null;
     }
 
+    /// <summary>Copies a file to another item (never overwriting); <see langword="false"/> when the source is not on disk.</summary>
+    public bool Copy(Guid sourceOfferingId, Guid sourceItemId, Guid targetOfferingId, Guid targetItemId)
+    {
+        var source = PathOf(sourceOfferingId, sourceItemId);
+        if (!File.Exists(source))
+        {
+            return false;
+        }
+
+        var target = PathOf(targetOfferingId, targetItemId);
+        Directory.CreateDirectory(System.IO.Path.GetDirectoryName(target)!);
+        File.Copy(source, target, overwrite: false);
+        return true;
+    }
+
     /// <summary>Removes the file; a failure is logged and leaves an unreachable file behind.</summary>
     public void Delete(Guid offeringId, Guid itemId)
     {

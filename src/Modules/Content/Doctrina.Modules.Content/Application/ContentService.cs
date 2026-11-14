@@ -21,13 +21,18 @@ internal static class ContentErrors
     public const string FileTooLarge = "Content.File.TooLarge";
     public const string FileMissing = "Content.File.Missing";
     public const string UnknownTool = "Content.Item.UnknownTool";
+    public const string CopyInvalidSource = "Content.Copy.InvalidSource";
+    public const string CopyTargetNotEmpty = "Content.Copy.TargetNotEmpty";
     public const string AccessForbidden = IContentDirectory.AccessForbiddenCode;
 
-    public static readonly string[] All = [SectionInvalid, SectionNotFound, ItemInvalid, ItemNotFound, FileTooLarge, FileMissing, UnknownTool, AccessForbidden];
+    public static readonly string[] All = [SectionInvalid, SectionNotFound, ItemInvalid, ItemNotFound, FileTooLarge, FileMissing, UnknownTool, CopyInvalidSource, CopyTargetNotEmpty, AccessForbidden];
 
     public static Error Invalid(string code, string field, string message) =>
         Error.Validation(code, message, new Dictionary<string, string[]> { [field] = [message] });
 }
+
+/// <summary>What a copy made: sections and items created, and items that could not be copied (design D5 of add-course-templates).</summary>
+internal sealed record CopyResult(int Sections, int Items, int Skipped);
 
 /// <summary>
 /// All changes to sections and items (design D3 of add-content). Every method saves once and returns a
@@ -36,6 +41,8 @@ internal static class ContentErrors
 /// </summary>
 internal sealed class ContentService(ContentDbContext db, IAcademicDirectory directory, ContentFileStore files, ILtiToolCatalog? tools = null)
 {
+    private readonly ContentAccess _access = new(directory);
+
     public const string DoctrinaSource = "Doctrina";
     public const string LinkMessage = "Enter a web address that starts with http:// or https://.";
 
@@ -231,6 +238,92 @@ internal sealed class ContentService(ContentDbContext db, IAcademicDirectory dir
 
         return item;
     }
+
+    /// <summary>
+    /// Copies the sections and items of another offering of the same course into an offering without sections, all as
+    /// drafts (design D3 to D6 of add-course-templates). Files are copied first and removed again when saving fails.
+    /// </summary>
+    public async Task<Result<CopyResult>> CopyFromAsync(ClaimsPrincipal user, Guid targetOfferingId, Guid sourceOfferingId, CancellationToken ct)
+    {
+        if (!await _access.CanManageAsync(user, targetOfferingId, ct))
+        {
+            return Forbidden();
+        }
+
+        if (!(await directory.SiblingOfferingsAsync(targetOfferingId, ct)).Any(o => o.Id == sourceOfferingId))
+        {
+            return ContentErrors.Invalid(ContentErrors.CopyInvalidSource, "source", "Choose another offering of this course.");
+        }
+
+        if (!await _access.CanManageAsync(user, sourceOfferingId, ct))
+        {
+            return Forbidden();
+        }
+
+        if (await db.Sections.AnyAsync(s => s.OfferingId == targetOfferingId && s.Status == EntityStatus.Active, ct))
+        {
+            return Error.Conflict(ContentErrors.CopyTargetNotEmpty, "This offering already has content.");
+        }
+
+        // Deleted sections keep their position, so numbering continues after them.
+        var position = await db.Sections.Where(s => s.OfferingId == targetOfferingId).MaxAsync(s => (int?)s.Position, ct) ?? 0;
+        var (sections, items, skipped) = (0, 0, 0);
+        var copied = new List<Guid>();
+        try
+        {
+            foreach (var from in await SectionsAsync(sourceOfferingId, includeDrafts: true, ct))
+            {
+                var section = New(new ContentSection { ExternalId = string.Empty, Source = DoctrinaSource, Title = from.Title });
+                section.OfferingId = targetOfferingId;
+                section.Position = ++position;
+                sections++;
+                var itemPosition = 0;
+                foreach (var source in from.Items)
+                {
+                    if (source.Kind == ContentItemKind.ToolLink && !(tools is not null && await tools.ExistsAsync(source.ToolId!.Value, ct)))
+                    {
+                        skipped++;
+                        continue;
+                    }
+
+                    var item = New(new ContentItem { ExternalId = string.Empty, Source = DoctrinaSource, Title = source.Title });
+                    item.SectionId = section.Id;
+                    item.Kind = source.Kind;
+                    (item.Body, item.Url, item.ToolId, item.FileName, item.ContentType, item.Size) =
+                        (source.Body, source.Url, source.ToolId, source.FileName, source.ContentType, source.Size);
+                    if (source.Kind == ContentItemKind.File)
+                    {
+                        if (!files.Copy(sourceOfferingId, source.Id, targetOfferingId, item.Id))
+                        {
+                            db.Remove(item); // not saved yet: only forgets it
+                            skipped++;
+                            continue;
+                        }
+
+                        copied.Add(item.Id);
+                    }
+
+                    item.Position = ++itemPosition;
+                    items++;
+                }
+            }
+
+            await db.SaveChangesAsync(ct);
+        }
+        catch
+        {
+            foreach (var id in copied)
+            {
+                files.Delete(targetOfferingId, id);
+            }
+
+            throw;
+        }
+
+        return new CopyResult(sections, items, skipped);
+    }
+
+    private static Error Forbidden() => Error.Forbidden(ContentErrors.AccessForbidden, "You may not manage the content of this course offering.");
 
     public static Error TooLarge(int maxSizeMb) =>
         ContentErrors.Invalid(ContentErrors.FileTooLarge, "file", $"The file is larger than {maxSizeMb} MB.");

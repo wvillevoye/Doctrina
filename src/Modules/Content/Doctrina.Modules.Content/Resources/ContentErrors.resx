@@ -36,4 +36,10 @@
   <data name="Content.Access.Forbidden" xml:space="preserve">
     <value>Geen toegang tot de content</value>
   </data>
+  <data name="Content.Copy.InvalidSource" xml:space="preserve">
+    <value>Ongeldige bron om te kopiëren</value>
+  </data>
+  <data name="Content.Copy.TargetNotEmpty" xml:space="preserve">
+    <value>De uitvoering heeft al content</value>
+  </data>
 </root>

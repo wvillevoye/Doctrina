@@ -25,6 +25,12 @@ public interface IAcademicDirectory
     /// <summary>The person of the signed-in user (linked via personId, then issuer + oid), or <see langword="null"/>.</summary>
     Task<Guid?> CurrentPersonIdAsync(ClaimsPrincipal user, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// The other active offerings of the same course as <paramref name="offeringId"/>, newest session first (design D2 of
+    /// add-course-templates); empty for an unknown or deleted offering.
+    /// </summary>
+    Task<IReadOnlyList<OfferingInfo>> SiblingOfferingsAsync(Guid offeringId, CancellationToken cancellationToken);
+
     /// <summary>Name and e-mail of an active person, or <see langword="null"/>.</summary>
     Task<PersonInfo?> FindPersonAsync(Guid personId, CancellationToken cancellationToken);
 

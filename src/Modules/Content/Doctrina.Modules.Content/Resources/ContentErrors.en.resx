@@ -36,4 +36,10 @@
   <data name="Content.Access.Forbidden" xml:space="preserve">
     <value>No access to the content</value>
   </data>
+  <data name="Content.Copy.InvalidSource" xml:space="preserve">
+    <value>Invalid source to copy from</value>
+  </data>
+  <data name="Content.Copy.TargetNotEmpty" xml:space="preserve">
+    <value>The offering already has content</value>
+  </data>
 </root>

@@ -39,6 +39,17 @@ internal sealed class AcademicDirectory(AcademicDbContext db, CurrentPerson curr
             : offering;
     }
 
+    public Task<IReadOnlyList<OfferingInfo>> SiblingOfferingsAsync(Guid offeringId, CancellationToken cancellationToken) =>
+        SerializedAsync<IReadOnlyList<OfferingInfo>>(async () =>
+        {
+            var rows = await db.CourseOfferings.AsNoTracking()
+                .Where(o => o.Id != offeringId && o.Status == EntityStatus.Active
+                    && o.Course.Offerings.Any(x => x.Id == offeringId && x.Status == EntityStatus.Active))
+                .Select(o => new { Info = new OfferingInfo(o.Id, o.ExternalId, o.Name, o.Course.Name, o.AcademicSession.Name), o.AcademicSession.StartDate })
+                .ToListAsync(cancellationToken);
+            return [.. rows.OrderByDescending(r => r.StartDate).ThenBy(r => r.Info.Name, StringComparer.CurrentCulture).Select(r => r.Info)];
+        }, cancellationToken);
+
     public Task<Guid?> CurrentPersonIdAsync(ClaimsPrincipal user, CancellationToken cancellationToken) =>
         SerializedAsync(async () => (await currentPerson.FindAsync(user, cancellationToken))?.Id, cancellationToken);
 

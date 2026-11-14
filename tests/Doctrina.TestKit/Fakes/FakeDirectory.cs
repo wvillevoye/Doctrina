@@ -16,7 +16,19 @@ public sealed class FakeDirectory : IAcademicDirectory
 
     public Guid OfferingId { get; } = new("11111111-0000-0000-0000-000000000001");
 
+    /// <summary>A second offering of the same course (add-course-templates): the usual source of a copy.</summary>
+    public Guid SourceOfferingId { get; } = new("11111111-0000-0000-0000-000000000002");
+
+    /// <summary>An offering of another course, so it has no siblings.</summary>
+    public Guid OtherCourseOfferingId { get; } = new("11111111-0000-0000-0000-000000000003");
+
+    /// <summary><see cref="OfferingId"/> and <see cref="SourceOfferingId"/> are offerings of the same course; set to false to make them unrelated.</summary>
+    public bool HasSiblings { get; set; } = true;
+
     public List<OfferingMember> Members { get; } = [];
+
+    /// <summary>The members of <see cref="SourceOfferingId"/>; add an existing member to give them a role there too.</summary>
+    public List<OfferingMember> SourceMembers { get; } = [];
 
     public OfferingMember Add(string externalId, OfferingRole role = OfferingRole.Student)
     {
@@ -34,9 +46,22 @@ public sealed class FakeDirectory : IAcademicDirectory
             "test"));
 
     public Task<Result<OfferingInfo>> FindOfferingAsync(Guid offeringId, CancellationToken cancellationToken) =>
-        Task.FromResult(offeringId == OfferingId
-            ? Result<OfferingInfo>.Success(new OfferingInfo(OfferingId, "BIO101-2026-P1", "Cell biology (2026-P1)", "Cell biology", "Period 1"))
+        Task.FromResult(Info(offeringId) is { } info
+            ? Result<OfferingInfo>.Success(info)
             : Result<OfferingInfo>.Failure(Error.NotFound("Academic.CourseOffering.NotFound", "Not found.")));
+
+    private OfferingInfo? Info(Guid id) =>
+        id == OfferingId ? new OfferingInfo(OfferingId, "BIO101-2026-P1", "Cell biology (2026-P1)", "Cell biology", "Period 1")
+        : id == SourceOfferingId ? new OfferingInfo(SourceOfferingId, "BIO101-2025-P1", "Cell biology (2025-P1)", "Cell biology", "Period 1")
+        : id == OtherCourseOfferingId ? new OfferingInfo(OtherCourseOfferingId, "WIS201-2026-P1", "Algebra (2026-P1)", "Algebra", "Period 1")
+        : null;
+
+    public Task<IReadOnlyList<OfferingInfo>> SiblingOfferingsAsync(Guid offeringId, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<OfferingInfo>>(
+            !HasSiblings ? []
+            : offeringId == OfferingId ? [Info(SourceOfferingId)!]
+            : offeringId == SourceOfferingId ? [Info(OfferingId)!]
+            : []);
 
     public Task<Guid?> CurrentPersonIdAsync(ClaimsPrincipal user, CancellationToken cancellationToken) =>
         Task.FromResult(Guid.TryParse(user.FindFirst(PersonClaim)?.Value, out var id) ? id : (Guid?)null);
@@ -47,5 +72,6 @@ public sealed class FakeDirectory : IAcademicDirectory
             : null);
 
     public Task<IReadOnlyList<OfferingMember>> MembersAsync(Guid offeringId, CancellationToken cancellationToken) =>
-        Task.FromResult<IReadOnlyList<OfferingMember>>(offeringId == OfferingId ? [.. Members] : []);
+        Task.FromResult<IReadOnlyList<OfferingMember>>(
+            offeringId == OfferingId ? [.. Members] : offeringId == SourceOfferingId ? [.. SourceMembers] : []);
 }

@@ -280,7 +280,7 @@ GroupSets binnen een offering; groepen handmatig, willekeurig of zelf-inschrijve
 
 ### 6.3 Templates
 Een **Course** dient als template; een **CourseOffering** wordt daaruit aangemaakt (structuur, componenten, content, LTI-links kopiëren). Daarnaast herbruikbare **contentblok-templates**.
-> *Open vraag: bedoelen we vooral cursussjablonen, pagina-/layouttemplates, of beide?*
+> *Eerste stap (`add-course-templates`, besluit 2026-11-14): een lege uitvoering vullen met de content van een eerdere uitvoering van dezelfde cursus (handmatig, als concept). Contentblok-templates en een template-inhoud per `Course` zijn nog open.*
 
 ### 6.4 Content
 Modules/secties binnen een offering, pagina's, bestanden, links, LTI-items; publiceren / verbergen; volgorde.

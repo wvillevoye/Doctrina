@@ -8,10 +8,10 @@ dezelfde validatie en upsert als elke andere invoerroute.
 
 ### Requirement: Beheerders importeren één CSV-bestand per type
 Een gebruiker met de permissie `Academic.Import` SHALL op de pagina "Import" een CSV-bestand voor één type
-(`organizations`, `academic-sessions`, `courses`, `course-offerings`, `persons` of `associations`) of een zip met meerdere
-CSV-bestanden kunnen uploaden, met een bron (`Source`, standaard "SIS") en optioneel "dry run". De upload SHALL een
-importjob maken en de gebruiker naar de pagina van die job sturen. Elke regel SHALL via de validator en de
-upsert-service van zijn type gaan. Gebruikers zonder `Academic.Import` SHALL de pagina niet kunnen gebruiken.
+(`organizations`, `academic-sessions`, `courses`, `course-offerings`, `persons` of `associations`) of een zip kunnen
+uploaden, met een bron (standaard "SIS") en optioneel "dry run". De upload SHALL een importjob maken en naar de
+jobpagina sturen; elke regel gaat via de validator en upsert-service van zijn type. Zonder `Academic.Import` is de
+pagina niet bruikbaar.
 
 #### Scenario: Personen importeren
 - **GIVEN** een gebruiker met `Academic.Import` en een CSV met drie geldige personen

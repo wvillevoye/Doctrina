@@ -10,6 +10,7 @@ internal static class ContentLabels
     {
         ContentItemKind.Page => "Page",
         ContentItemKind.File => "File",
+        ContentItemKind.ToolLink => "Tool",
         _ => "Link",
     };
 
@@ -17,6 +18,8 @@ internal static class ContentLabels
     public static string Size(long bytes) => bytes < 1024 * 1024
         ? string.Create(CultureInfo.InvariantCulture, $"{Math.Max(1, bytes / 1024)} KB")
         : string.Create(CultureInfo.InvariantCulture, $"{bytes / (1024.0 * 1024.0):0.#} MB");
+
+    public static string LaunchUrl(Guid itemId) => $"/lti/launch/{itemId:D}";
 
     public static string ItemUrl(Guid offeringId, Guid itemId) => $"/courses/{offeringId:D}/content/{itemId:D}";
 }

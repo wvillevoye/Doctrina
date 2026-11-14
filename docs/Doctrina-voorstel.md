@@ -417,7 +417,10 @@ Wat Bootstrap herkenbaar maakt en wij aanpassen: font, knoppen (vorm, kleur, gew
 | 5 | `add-api-and-import` | REST per resource (incl. upsert op ExternalId, batch) + CSV/zip-import, dry-run, jobs, rapportage | 3 |
 | 6 | `add-ooapi-interop` | OOAPI v5-endpoints aanbieden/consumeren | 3, 5 |
 | 7 | `add-content` | Content-structuur binnen offerings | 3 |
-| 8 | `add-lti-platform` | LTI 1.3 core + Deep Linking + AGS + NRPS | 3, 7 |
+| 8 | `add-lti-platform` | LTI 1.3 core (tools registreren, sleutels/JWKS, resource link launch) | 3, 7 |
+| 8a | `add-lti-deep-linking` | LTI Deep Linking 2.0 (tool links kiezen in de tool) | 8 |
+| 8b | `add-lti-ags` | LTI Assignment and Grade Services (cijfers) | 8 |
+| 8c | `add-lti-nrps` | LTI Names and Role Provisioning Services (deelnemers) | 8 |
 | 9 | `add-course-templates` | Offering aanmaken vanuit cursus-template | 3, 7, 8 |
 | later | `add-oneroster-interop`, `add-common-cartridge-import`, `add-lti-tool-role`, `add-xapi` | | |
 

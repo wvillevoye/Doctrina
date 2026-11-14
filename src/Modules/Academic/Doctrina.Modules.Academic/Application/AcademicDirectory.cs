@@ -42,6 +42,17 @@ internal sealed class AcademicDirectory(AcademicDbContext db, CurrentPerson curr
     public Task<Guid?> CurrentPersonIdAsync(ClaimsPrincipal user, CancellationToken cancellationToken) =>
         SerializedAsync(async () => (await currentPerson.FindAsync(user, cancellationToken))?.Id, cancellationToken);
 
+    public Task<PersonInfo?> FindPersonAsync(Guid personId, CancellationToken cancellationToken) =>
+        SerializedAsync(async () =>
+        {
+            var p = await db.Persons.AsNoTracking()
+                .Where(x => x.Id == personId && x.Status == EntityStatus.Active)
+                .SingleOrDefaultAsync(cancellationToken);
+            return p is null
+                ? null
+                : new PersonInfo(p.FullName, p.GivenName, string.Join(' ', new[] { p.SurnamePrefix, p.Surname }.Where(s => !string.IsNullOrEmpty(s))), p.Mail);
+        }, cancellationToken);
+
     public Task<IReadOnlyList<OfferingMember>> MembersAsync(Guid offeringId, CancellationToken cancellationToken) =>
         SerializedAsync(() => MembersCoreAsync(offeringId, cancellationToken), cancellationToken);
 

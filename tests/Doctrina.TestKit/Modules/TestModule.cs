@@ -29,6 +29,9 @@ public class TestModule(string name, params string[] dependsOn) : IModule
     /// <summary>Extra endpoints onder <c>/api/v1</c>; alleen gekoppeld als de module is ingeschakeld.</summary>
     public Action<IEndpointRouteBuilder>? Endpoints { get; init; }
 
+    /// <summary>Extra browser-endpoints onder <c>/{naam}</c>; alleen gekoppeld als de module is ingeschakeld.</summary>
+    public Action<IEndpointRouteBuilder>? BrowserEndpoints { get; init; }
+
     public IReadOnlyCollection<NavItem> Navigation => NavItems;
 
     public IReadOnlyCollection<Permission> Permissions => DeclaredPermissions;
@@ -47,6 +50,8 @@ public class TestModule(string name, params string[] dependsOn) : IModule
     }
 
     public virtual void MapEndpoints(IEndpointRouteBuilder api) => Endpoints?.Invoke(api);
+
+    public virtual void MapBrowserEndpoints(IEndpointRouteBuilder app) => BrowserEndpoints?.Invoke(app);
 }
 
 /// <summary>De testmodules <c>A</c> en <c>B</c> uit de specs.</summary>

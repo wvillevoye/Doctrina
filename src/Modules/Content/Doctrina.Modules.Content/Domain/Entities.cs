@@ -16,9 +16,9 @@ public sealed class ContentSection : ExchangeableEntity
 }
 
 /// <summary>The kind of a content item; stored as text.</summary>
-public enum ContentItemKind { Page, File, Link }
+public enum ContentItemKind { Page, File, Link, ToolLink }
 
-/// <summary>A page, file or link in a section. One table for all kinds; the kind decides which fields are used.</summary>
+/// <summary>A page, file, link or tool link in a section. One table for all kinds; the kind decides which fields are used.</summary>
 public sealed class ContentItem : ExchangeableEntity
 {
     public Guid SectionId { get; set; }
@@ -33,6 +33,9 @@ public sealed class ContentItem : ExchangeableEntity
 
     /// <summary>Link: an absolute http(s) address.</summary>
     public string? Url { get; set; }
+
+    /// <summary>Tool link: the registered LTI tool it starts. No foreign key; the Lti module owns the tool (design D4 of add-lti-platform).</summary>
+    public Guid? ToolId { get; set; }
 
     /// <summary>File: the original file name, content type and size in bytes. The bytes are on disk (design D5).</summary>
     public string? FileName { get; set; }

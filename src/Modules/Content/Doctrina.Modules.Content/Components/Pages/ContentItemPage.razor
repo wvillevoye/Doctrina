@@ -34,6 +34,10 @@
     {
       <MarkdownView Text="@_item.Body" />
     }
+    else if (_item.Kind == ContentItemKind.ToolLink)
+    {
+      <DcButton Variant="DcButtonVariant.Primary" Href="@ContentLabels.LaunchUrl(ItemId)" Icon="external-link" target="_blank" rel="noopener noreferrer" data-testid="launch">Launch</DcButton>
+    }
     else
     {
       <dl class="dc-details" data-testid="file-details">

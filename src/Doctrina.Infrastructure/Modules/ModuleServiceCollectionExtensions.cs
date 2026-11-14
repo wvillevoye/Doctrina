@@ -64,6 +64,22 @@ public static class ModuleServiceCollectionExtensions
         return api;
     }
 
+    /// <summary>
+    /// Koppelt de browser-endpoints van de ingeschakelde modules, elk onder <c>/{modulenaam}</c> en standaard met
+    /// inloggen vereist (spec module-system).
+    /// </summary>
+    public static IEndpointRouteBuilder MapDoctrinaBrowserEndpoints(this IEndpointRouteBuilder app)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+        var catalog = app.ServiceProvider.GetRequiredService<ModuleCatalog>();
+        foreach (var module in catalog.Enabled)
+        {
+            module.MapBrowserEndpoints(app.MapGroup("/" + module.Name.ToLowerInvariant()).RequireAuthorization());
+        }
+
+        return app;
+    }
+
     private sealed class ModuleServiceProviderFactory(IConfiguration configuration, ServiceProviderOptions options)
         : IServiceProviderFactory<IServiceCollection>
     {

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Lti.Tool.Invalid" xml:space="preserve">
+    <value>Invalid tool</value>
+  </data>
+  <data name="Lti.Tool.NameRequired" xml:space="preserve">
+    <value>Name is required</value>
+  </data>
+  <data name="Lti.Tool.InvalidUrl" xml:space="preserve">
+    <value>Invalid address</value>
+  </data>
+  <data name="Lti.Tool.RedirectUriRequired" xml:space="preserve">
+    <value>Redirect URI is required</value>
+  </data>
+  <data name="Lti.Tool.NotFound" xml:space="preserve">
+    <value>Tool not found</value>
+  </data>
+  <data name="Lti.Launch.UnknownClient" xml:space="preserve">
+    <value>Unknown client_id</value>
+  </data>
+  <data name="Lti.Launch.InvalidRedirectUri" xml:space="preserve">
+    <value>Invalid redirect_uri</value>
+  </data>
+  <data name="Lti.Launch.InvalidHint" xml:space="preserve">
+    <value>Invalid or expired lti_message_hint</value>
+  </data>
+  <data name="Lti.Launch.UserMismatch" xml:space="preserve">
+    <value>Request belongs to another user</value>
+  </data>
+  <data name="Lti.Launch.InvalidRequest" xml:space="preserve">
+    <value>Invalid authentication request</value>
+  </data>
+  <data name="Lti.Launch.Forbidden" xml:space="preserve">
+    <value>No access to this tool link</value>
+  </data>
+</root>

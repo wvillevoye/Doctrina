@@ -1,0 +1,191 @@
+using System.Globalization;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using Doctrina.Core.Results;
+using Doctrina.Modules.Academic.Contracts;
+using Doctrina.Modules.Content.Contracts;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Tokens;
+
+namespace Doctrina.Modules.Lti.Application;
+
+/// <summary>The authentication request of a tool (the query of <c>/lti/authorize</c>).</summary>
+internal sealed record AuthRequest(
+    string? Scope, string? ResponseType, string? ResponseMode, string? Prompt, string? ClientId,
+    string? RedirectUri, string? LoginHint, string? MessageHint, string? Nonce, string? State);
+
+/// <summary>What the browser posts to the tool: the signed <c>id_token</c> and the <c>state</c> of the tool.</summary>
+internal sealed record LaunchForm(string RedirectUri, string IdToken, string State);
+
+/// <summary>
+/// The launch flow of an LTI resource link (design D5 of add-lti-platform): login initiation in
+/// <see cref="StartAsync"/>, the authentication request of the tool in <see cref="AuthorizeAsync"/>. Nothing personal
+/// (names, hints, tokens) is logged.
+/// </summary>
+internal sealed class LaunchService(
+    IContentDirectory content,
+    ToolService tools,
+    IAcademicDirectory directory,
+    KeyService keys,
+    IDataProtectionProvider dataProtection,
+    TimeProvider time)
+{
+    public const string HintPurpose = "Lti.MessageHint";
+
+    /// <summary>How long an <c>lti_message_hint</c> is valid (design D8).</summary>
+    public static readonly TimeSpan HintLifetime = TimeSpan.FromMinutes(5);
+
+    /// <summary>How long an <c>id_token</c> is valid (spec: at most 5 minutes).</summary>
+    public static readonly TimeSpan TokenLifetime = TimeSpan.FromMinutes(5);
+
+    private IDataProtector HintProtector => dataProtection.CreateProtector(HintPurpose);
+
+    /// <summary>
+    /// Login initiation for a tool link: checks that the user may read it and returns the redirect to the login URL of
+    /// the tool with <c>iss</c>, <c>login_hint</c>, <c>target_link_uri</c>, <c>lti_message_hint</c>, <c>client_id</c> and
+    /// <c>lti_deployment_id</c>.
+    /// </summary>
+    public async Task<Result<Uri>> StartAsync(ClaimsPrincipal user, Guid itemId, string issuer, CancellationToken ct)
+    {
+        var link = await content.FindToolLinkAsync(user, itemId, ct);
+        if (link.Error is { } denied)
+        {
+            return denied;
+        }
+
+        var tool = await tools.FindAsync(link.Value!.ToolId, ct);
+        if (tool is null)
+        {
+            return ToolService.NotFound(link.Value.ToolId);
+        }
+
+        var subject = await SubjectAsync(user, ct);
+        var expires = time.GetUtcNow().Add(HintLifetime).ToUnixTimeSeconds();
+        var hint = HintProtector.Protect(string.Create(CultureInfo.InvariantCulture, $"{itemId:N}.{subject}.{expires}"));
+        var url = QueryHelpers.AddQueryString(tool.LoginUrl, new Dictionary<string, string?>
+        {
+            ["iss"] = issuer,
+            ["login_hint"] = subject,
+            ["target_link_uri"] = tool.LaunchUrl,
+            ["lti_message_hint"] = hint,
+            ["client_id"] = tool.ClientId,
+            ["lti_deployment_id"] = tool.DeploymentId,
+        });
+        return new Uri(url);
+    }
+
+    /// <summary>
+    /// The authentication request of the tool: validates it in the order of design D5 (never redirecting for an invalid
+    /// request) and returns the signed <c>id_token</c> for the form that is posted to the tool.
+    /// </summary>
+    public async Task<Result<LaunchForm>> AuthorizeAsync(ClaimsPrincipal user, AuthRequest request, string issuer, CancellationToken ct)
+    {
+        if (string.IsNullOrEmpty(request.ClientId) || await tools.FindByClientIdAsync(request.ClientId, ct) is not { } tool)
+        {
+            return Bad(LtiErrors.LaunchUnknownClient, "client_id", "The client_id is not known.");
+        }
+
+        // Before anything that could redirect: only a registered address ever receives a launch.
+        if (string.IsNullOrEmpty(request.RedirectUri) || !tool.RedirectUris.Split('\n').Contains(request.RedirectUri, StringComparer.Ordinal))
+        {
+            return Bad(LtiErrors.LaunchInvalidRedirectUri, "redirect_uri", "The redirect_uri is not registered for this tool.");
+        }
+
+        if (request.Scope != "openid" || request.ResponseType != "id_token" || request.ResponseMode != "form_post" || request.Prompt != "none")
+        {
+            return Bad(LtiErrors.LaunchInvalidRequest, "request", "Use scope=openid, response_type=id_token, response_mode=form_post and prompt=none.");
+        }
+
+        if (string.IsNullOrEmpty(request.Nonce) || string.IsNullOrEmpty(request.State) || string.IsNullOrEmpty(request.LoginHint) || string.IsNullOrEmpty(request.MessageHint))
+        {
+            return Bad(LtiErrors.LaunchInvalidRequest, "request", "The nonce, state, login_hint and lti_message_hint are required.");
+        }
+
+        if (OpenHint(request.MessageHint) is not var (itemId, subject))
+        {
+            return Bad(LtiErrors.LaunchInvalidHint, "lti_message_hint", "The lti_message_hint is not valid or has expired.");
+        }
+
+        if (subject != await SubjectAsync(user, ct) || request.LoginHint != subject)
+        {
+            return Error.Forbidden(LtiErrors.LaunchUserMismatch, "The request belongs to another user.");
+        }
+
+        // The item may have been hidden or deleted since the login initiation.
+        var link = await content.FindToolLinkAsync(user, itemId, ct);
+        if (link.IsFailure || link.Value!.ToolId != tool.Id)
+        {
+            return Error.Forbidden(LtiErrors.LaunchForbidden, "The tool link isn't available to you.");
+        }
+
+        var offering = await directory.FindOfferingAsync(link.Value.OfferingId, ct);
+        if (offering.Error is { } missing)
+        {
+            return missing;
+        }
+
+        var roles = await directory.CurrentRolesAsync(user, link.Value.OfferingId, ct);
+        var person = tool.SendName || tool.SendEmail
+            ? await FindPersonAsync(user, ct)
+            : null;
+        var now = time.GetUtcNow();
+        var payload = IdToken.Payload(
+            issuer, tool, subject, request.Nonce, now, TokenLifetime, link.Value, offering.Value!, roles,
+            tool.SendName ? person?.Name : null, tool.SendName ? person?.GivenName : null, tool.SendName ? person?.FamilyName : null, tool.SendEmail ? person?.Mail : null);
+        var key = await keys.ActiveAsync(ct);
+        var token = new JsonWebTokenHandler().CreateToken(payload, new SigningCredentials(key, SecurityAlgorithms.RsaSha256));
+        return new LaunchForm(request.RedirectUri, token, request.State);
+    }
+
+    /// <summary>
+    /// An opaque identifier of the signed-in user: the person in Academic, or for users without a person (e.g. an
+    /// administrator) a hash of their <c>sub</c>. Never an e-mail address or an external id.
+    /// </summary>
+    public async Task<string> SubjectAsync(ClaimsPrincipal user, CancellationToken ct)
+    {
+        if (await directory.CurrentPersonIdAsync(user, ct) is { } person)
+        {
+            return person.ToString("N");
+        }
+
+        var sub = user.FindFirst("sub")?.Value ?? user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+        return Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(sub)))[..32];
+    }
+
+    private async Task<SharedPerson?> FindPersonAsync(ClaimsPrincipal user, CancellationToken ct)
+    {
+        if (await directory.CurrentPersonIdAsync(user, ct) is { } id && await directory.FindPersonAsync(id, ct) is { } person)
+        {
+            return new SharedPerson(person.Name, person.GivenName, person.FamilyName, person.Mail ?? user.FindFirst("email")?.Value);
+        }
+
+        // No person in Academic: what the identity provider says about the user.
+        return new SharedPerson(user.FindFirst("name")?.Value, user.FindFirst("given_name")?.Value, user.FindFirst("family_name")?.Value, user.FindFirst("email")?.Value);
+    }
+
+    /// <summary>The item and user of a valid, unexpired <c>lti_message_hint</c>; <see langword="null"/> if it isn't one of ours or has expired.</summary>
+    private (Guid ItemId, string Subject)? OpenHint(string hint)
+    {
+        try
+        {
+            var parts = HintProtector.Unprotect(hint).Split('.');
+            return parts.Length == 3
+                && Guid.TryParseExact(parts[0], "N", out var itemId)
+                && long.TryParse(parts[2], NumberStyles.None, CultureInfo.InvariantCulture, out var expires)
+                && time.GetUtcNow().ToUnixTimeSeconds() < expires
+                    ? (itemId, parts[1])
+                    : null;
+        }
+        catch (CryptographicException)
+        {
+            return null;
+        }
+    }
+
+    private static Error Bad(string code, string field, string message) => LtiErrors.Invalid(code, field, message);
+
+    private sealed record SharedPerson(string? Name, string? GivenName, string? FamilyName, string? Mail);
+}

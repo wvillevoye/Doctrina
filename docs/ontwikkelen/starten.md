@@ -132,6 +132,27 @@ Files are kept in a folder (`Content:Files:Path`, by default `App_Data/content` 
 ignored by Git), as `{offering}/{item}`, with the file name and size in the database. **Back up that folder together
 with the database**, and use a shared folder when more than one web server runs Doctrina.
 
+### LTI tools
+
+With **Lti** switched on (it is in Development), Doctrina is an LTI 1.3 platform: a teacher starts an external tool from
+a course and students arrive in it without signing in again.
+
+1. Sign in as a user with `Lti.Manage` (role `admin`) and open **LTI tools** (`/lti/tools`). The page shows the platform
+   details to enter in the tool: the **issuer**, the **authorization endpoint** (`/lti/authorize`) and the **JWKS URL**
+   (`/lti/jwks.json`). Register a tool with the name, the login initiation URL, the launch URL, one or more redirect
+   URIs, and whether to share the name and e-mail address of the user (off by default). The page then shows the
+   **client id** and **deployment id** for the tool. **Rotate key** gives the platform a new signing key; the old one
+   stays in the JWKS for `Lti:Keys:RetireAfterDays` days (7).
+2. Sign in as `docent`, open **Cell biology** → **Manage content** and use **Add tool link** in a section, then publish
+   the item. Students see a **Launch** button that opens the tool in a new tab.
+
+`Lti:Issuer` sets the issuer; by default it is the address the request came in on (`https://localhost:5001` locally).
+Set it in production, because tools remember it.
+
+The login hints and the signing keys are protected with ASP.NET Core Data Protection. **In production the Data
+Protection key ring must be persistent** (and shared between servers); otherwise a restart invalidates launches that
+are under way and makes the stored private keys unreadable.
+
 ## 6. De API proberen
 
 De API (`/api/v1`) accepteert alleen bearer-tokens. Een systeemtoken (client credentials) haal je zo op:

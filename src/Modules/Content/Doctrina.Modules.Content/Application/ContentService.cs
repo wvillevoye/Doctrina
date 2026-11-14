@@ -3,8 +3,10 @@ using Doctrina.Core.Entities;
 using Doctrina.Core.Results;
 using Doctrina.Infrastructure.Authentication;
 using Doctrina.Modules.Academic.Contracts;
+using Doctrina.Modules.Content.Contracts;
 using Doctrina.Modules.Content.Domain;
 using Doctrina.Modules.Content.Infrastructure;
+using Doctrina.Modules.Lti.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Doctrina.Modules.Content.Application;
@@ -18,8 +20,10 @@ internal static class ContentErrors
     public const string ItemNotFound = "Content.Item.NotFound";
     public const string FileTooLarge = "Content.File.TooLarge";
     public const string FileMissing = "Content.File.Missing";
+    public const string UnknownTool = "Content.Item.UnknownTool";
+    public const string AccessForbidden = IContentDirectory.AccessForbiddenCode;
 
-    public static readonly string[] All = [SectionInvalid, SectionNotFound, ItemInvalid, ItemNotFound, FileTooLarge, FileMissing];
+    public static readonly string[] All = [SectionInvalid, SectionNotFound, ItemInvalid, ItemNotFound, FileTooLarge, FileMissing, UnknownTool, AccessForbidden];
 
     public static Error Invalid(string code, string field, string message) =>
         Error.Validation(code, message, new Dictionary<string, string[]> { [field] = [message] });
@@ -30,7 +34,7 @@ internal static class ContentErrors
 /// <see cref="Result"/>. Reading goes through <see cref="SectionsAsync"/> and <see cref="FindItemAsync"/>, so the
 /// visibility rule lives in one place.
 /// </summary>
-internal sealed class ContentService(ContentDbContext db, IAcademicDirectory directory, ContentFileStore files)
+internal sealed class ContentService(ContentDbContext db, IAcademicDirectory directory, ContentFileStore files, ILtiToolCatalog? tools = null)
 {
     public const string DoctrinaSource = "Doctrina";
     public const string LinkMessage = "Enter a web address that starts with http:// or https://.";
@@ -167,6 +171,17 @@ internal sealed class ContentService(ContentDbContext db, IAcademicDirectory dir
         CheckUrl(url) is { } invalid
             ? Task.FromResult<Result<ContentItem>>(invalid)
             : AddItemAsync(sectionId, ContentItemKind.Link, title, item => item.Url = url!.Trim(), ct);
+
+    /// <summary>Adds a link to a registered LTI tool; without the Lti module no tool exists (design D4 of add-lti-platform).</summary>
+    public async Task<Result<ContentItem>> AddToolLinkAsync(Guid sectionId, string? title, Guid toolId, CancellationToken ct)
+    {
+        if (tools is null || !await tools.ExistsAsync(toolId, ct))
+        {
+            return ContentErrors.Invalid(ContentErrors.UnknownTool, "tool", "Choose a tool.");
+        }
+
+        return await AddItemAsync(sectionId, ContentItemKind.ToolLink, title, item => item.ToolId = toolId, ct);
+    }
 
     /// <summary>
     /// Adds a file: first the bytes to disk, then the item; a failed save removes the file again (design D5). The
@@ -406,4 +421,28 @@ internal sealed class ContentAccess(IAcademicDirectory directory)
     }
 
     private static bool Has(ClaimsPrincipal user, string permission) => user.HasClaim(DoctrinaClaimTypes.Permission, permission);
+}
+
+/// <summary>The public contract of the Content module (design D1 of add-lti-platform).</summary>
+internal sealed class ContentDirectory(ContentDbContext db, ContentAccess access) : IContentDirectory
+{
+    public async Task<Result<ToolLinkInfo>> FindToolLinkAsync(ClaimsPrincipal user, Guid itemId, CancellationToken cancellationToken)
+    {
+        var item = await db.Items.AsNoTracking().Include(i => i.Section)
+            .FirstOrDefaultAsync(i => i.Id == itemId && i.Status == EntityStatus.Active && i.Section.Status == EntityStatus.Active, cancellationToken);
+        if (item is not { Kind: ContentItemKind.ToolLink, ToolId: { } toolId })
+        {
+            return Error.NotFound(IContentDirectory.ItemNotFoundCode, $"Item {itemId:D} was not found.");
+        }
+
+        var offeringId = item.Section.OfferingId;
+        if (!await access.CanReadAsync(user, offeringId, cancellationToken))
+        {
+            return Error.Forbidden(IContentDirectory.AccessForbiddenCode, "You may not read the content of this course offering.");
+        }
+
+        return item.IsVisible || await access.CanManageAsync(user, offeringId, cancellationToken)
+            ? new ToolLinkInfo(item.Id, offeringId, item.Title, toolId)
+            : Error.NotFound(IContentDirectory.ItemNotFoundCode, $"Item {itemId:D} was not found.");
+    }
 }

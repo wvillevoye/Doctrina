@@ -13,6 +13,9 @@ public enum OfferingRole { Student, Lecturer, TeachingAssistant, Coordinator }
 /// <summary>An active enrolment of an active person in a course offering.</summary>
 public sealed record OfferingMember(Guid PersonId, string ExternalId, string Name, OfferingRole Role);
 
+/// <summary>Name and e-mail of a person, for modules that pass them on with consent (add-lti-platform, design D9).</summary>
+public sealed record PersonInfo(string Name, string GivenName, string FamilyName, string? Mail);
+
 /// <summary>Read access to academic data for other modules. Never exposes Academic's entities or tables.</summary>
 public interface IAcademicDirectory
 {
@@ -21,6 +24,9 @@ public interface IAcademicDirectory
 
     /// <summary>The person of the signed-in user (linked via personId, then issuer + oid), or <see langword="null"/>.</summary>
     Task<Guid?> CurrentPersonIdAsync(ClaimsPrincipal user, CancellationToken cancellationToken);
+
+    /// <summary>Name and e-mail of an active person, or <see langword="null"/>.</summary>
+    Task<PersonInfo?> FindPersonAsync(Guid personId, CancellationToken cancellationToken);
 
     /// <summary>Active enrolments of active persons in the offering, ordered by name.</summary>
     Task<IReadOnlyList<OfferingMember>> MembersAsync(Guid offeringId, CancellationToken cancellationToken);

@@ -37,4 +37,16 @@ public interface IModule
     /// versieprefix en de beveiliging niet kan omzeilen.
     /// </param>
     void MapEndpoints(IEndpointRouteBuilder api);
+
+    /// <summary>
+    /// Koppelt de browser-endpoints van de module (cookie-authenticatie, bv. een launch of een publiek JWKS-adres).
+    /// Standaard doet een module niets.
+    /// </summary>
+    /// <param name="app">
+    /// De groep <c>/{modulenaam in kleine letters}</c>: ingelogd vereist; een endpoint kan zichzelf expliciet
+    /// <c>AllowAnonymous()</c> maken.
+    /// </param>
+    void MapBrowserEndpoints(IEndpointRouteBuilder app)
+    {
+    }
 }

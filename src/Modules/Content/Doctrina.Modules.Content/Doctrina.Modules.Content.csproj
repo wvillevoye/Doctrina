@@ -21,5 +21,7 @@
     <ProjectReference Include="..\..\..\Doctrina.Infrastructure\Doctrina.Infrastructure.csproj" />
     <ProjectReference Include="..\..\..\Doctrina.UI\Doctrina.UI.csproj" />
     <ProjectReference Include="..\..\Academic\Doctrina.Modules.Academic.Contracts\Doctrina.Modules.Academic.Contracts.csproj" />
+    <ProjectReference Include="..\Doctrina.Modules.Content.Contracts\Doctrina.Modules.Content.Contracts.csproj" />
+    <ProjectReference Include="..\..\Lti\Doctrina.Modules.Lti.Contracts\Doctrina.Modules.Lti.Contracts.csproj" />
   </ItemGroup>
 </Project>

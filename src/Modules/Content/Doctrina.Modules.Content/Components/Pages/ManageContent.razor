@@ -6,6 +6,7 @@
 @using Doctrina.Modules.Academic.Contracts
 @using Doctrina.Modules.Content.Application
 @using Doctrina.Modules.Content.Domain
+@using Doctrina.Modules.Lti.Contracts
 @using Microsoft.Extensions.DependencyInjection
 @inject IServiceScopeFactory Scopes
 @inject NavigationManager Navigation
@@ -97,6 +98,31 @@
         </DcForm>
       </DcCard>
 
+      @if (_tools is not null)
+      {
+        <DcCard Title="Add a tool link">
+          <DcForm Model="_newTool" OnValidSubmit="AddToolLinkAsync" FormName="add-tool-link" data-testid="add-tool-link">
+            @if (_tools.Count == 0)
+            {
+              <p>No tools are registered yet.</p>
+            }
+            else
+            {
+              <DcSelect TValue="string" Label="Section" Required @bind-Value="_newTool.SectionId">@SectionOptions</DcSelect>
+              <DcSelect TValue="string" Label="Tool" Required @bind-Value="_newTool.ToolId">
+                <option value="">Choose a tool…</option>
+                @foreach (var tool in _tools)
+                {
+                  <option value="@tool.Id.ToString("D")">@tool.Name</option>
+                }
+              </DcSelect>
+              <DcTextField Label="Title" Required @bind-Value="_newTool.Title" />
+              <div class="dc-form__actions"><DcButton Type="submit" Icon="plus">Add tool link</DcButton></div>
+            }
+          </DcForm>
+        </DcCard>
+      }
+
       <DcCard Title="Add a file">
         <DcForm Model="_newFile" OnValidSubmit="AddFileAsync" FormName="add-file" data-testid="add-file">
           <DcSelect TValue="string" Label="Section" Required @bind-Value="_newFile.SectionId">@SectionOptions</DcSelect>
@@ -151,6 +177,8 @@
     private readonly NewItemForm _newPage = new();
     private readonly NewLinkForm _newLink = new();
     private readonly NewFileForm _newFile = new();
+    private readonly NewToolLinkForm _newTool = new();
+    private IReadOnlyList<LtiToolSummary>? _tools; // null: the Lti module is off
     private readonly RenameForm _rename = new();
     private (Guid Id, string Title, bool IsSection) _delete;
     private DcModal? _renameModal;
@@ -201,6 +229,8 @@
     {
         using var scope = Scopes.CreateScope();
         _sections = await scope.ServiceProvider.GetRequiredService<ContentService>().SectionsAsync(OfferingId, includeDrafts: true, CancellationToken.None);
+        var catalog = scope.ServiceProvider.GetService<ILtiToolCatalog>();
+        _tools = catalog is null ? null : await catalog.ListAsync(CancellationToken.None);
     }
 
     /// <summary>Runs one change in its own scope, shows the outcome and reloads.</summary>
@@ -247,6 +277,14 @@
         if (await RunAsync(async s => await s.AddLinkAsync(Guid.Parse(_newLink.SectionId!), _newLink.Title, _newLink.Url, CancellationToken.None), $"Link “{_newLink.Title}” added as a draft."))
         {
             _newLink.Title = _newLink.Url = null;
+        }
+    }
+
+    private async Task AddToolLinkAsync()
+    {
+        if (await RunAsync(async s => await s.AddToolLinkAsync(Guid.Parse(_newTool.SectionId!), _newTool.Title, Guid.Parse(_newTool.ToolId!), CancellationToken.None), $"Tool link “{_newTool.Title}” added as a draft."))
+        {
+            _newTool.Title = null;
         }
     }
 
@@ -343,6 +381,12 @@
     {
         [Required(ErrorMessage = "Enter a web address.")]
         public string? Url { get; set; }
+    }
+
+    private sealed class NewToolLinkForm : NewItemForm
+    {
+        [Required(ErrorMessage = "Choose a tool.")]
+        public string? ToolId { get; set; }
     }
 
     private sealed class NewFileForm

@@ -76,7 +76,7 @@ modulesysteem. Alternatief 2: Blazor-pagina's voor de launch. Afgewezen: de stro
 | Tabel | Velden |
 |---|---|
 | `Tools` (`ExchangeableEntity`) | `Name` (200), `ClientId` (100, uniek), `DeploymentId` (100), `LoginUrl`, `LaunchUrl`, `RedirectUris` (tekst, één adres per regel), `SendName`, `SendEmail` |
-| `Keys` (`ExchangeableEntity`) | `Kid` (uniek), `PrivateKey` (`varbinary(max)`, versleuteld), `PublicKey` (RSA-parameters als JSON: `n` en `e`), `RetiredAt` (null = actief) |
+| `Keys` (`ExchangeableEntity`) | `Kid` (uniek), `PrivateKey` (`varbinary(max)`, versleuteld), `PublicKey` (RSA-parameters als JSON: `n` en `e`), `Active` (waar voor de ondertekenende sleutel), `RetiredAt` (sinds wanneer niet meer actief) |
 
 - `ExternalId` is het eigen `Id` en `Source` is "Doctrina" (huisregel 6); verwijderen zet `Status` op `ToBeDeleted` en alle
   queries filteren op actieve records.
@@ -143,8 +143,7 @@ zet `RetiredAt` op de actieve en maakt een nieuwe; `JwksAsync()` geeft de actiev
 - Kan de privésleutel niet ontsleuteld worden (sleutelring kwijt of veranderd), dan wordt die sleutel op `ToBeDeleted` gezet en
   `ActiveAsync` maakt een nieuwe. Tools halen de JWKS opnieuw op (of de beheerder meldt het); dat is beter dan een
   launch die faalt tot iemand ingrijpt.
-- Gelijktijdige eerste aanvragen: een unieke index op "één actieve sleutel" (gefilterd op `RetiredAt IS NULL AND Status =
-  'Active'`) voorkomt twee actieve sleutels; de verliezer leest de winnaar.
+- Gelijktijdige eerste aanvragen: een unieke, gefilterde index op `Active` (`WHERE Active = 1`) voorkomt twee actieve sleutels; de verliezer leest de winnaar.
 
 Alternatief: sleutels in een bestand of in een key vault. Afgewezen voor nu: de database is er al, en het versleutelen met Data
 Protection geeft hetzelfde als een bestand met rechten. Een vault kan later de `IDataProtector` vervangen.
@@ -176,6 +175,10 @@ Rollen (`OfferingRole` uit `Academic.Contracts`): Student → `membership#Learne
 `membership#Instructor`; TeachingAssistant → `membership/Instructor#TeachingAssistant`. Een gebruiker zonder inschrijving die
 toch mag lezen (`Content.Read` of `Content.Manage`, bv. een beheerder) krijgt `institution/person#Administrator`. Heeft
 iemand meerdere rollen, dan komen alle bijbehorende rol-URI's mee.
+
+Naam en mailadres komen uit Academic via een nieuwe `.Contracts`-methode `IAcademicDirectory.FindPersonAsync(personId)`
+(`PersonInfo`: weergavenaam, voornaam, achternaam met tussenvoegsel, mail); heeft de gebruiker geen persoon, of de persoon geen
+mailadres, dan vallen we terug op de claims `name`, `given_name`, `family_name` en `email` van de inlogdienst.
 
 Persoonsgegevens gaan alleen mee als de tool dat vraagt (AVG). In logs komt niets uit de launch: alleen de foutcode en de
 tool-id.

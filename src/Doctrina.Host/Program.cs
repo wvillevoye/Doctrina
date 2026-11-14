@@ -69,6 +69,7 @@ app.MapDoctrinaHealth();
 app.MapDoctrinaJobsDashboard();
 app.MapDoctrinaApiDocumentation(app.Configuration, app.Environment);
 app.MapApiV1().MapDoctrinaModules();
+app.MapDoctrinaBrowserEndpoints();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddAdditionalAssemblies([.. modules.ComponentAssemblies]);

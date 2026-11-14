@@ -36,6 +36,7 @@ public sealed class ContentModule : IModule
         services.AddSingleton<ContentFileStore>();
         services.AddScoped<ContentService>();
         services.AddScoped<ContentAccess>();
+        services.AddScoped<Contracts.IContentDirectory, ContentDirectory>();
         services.AddOfferingPageSection<Components.ContentSectionList>(order: 10);
         services.AddHealthChecks().AddCheck<ContentHealthCheck>("content", tags: [ModuleHealthChecks.TagFor(Name)]);
     }

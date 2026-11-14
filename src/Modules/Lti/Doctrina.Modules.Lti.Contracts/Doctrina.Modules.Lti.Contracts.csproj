@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Public contracts of the Lti module (change add-lti-platform). -->
+  <PropertyGroup>
+    <RootNamespace>Doctrina.Modules.Lti.Contracts</RootNamespace>
+  </PropertyGroup>
+</Project>

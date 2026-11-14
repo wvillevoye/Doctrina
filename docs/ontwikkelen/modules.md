@@ -73,6 +73,9 @@ Afspraken:
 - **Naam** = de naam in `Modules:Enabled`; het schema wordt de naam in kleine letters (`academic`).
 - **Permissies** beginnen met `<Naam>.`; dubbele of verkeerd genoemde permissies laten het opstarten mislukken.
 - **Endpoints** komen altijd onder `/api/v1` en vereisen standaard een token. Voeg `.RequirePermission(...)` toe.
+- **Browser endpoints** (cookie login, e.g. a redirect or a public JWKS) go in `MapBrowserEndpoints(IEndpointRouteBuilder app)`,
+  which does nothing by default. They live under `/{module name in lower case}` and require a signed-in user; a
+  public endpoint must say so with `.AllowAnonymous()`.
 - **Pagina's** staan in de module (`Components/`) en vragen een permissie met
   `@attribute [RequirePermission("Academic.Manage")]`. Ze geven alleen vorm met `Dc*`-componenten uit `Doctrina.UI`
   en `--dc-*`-tokens: geen ruwe Bootstrap-classes en geen letterlijke kleuren (de architectuurtests controleren dit).

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <!-- Unit tests and LocalDB tests of the Lti module (change add-lti-platform). -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Doctrina.Modules.Lti.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <PackageReference Include="bunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Modules\Lti\Doctrina.Modules.Lti\Doctrina.Modules.Lti.csproj" />
+    <ProjectReference Include="..\..\Doctrina.TestKit\Doctrina.TestKit.csproj" />
+  </ItemGroup>
+</Project>

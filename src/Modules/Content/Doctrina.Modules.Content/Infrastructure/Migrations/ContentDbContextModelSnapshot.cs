@@ -80,6 +80,9 @@ namespace Doctrina.Modules.Content.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<Guid?>("ToolId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Url")
                         .HasMaxLength(2048)
                         .HasColumnType("nvarchar(2048)");

@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Public contracts of the Content module (change add-lti-platform). -->
+  <PropertyGroup>
+    <RootNamespace>Doctrina.Modules.Content.Contracts</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Doctrina.Core\Doctrina.Core.csproj" />
+  </ItemGroup>
+</Project>

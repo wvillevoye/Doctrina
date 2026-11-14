@@ -44,7 +44,8 @@ internal sealed class ContentDatabase : IAsyncDisposable
         new(Options.Create(new ContentFileOptions { Path = FilesPath, MaxSizeMb = maxSizeMb }), new TestHostEnvironment(), NullLogger<ContentFileStore>.Instance);
 
     /// <summary>The service over a fresh context, the given directory and a file store in the temporary folder.</summary>
-    public ContentService CreateService(FakeDirectory directory, int maxSizeMb = 100) => new(CreateContext(), directory, CreateFileStore(maxSizeMb));
+    public ContentService CreateService(FakeDirectory directory, int maxSizeMb = 100, Doctrina.Modules.Lti.Contracts.ILtiToolCatalog? tools = null) =>
+        new(CreateContext(), directory, CreateFileStore(maxSizeMb), tools);
 
     public async ValueTask DisposeAsync()
     {

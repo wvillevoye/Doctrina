@@ -30,4 +30,10 @@
   <data name="Content.File.Missing" xml:space="preserve">
     <value>File is missing</value>
   </data>
+  <data name="Content.Item.UnknownTool" xml:space="preserve">
+    <value>Unknown tool</value>
+  </data>
+  <data name="Content.Access.Forbidden" xml:space="preserve">
+    <value>No access to the content</value>
+  </data>
 </root>

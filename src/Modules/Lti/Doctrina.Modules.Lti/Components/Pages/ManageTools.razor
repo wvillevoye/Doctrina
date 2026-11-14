@@ -1,0 +1,224 @@
+@page "/lti/tools"
+@attribute [RequirePermission(LtiPermissions.Manage)]
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using Doctrina.Core.Results
+@using Doctrina.Modules.Lti.Application
+@using Doctrina.Modules.Lti.Domain
+@using Microsoft.Extensions.DependencyInjection
+@using Microsoft.Extensions.Options
+@inject IServiceScopeFactory Scopes
+@inject NavigationManager Navigation
+@inject IOptions<LtiOptions> Options
+
+@* Registration of LTI tools (spec lti-tool-registration, design D10 of add-lti-platform). Interactive; every action
+   runs in its own scope, like a request, and then reloads. Access: Lti.Manage. *@
+<DcPageHeader Title="LTI tools" DocumentTitle="LTI tools">
+  <Description>Tools that can be started from a course offering. Give the tool the platform details below.</Description>
+</DcPageHeader>
+
+<div class="dc-stack">
+  @if (_message is not null)
+  {
+    <DcAlert Severity="DcSeverity.Success" data-testid="lti-message"><p>@_message</p></DcAlert>
+  }
+  <DcResult Error="_error" />
+
+  <DcCard Title="Platform details" data-testid="platform-details">
+    <ChildContent>
+      <dl class="dc-details">
+        <dt>Issuer</dt><dd><code data-testid="issuer">@_issuer</code></dd>
+        <dt>Authentication endpoint</dt><dd><code data-testid="authorize-url">@_issuer/lti/authorize</code></dd>
+        <dt>Public keyset (JWKS)</dt><dd><code data-testid="jwks-url">@_issuer/lti/jwks.json</code></dd>
+        <dt>Active key ID</dt><dd><code data-testid="active-kid">@_activeKid</code></dd>
+      </dl>
+    </ChildContent>
+    <Footer>
+      <DcButton OnClick="RotateAsync" data-testid="rotate-key">Rotate key</DcButton>
+    </Footer>
+  </DcCard>
+
+  @if (_tools.Count == 0)
+  {
+    <DcCard Title="Registered tools"><p>No tools yet.</p></DcCard>
+  }
+  @foreach (var tool in _tools)
+  {
+    <DcCard Title="@tool.Name" data-testid="tool">
+      <ChildContent>
+        <dl class="dc-details">
+          <dt>Client ID</dt><dd><code data-testid="client-id">@tool.ClientId</code></dd>
+          <dt>Deployment ID</dt><dd><code data-testid="deployment-id">@tool.DeploymentId</code></dd>
+          <dt>Login URL</dt><dd>@tool.LoginUrl</dd>
+          <dt>Launch URL</dt><dd>@tool.LaunchUrl</dd>
+          <dt>Redirect URIs</dt><dd>@tool.RedirectUris.Replace("\n", ", ")</dd>
+          <dt>Shared with the tool</dt><dd>@Shared(tool)</dd>
+        </dl>
+      </ChildContent>
+      <Footer>
+        <DcButton Icon="pencil" OnClick="() => Edit(tool)" aria-label="@($"Edit: {tool.Name}")" data-testid="edit-tool">Edit</DcButton>
+        <DcButton Variant="DcButtonVariant.Danger" Icon="trash-2" OnClick="() => AskDelete(tool)" aria-label="@($"Delete: {tool.Name}")" data-testid="delete-tool">Delete</DcButton>
+      </Footer>
+    </DcCard>
+  }
+
+  <DcCard Title="@(_editId is null ? "Register a tool" : "Edit tool")">
+    <DcForm Model="_form" OnValidSubmit="SaveAsync" FormName="tool" data-testid="tool-form">
+      <DcTextField Label="Name" Required @bind-Value="_form.Name" />
+      <DcTextField Label="Login URL" Type="url" Required Hint="The tool's OpenID Connect login initiation URL." @bind-Value="_form.LoginUrl" />
+      <DcTextField Label="Launch URL" Type="url" Required Hint="The address of the tool that is started (target link URI)." @bind-Value="_form.LaunchUrl" />
+      <DcTextField Label="Redirect URIs" Required Rows="3" Hint="One address per line. Only these addresses receive a launch." @bind-Value="_form.RedirectUris" />
+      <DcCheckbox Label="Send name" Hint="Share the name of the user with this tool." @bind-Value="_form.SendName" />
+      <DcCheckbox Label="Send email" Hint="Share the email address of the user with this tool." @bind-Value="_form.SendEmail" />
+      <div class="dc-form__actions">
+        <DcButton Type="submit" Variant="DcButtonVariant.Primary" Icon="@(_editId is null ? "plus" : "check")">@(_editId is null ? "Register tool" : "Save")</DcButton>
+        @if (_editId is not null)
+        {
+          <DcButton OnClick="CancelEdit">Cancel</DcButton>
+        }
+      </div>
+    </DcForm>
+  </DcCard>
+</div>
+
+<DcModal @ref="_deleteModal" Title="@($"Delete {_delete.Name}?")">
+  <ChildContent>
+    <p>The tool is deleted. Tool links that use it stay in the course content, but can't be launched any more.</p>
+  </ChildContent>
+  <Footer>
+    <DcButton OnClick="() => _deleteModal!.CloseAsync()">Cancel</DcButton>
+    <DcButton Variant="DcButtonVariant.Danger" OnClick="DeleteAsync" data-testid="confirm-delete">Delete</DcButton>
+  </Footer>
+</DcModal>
+
+@code {
+    private IReadOnlyList<LtiTool> _tools = [];
+    private string _issuer = string.Empty;
+    private string? _activeKid;
+    private Error? _error;
+    private string? _message;
+    private Guid? _editId;
+    private ToolForm _form = new();
+    private (Guid Id, string Name) _delete;
+    private DcModal? _deleteModal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _issuer = LtiPlatform.Issuer(Options.Value, Navigation.BaseUri);
+        await ReloadAsync();
+    }
+
+    private async Task ReloadAsync()
+    {
+        using var scope = Scopes.CreateScope();
+        _tools = await scope.ServiceProvider.GetRequiredService<ToolService>().ToolsAsync(CancellationToken.None);
+        // Makes the first key when there is none, so the page always shows the key the tools will see.
+        var keys = scope.ServiceProvider.GetRequiredService<KeyService>();
+        await keys.ActiveAsync(CancellationToken.None);
+        _activeKid = await keys.ActiveKidAsync(CancellationToken.None);
+    }
+
+    private static string Shared(LtiTool tool) =>
+        (tool.SendName, tool.SendEmail) switch
+        {
+            (true, true) => "Name and email",
+            (true, false) => "Name",
+            (false, true) => "Email",
+            _ => "Nothing",
+        };
+
+    /// <summary>Runs one change in its own scope, shows the outcome and reloads.</summary>
+    private async Task<bool> RunAsync(Func<ToolService, Task<Result>> change, string? success)
+    {
+        _message = null;
+        using (var scope = Scopes.CreateScope())
+        {
+            var result = await change(scope.ServiceProvider.GetRequiredService<ToolService>());
+            _error = result.Error;
+            _message = result.IsSuccess ? success : null;
+        }
+
+        await ReloadAsync();
+        return _error is null;
+    }
+
+    private ToolInput Input() => new(_form.Name, _form.LoginUrl, _form.LaunchUrl, _form.RedirectUris, _form.SendName, _form.SendEmail);
+
+    private async Task SaveAsync()
+    {
+        var name = _form.Name;
+        var saved = _editId is { } id
+            ? await RunAsync(s => s.UpdateAsync(id, Input(), CancellationToken.None), $"Tool “{name}” saved.")
+            : await RunAsync(async s => await s.CreateAsync(Input(), CancellationToken.None), $"Tool “{name}” registered. Give its client ID and deployment ID to the tool.");
+        if (saved)
+        {
+            CancelEdit();
+        }
+    }
+
+    private void Edit(LtiTool tool)
+    {
+        _editId = tool.Id;
+        _form = new ToolForm
+        {
+            Name = tool.Name,
+            LoginUrl = tool.LoginUrl,
+            LaunchUrl = tool.LaunchUrl,
+            RedirectUris = tool.RedirectUris,
+            SendName = tool.SendName,
+            SendEmail = tool.SendEmail,
+        };
+        _error = null;
+        _message = null;
+    }
+
+    private void CancelEdit()
+    {
+        _editId = null;
+        _form = new ToolForm();
+    }
+
+    private Task AskDelete(LtiTool tool)
+    {
+        _delete = (tool.Id, tool.Name);
+        return _deleteModal!.ShowAsync();
+    }
+
+    private async Task DeleteAsync()
+    {
+        var (id, name) = _delete;
+        await RunAsync(s => s.DeleteAsync(id, CancellationToken.None), $"Tool “{name}” deleted.");
+        await _deleteModal!.CloseAsync();
+    }
+
+    private async Task RotateAsync()
+    {
+        using (var scope = Scopes.CreateScope())
+        {
+            await scope.ServiceProvider.GetRequiredService<KeyService>().RotateAsync(CancellationToken.None);
+        }
+
+        _error = null;
+        _message = $"A new signing key is active. The previous key stays in the keyset for {Options.Value.Keys.RetireAfterDays} days.";
+        await ReloadAsync();
+    }
+
+    private sealed class ToolForm
+    {
+        [Required(ErrorMessage = "Enter a name.")]
+        public string? Name { get; set; }
+
+        [Required(ErrorMessage = "Enter the login URL.")]
+        public string? LoginUrl { get; set; }
+
+        [Required(ErrorMessage = "Enter the launch URL.")]
+        public string? LaunchUrl { get; set; }
+
+        [Required(ErrorMessage = "Enter at least one redirect URI.")]
+        public string? RedirectUris { get; set; }
+
+        public bool SendName { get; set; }
+
+        public bool SendEmail { get; set; }
+    }
+}

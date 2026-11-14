@@ -38,6 +38,10 @@
             {
               <span> (@item.FileName, @ContentLabels.Size(item.Size ?? 0))</span>
             }
+            @if (item.Kind == ContentItemKind.ToolLink)
+            {
+              <DcButton Href="@ContentLabels.LaunchUrl(item.Id)" Icon="external-link" target="_blank" rel="noopener noreferrer" data-testid="launch">Launch</DcButton>
+            }
             @if (!item.Published)
             {
               <DcBadge Variant="DcBadgeVariant.Warning">Draft</DcBadge>

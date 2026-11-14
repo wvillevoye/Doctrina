@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <!-- Lti module: Doctrina as an LTI 1.3 platform, core only (change add-lti-platform). -->
+  <PropertyGroup>
+    <RootNamespace>Doctrina.Modules.Lti</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Only for dotnet ef (migrations), see docs/ontwikkelen/database.md. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Doctrina.Modules.Lti.Tests" />
+    <InternalsVisibleTo Include="Doctrina.Host.IntegrationTests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Doctrina.Core\Doctrina.Core.csproj" />
+    <ProjectReference Include="..\..\..\Doctrina.Infrastructure\Doctrina.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Doctrina.UI\Doctrina.UI.csproj" />
+    <ProjectReference Include="..\..\Academic\Doctrina.Modules.Academic.Contracts\Doctrina.Modules.Academic.Contracts.csproj" />
+    <ProjectReference Include="..\..\Content\Doctrina.Modules.Content.Contracts\Doctrina.Modules.Content.Contracts.csproj" />
+    <ProjectReference Include="..\Doctrina.Modules.Lti.Contracts\Doctrina.Modules.Lti.Contracts.csproj" />
+  </ItemGroup>
+</Project>

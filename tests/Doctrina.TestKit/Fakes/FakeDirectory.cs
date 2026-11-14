@@ -41,6 +41,11 @@ public sealed class FakeDirectory : IAcademicDirectory
     public Task<Guid?> CurrentPersonIdAsync(ClaimsPrincipal user, CancellationToken cancellationToken) =>
         Task.FromResult(Guid.TryParse(user.FindFirst(PersonClaim)?.Value, out var id) ? id : (Guid?)null);
 
+    public Task<PersonInfo?> FindPersonAsync(Guid personId, CancellationToken cancellationToken) =>
+        Task.FromResult(Members.FirstOrDefault(m => m.PersonId == personId) is { } m
+            ? new PersonInfo(m.Name, m.ExternalId, "Name", m.ExternalId + "@example.test")
+            : null);
+
     public Task<IReadOnlyList<OfferingMember>> MembersAsync(Guid offeringId, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<OfferingMember>>(offeringId == OfferingId ? [.. Members] : []);
 }

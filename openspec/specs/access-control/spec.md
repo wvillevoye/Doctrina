@@ -25,7 +25,8 @@ Elke module SHALL de permissies declareren die zij gebruikt, elk met een unieke 
 ### Requirement: Rollen worden via configuratie aan permissies gekoppeld
 De instelling `Authorization:RolePermissions` SHALL waarden van de `roles`-claim aan permissies koppelen. Een aanroeper
 SHALL de vereniging van de permissies van al zijn rollen hebben. De waarde `*` SHALL alle permissies van ingeschakelde
-modules geven.
+modules geven. Een koppeling naar een permissie van een bekende maar uitgeschakelde module SHALL genegeerd worden, zodat
+een module uitzetten geen aanpassing van de koppeling vraagt.
 
 #### Scenario: Permissies uit meerdere rollen worden samengevoegd
 - **GIVEN** rol `employee` is gekoppeld aan `Sample.Read` en rol `admin` aan `Sample.Manage`
@@ -42,9 +43,14 @@ modules geven.
 - **THEN** de gebruiker is ingelogd maar heeft geen permissies
 
 #### Scenario: Koppeling naar een onbekende permissie laat het opstarten mislukken
-- **GIVEN** de koppeling verwijst naar permissie `Unknown.Do`, die geen enkele ingeschakelde module declareert
+- **GIVEN** de koppeling verwijst naar permissie `Unknown.Do`, die geen enkele bekende module declareert
 - **WHEN** de host start
 - **THEN** het opstarten mislukt met een fout die `Unknown.Do` noemt en de rol die ernaar verwijst
+
+#### Scenario: Koppeling naar een permissie van een uitgeschakelde module wordt genegeerd
+- **GIVEN** de module Academic is bekend maar niet ingeschakeld, en rol `student` is gekoppeld aan `Academic.MyCourses`
+- **WHEN** de host start en een gebruiker met rol `student` inlogt
+- **THEN** de host start en de gebruiker heeft geen permissies
 
 ### Requirement: Systeempermissies gebruiken dezelfde koppeling
 Voor aanroepers die met client credentials zijn geauthenticeerd SHALL de waarden in hun `roles`-claim (bijvoorbeeld
@@ -57,13 +63,13 @@ Voor aanroepers die met client credentials zijn geauthenticeerd SHALL de waarden
 
 ### Requirement: Pagina's en endpoints vereisen permissies
 Pagina's en API-endpoints SHALL te beveiligen zijn door een vereiste permissie te noemen. Aanroepers zonder die
-permissie SHALL geweigerd worden: ingelogde gebruikers met een pagina "Geen toegang", API-aanroepers met status 403 en
+permissie SHALL geweigerd worden: ingelogde gebruikers met een pagina "Access denied", API-aanroepers met status 403 en
 een ProblemDetails-body.
 
 #### Scenario: Pagina geweigerd zonder permissie
 - **GIVEN** een pagina die `Sample.Manage` vereist
 - **WHEN** een ingelogde gebruiker zonder `Sample.Manage` haar opent
-- **THEN** de pagina "Geen toegang" wordt getoond met status 403 en de gebruiker blijft ingelogd
+- **THEN** de pagina "Access denied" wordt getoond met status 403 en de gebruiker blijft ingelogd
 
 #### Scenario: API geweigerd zonder permissie
 - **GIVEN** een endpoint dat `Sample.Manage` vereist

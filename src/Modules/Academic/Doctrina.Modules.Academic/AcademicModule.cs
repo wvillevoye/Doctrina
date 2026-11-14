@@ -40,14 +40,21 @@ public sealed class AcademicModule : IModule
         services.AddModuleDbContext<AcademicDbContext>(configuration, Name);
         services.AddErrorTitles("Doctrina.Modules.Academic.Resources.AcademicErrors", typeof(AcademicModule).Assembly);
         services.AddOptions<AcademicImportOptions>().BindConfiguration(AcademicImportOptions.Section);
-        services.AddScoped<AcademicImporter>();
+        services.AddScoped<ImportJobs>();
+        services.AddScoped<ImportRunner>();
+        services.AddScoped<ImportRetention>();
+        services.AddHostedService<ImportRetentionSchedule>();
         services.AddScoped<AcademicQueries>();
         services.AddScoped<CurrentPerson>();
         services.AddScoped<Doctrina.Modules.Academic.Contracts.IAcademicDirectory, AcademicDirectory>();
         services.AddHealthChecks().AddCheck<AcademicHealthCheck>("academic", tags: [ModuleHealthChecks.TagFor(Name)]);
     }
 
-    public void MapEndpoints(IEndpointRouteBuilder api) => Api.AcademicEndpoints.Map(api);
+    public void MapEndpoints(IEndpointRouteBuilder api)
+    {
+        Api.ImportEndpoints.Map(api);
+        Api.AcademicEndpoints.Map(api);
+    }
 }
 
 /// <summary>Permissions of the Academic module.</summary>

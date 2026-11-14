@@ -74,8 +74,8 @@ public sealed class HetCsvFormaatIsVergevingsgezindEnVoorspelbaar
     }
 }
 
-// Spec academic-csv-import, requirement "De import heeft een grens".
-public sealed class DeImportHeeftEenGrens
+// The row and byte limits of the CSV reader itself; the spec scenario runs on the job (ImportJobTests).
+public sealed class DeCsvLezerHeeftEenGrens
 {
     [Fact]
     public async Task TeGrootBestand()

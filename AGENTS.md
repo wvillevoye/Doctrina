@@ -45,8 +45,10 @@ Achtergrond: [docs/Doctrina-voorstel.md](docs/Doctrina-voorstel.md). Inloggen/cl
 
 ## Lokaal ontwikkelen
 
-De dev-stack (Keycloak 26, Mailpit) staat in `dev-stack/`: `cd dev-stack; docker compose up -d`
-(compose-project `doctrina-dev`, zie `dev-stack/README.md`). Realm `doctrina`, client `doctrina-web`, testaccounts `beheerder`, `docent`, `student`
+Keycloak 26 en Mailpit draaien in een gedeelde stack buiten deze repo, in de map `Keycloak` naast de map van deze
+checkout: `docker compose -f ..\..\Keycloak\docker-compose.yml up -d` (compose-project `keycloak-dev`). In `dev-stack/`
+staat alleen wat van Doctrina is: de realm, de generator, de CSV-testdata en de rooktest (zie `dev-stack/README.md`).
+Realm `doctrina`, client `doctrina-web`, testaccounts `beheerder`, `docent`, `student`
 (wachtwoord = naam) en 250 nepgebruikers (`test123`). Doctrina.Host draait op `https://localhost:5001`.
 
 Configuratie: `appsettings.json` + `appsettings.{Development,Test,Production}.json` (`Test` = de geautomatiseerde tests).

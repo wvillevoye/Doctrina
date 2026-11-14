@@ -62,6 +62,8 @@ internal static class TestDatabases
             [$"{OidcSettings.SectionName}:ClientSecret"] = "test-secret",
             [$"{OidcSettings.SectionName}:RequireHttpsMetadata"] = "true",
             [$"{ApiAuthenticationSettings.SectionName}:Audience"] = DoctrinaHostFactory.ApiAudience,
+            // No Hangfire server unless the test switches it on (it needs a database with the schema hangfire).
+            ["Jobs:Enabled"] = "false",
         };
         if (migrate is { } value)
         {

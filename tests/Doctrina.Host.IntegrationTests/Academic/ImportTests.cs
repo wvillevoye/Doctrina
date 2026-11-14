@@ -31,4 +31,19 @@ public sealed class BeheerdersImporterenEenCsvBestandPerType(DoctrinaHostFactory
         Assert.Contains("Import · Doctrina", html, StringComparison.Ordinal);
         Assert.Contains("type=\"file\"", html, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public async Task RecenteImportsVoorBeheerders()
+    {
+        await using var academic = await AcademicHost.CreateAsync(factory, Ct);
+        using var api = academic.Api(factory, roles: "test.import");
+        using var upload = await api.UploadAsync("courses.csv", "courseId,name\nBIO101,Cell biology\n", "courses", dryRun: false, Ct);
+        await api.WaitForAsync(upload.Headers.Location!, Ct);
+
+        var (status, html) = await academic.GetAsync(factory, StubUser.Beheerder, "/academic/imports", Ct);
+
+        Assert.Equal(HttpStatusCode.OK, status);
+        var row = Doctrina.Host.IntegrationTests.HostUi.Html.Parse(html).QuerySelector("[data-testid=import-jobs] tbody tr")!;
+        Assert.Contains("1 created", row.TextContent, StringComparison.Ordinal);
+    }
 }

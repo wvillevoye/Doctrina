@@ -8,6 +8,7 @@ using Doctrina.Infrastructure.Authentication;
 using Doctrina.Infrastructure.Authorization;
 using Doctrina.Infrastructure.Configuration;
 using Doctrina.Infrastructure.Events;
+using Doctrina.Infrastructure.Jobs;
 using Doctrina.Infrastructure.Modules;
 using Doctrina.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -34,6 +35,9 @@ builder.Services.AddDoctrinaApi();
 builder.Services.AddDoctrinaRateLimits();
 builder.Services.AddDoctrinaEvents();
 builder.Services.AddHostedService<ModuleMigrationService>();
+// Background jobs (change add-bulk-import): the server starts after the migrations, so the database exists.
+builder.Services.AddDoctrinaJobs(builder.Configuration);
+builder.Services.AddDoctrinaJobServer();
 // Vormgeving: white-label-instellingen, bij het opstarten gecontroleerd (design D4).
 builder.Services.AddOptions<ThemeSettings>().BindConfiguration(ThemeSettings.Section).ValidateOnStart();
 builder.Services.AddSingleton<Microsoft.Extensions.Options.IValidateOptions<ThemeSettings>, ThemeSettingsValidator>();
@@ -62,6 +66,7 @@ app.MapStaticAssets();
 app.MapDoctrinaAuthenticationEndpoints();
 app.MapDoctrinaThemeEndpoint();
 app.MapDoctrinaHealth();
+app.MapDoctrinaJobsDashboard();
 app.MapDoctrinaApiDocumentation(app.Configuration, app.Environment);
 app.MapApiV1().MapDoctrinaModules();
 app.MapRazorComponents<App>()

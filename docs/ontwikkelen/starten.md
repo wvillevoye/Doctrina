@@ -26,11 +26,14 @@ Zonder dit bestand start de host niet: je krijgt dan een melding dat `Authentica
 ## 2. Dev-stack starten
 
 ```powershell
-cd dev-stack; docker compose up -d; cd ..
+docker compose -f ..\..\Keycloak\docker-compose.yml up -d
 ```
 
+Keycloak and Mailpit run in a shared stack outside this repository: the folder `Keycloak` next to the folder of this
+checkout. It reads Doctrina's realm from `dev-stack/realm/doctrina-realm.json` in this repository.
+
 Dit start Keycloak (http://localhost:8080) en Mailpit (http://localhost:8025). Wacht tot Keycloak gezond is:
-`docker ps` toont dan `keycloak … (healthy)`. Meer over de dev-stack: [`dev-stack/README.md`](../../dev-stack/README.md).
+`docker ps` toont dan `keycloak … (healthy)`. Meer over het Doctrina-deel: [`dev-stack/README.md`](../../dev-stack/README.md).
 
 De database draait niet in Docker maar op LocalDB. De host maakt de database `Doctrina` en de tabellen zelf aan bij het
 starten, zodra er een ingeschakelde module met migraties is (zie [database.md](database.md)). Zolang er nog geen
@@ -77,17 +80,23 @@ schema `academic` is created on start-up. The database starts empty. The dev-sta
 as in Keycloak (same `personId`), plus organizations, sessions, courses, offerings and enrolments:
 
 1. Sign in as `beheerder` and open **Academic** → **Import** (`/academic/import`).
-2. Import the files from `dev-stack/data/` one by one, with source `SIS`, in this order (later files refer to earlier ones):
-   `organizations.csv`, `academic-sessions.csv`, `courses.csv`, `course-offerings.csv`, `persons.csv`, `associations.csv`.
-   Choose the matching type each time. Every row should say `created`; importing a file again says `unchanged`.
-3. Sign out and sign in as `student`: **My courses** (`/my-courses`) shows three courses. As `docent` you see two, as lecturer.
+2. Upload `dev-stack/data/academic-testdata.zip` with source `SIS` and **Dry run** ticked. The import runs in the
+   background; its page refreshes by itself and shows what would happen (every row `created`), without saving anything.
+3. Choose **Import for real**. Importing the same zip again gives `unchanged` for every row. The report is downloadable
+   as CSV; **Recent imports** (`/academic/imports`) lists earlier imports. A single CSV also works: pick its type.
+4. Sign out and sign in as `student`: **My courses** (`/my-courses`) shows three courses. As `docent` you see two, as lecturer.
+
+Background jobs run with Hangfire (schema `hangfire`); `beheerder` can follow them on the dashboard at `/hangfire`.
 
 Under **Academic** (`/academic`) the admin pages list every type with search and a detail page per record. They are
 read-only: changes go through the source (CSV now, REST later).
 
 The CSV files are generated together with the realm by `dev-stack/scripts/generate-realm.ps1` (see
-`dev-stack/README.md`). The format: one file per type, a header row with OOAPI field names, `,` or `;`, UTF-8 with or
-without BOM, dates as `YYYY-MM-DD`, and an optional `status` column (`active` or `toBeDeleted`).
+`dev-stack/README.md`), together with `academic-testdata.zip`. The format: one file per type, a header row with OOAPI
+field names, `,` or `;`, UTF-8 with or without BOM, dates as `YYYY-MM-DD`, and an optional `status` column (`active` or
+`toBeDeleted`). In a zip the type of each file comes from `manifest.csv` (columns `file,type`) or from the file name
+(`persons.csv`); the files are imported in the order above, whatever their order in the zip. Empty templates per type are
+on the import page. Limits: 100,000 rows and 50 MB per upload (`Academic:Import`); uploads are removed after 30 days.
 
 ### Groups
 
@@ -145,7 +154,7 @@ Scalar lists them per endpoint. Errors are ProblemDetails with a `code`, e.g. `A
 
 Keycloak kan Entra ID als identity provider doorgeven. Eenmalig inrichten: zie
 [doctrina-integratie.md](../doctrina-integratie.md#entra-koppelen-lokaal-via-keycloak) en draai daarna
-`dev-stack\scripts\configure-entra.ps1`.
+`scripts\configure-entra.ps1` in de map `Keycloak`.
 
 Daarna overslaan van het Keycloak-scherm, zodat je direct naar Microsoft gaat: zet in
 `appsettings.Secrets.json` (of in een omgevingsvariabele `Authentication__Oidc__IdpHint`):
@@ -178,7 +187,7 @@ Die logt in als `student` en `beheerder`, controleert `/profile` en roept de API
 | Melding of symptoom | Oplossing |
 |---|---|
 | `Authentication:Oidc:ClientSecret ontbreekt` | stap 1: `appsettings.Secrets.example.json` kopiëren naar `appsettings.Secrets.json` |
-| Pagina "Sign-in unavailable" (`/sign-in-unavailable`) bij inloggen of uitloggen | dev-stack draait niet of Keycloak is nog niet gezond: `docker ps`, zo nodig `cd dev-stack; docker compose up -d`, daarna "Try again" |
+| Pagina "Sign-in unavailable" (`/sign-in-unavailable`) bij inloggen of uitloggen | dev-stack draait niet of Keycloak is nog niet gezond: `docker ps`, zo nodig `docker compose -f ..\..\Keycloak\docker-compose.yml up -d`, daarna "Try again" |
 | Browser waarschuwt voor het certificaat | `dotnet dev-certs https --trust` en de browser opnieuw starten |
 | `/health/ready` geeft 503 met `"database": "Unhealthy"` | database `Doctrina` bestaat nog niet (zie stap 2) of LocalDB is gestopt |
 | Fout over `(localdb)\MSSQLLocalDB` | `sqllocaldb start MSSQLLocalDB` (zie [database.md](database.md#problemen)) |

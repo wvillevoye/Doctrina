@@ -8,8 +8,6 @@ namespace Doctrina.Modules.Academic.Tests;
 // persons have the same personId as the users in the Keycloak realm.
 public sealed class DeTestdataUitDeDevStack
 {
-    private static readonly string[] ImportOrder = ["organizations", "academic-sessions", "courses", "course-offerings", "persons", "associations"];
-
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     private static string DevStack(params string[] parts) => Path.Combine([AcademicDatabase.RepoRoot(), "dev-stack", .. parts]);
@@ -18,16 +16,13 @@ public sealed class DeTestdataUitDeDevStack
     public async Task ImporteertFoutloosInDeVasteVolgorde()
     {
         await using var db = await AcademicDatabase.CreateAsync(Ct);
+        // The zip the generator writes next to the six CSV files (change add-bulk-import), as a user would upload it.
+        var job = await Imports.RunAsync(db, "academic-testdata.zip", await File.ReadAllBytesAsync(DevStack("data", "academic-testdata.zip"), Ct));
+
+        Assert.Equal(Domain.ImportJobStatus.Completed, job.Status);
+        Assert.Null(job.Warnings);
+        Assert.All(await Imports.RowsAsync(db, job.Id), r => Assert.True(r.Outcome == Domain.ImportRowOutcome.Created, $"{r.File} line {r.Line}: {r.Message}"));
         await using var context = db.CreateContext();
-
-        foreach (var type in ImportOrder)
-        {
-            var report = await Importer.RunAsync(context, type, await File.ReadAllTextAsync(DevStack("data", type + ".csv"), Ct));
-
-            Assert.Empty(report.Warnings);
-            Assert.All(report.Rows, r => Assert.True(r.Outcome == ImportRowOutcome.Created, $"{type} line {r.Line}: {r.Message}"));
-        }
-
         Assert.Equal(3, await context.Associations.CountAsync(a => a.Person.ExternalId == "I6000001", Ct));
     }
 

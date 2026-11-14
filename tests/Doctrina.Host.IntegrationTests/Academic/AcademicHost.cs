@@ -53,11 +53,13 @@ internal sealed class AcademicHost : IAsyncDisposable
             database,
             [
                 (ModuleMigrationService.MigrateOnStartupKey, "true"),
+                ("Jobs:Enabled", "true"),
                 (AccessHosts.Mapping("student", 0), AcademicPermissions.MyCourses),
                 (AccessHosts.Mapping("employee", 0), AcademicPermissions.MyCourses),
                 (AccessHosts.Mapping("test.read", 0), AcademicPermissions.Read),
                 (AccessHosts.Mapping("test.read", 1), "Groups.Read"),
                 (AccessHosts.Mapping("test.write", 0), AcademicPermissions.Write),
+                (AccessHosts.Mapping("test.import", 0), AcademicPermissions.Import),
                 .. settings,
             ]);
         host.Services.GetRequiredService<IServiceProvider>(); // start the host, which migrates

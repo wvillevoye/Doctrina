@@ -1,10 +1,11 @@
 ﻿# Genereert realm-bestanden met vaste testaccounts + N nepgebruikers (medewerkers/studenten).
-#   realm/demo-realm.json      algemene speeltuin (clients demo-app / demo-api)
 #   realm/doctrina-realm.json  voor Doctrina (clients doctrina-web / doctrina-api / doctrina-sis-sync)
-# Gebruik:  powershell -ExecutionPolicy Bypass -File scripts\generate-realm.ps1 [-Realm all|demo|doctrina] [-Count 100] [-StudentRatio 0.7] [-Seed 42]
-# Daarna:   docker compose down -v; docker compose up -d
+#   realm/demo-realm.json      algemene speeltuin (alleen met -Realm demo of all); the shared Keycloak reads its own
+#                              copy, so copy the result to ..\..\Keycloak\realm\ afterwards
+# Gebruik:  powershell -ExecutionPolicy Bypass -File scripts\generate-realm.ps1 [-Realm doctrina|demo|all] [-Count 100] [-StudentRatio 0.7] [-Seed 42]
+# Daarna (in ..\..\Keycloak):   docker compose down -v; docker compose up -d
 param(
-    [ValidateSet("all","demo","doctrina")][string]$Realm = "all",
+    [ValidateSet("all","demo","doctrina")][string]$Realm = "doctrina",
     [int]$Count = 250,
     [double]$StudentRatio = 0.7,
     [int]$Seed = 42,
@@ -269,6 +270,13 @@ function Write-AcademicCsv($people) {
         }
     }
     Write-Csv "associations.csv" @("associationId","personId","offeringId","role") $enrolments
+
+    # All six as one zip for the import (change add-bulk-import): the types come from the file names.
+    $dir = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\data"))
+    $zip = Join-Path $dir "academic-testdata.zip"
+    $names = @("organizations","academic-sessions","courses","course-offerings","persons","associations") | ForEach-Object { Join-Path $dir "$_.csv" }
+    Compress-Archive -Path $names -DestinationPath $zip -Force
+    Write-Host "Geschreven: $zip"
 }
 
 $studentCount = [math]::Round($Count * $StudentRatio)

@@ -92,3 +92,33 @@ internal sealed class PersonLoginConfiguration : IEntityTypeConfiguration<Person
         builder.HasIndex(l => new { l.Issuer, l.Oid }).IsUnique();
     }
 }
+
+internal sealed class ImportJobConfiguration : IEntityTypeConfiguration<ImportJob>
+{
+    public void Configure(EntityTypeBuilder<ImportJob> builder)
+    {
+        builder.Property(j => j.Status).HasConversion<string>().HasMaxLength(Lengths.Enum);
+        builder.Property(j => j.Source).HasMaxLength(Doctrina.Core.Entities.ExchangeableEntity.SourceMaxLength);
+        builder.Property(j => j.StartedBy).HasMaxLength(ImportJob.StartedByMaxLength);
+        builder.Property(j => j.Message).HasMaxLength(ImportJob.MessageMaxLength);
+        builder.Property(j => j.Warnings).HasMaxLength(ImportJob.MessageMaxLength);
+        builder.Property(j => j.UploadName).HasMaxLength(ImportJob.NameMaxLength);
+        builder.Property(j => j.UploadType).HasMaxLength(Lengths.Enum);
+        builder.Ignore(j => j.IsFinished);
+        builder.HasIndex(j => j.CreatedAt);
+        builder.HasMany<ImportJobRow>().WithOne().HasForeignKey(r => r.ImportJobId).OnDelete(DeleteBehavior.Cascade);
+    }
+}
+
+internal sealed class ImportJobRowConfiguration : IEntityTypeConfiguration<ImportJobRow>
+{
+    public void Configure(EntityTypeBuilder<ImportJobRow> builder)
+    {
+        builder.Property(r => r.File).HasMaxLength(ImportJobRow.FileMaxLength);
+        builder.Property(r => r.Key).HasMaxLength(Doctrina.Core.Entities.ExchangeableEntity.ExternalIdMaxLength);
+        builder.Property(r => r.Outcome).HasConversion<string>().HasMaxLength(Lengths.Enum);
+        builder.Property(r => r.Code).HasMaxLength(Lengths.Name);
+        builder.Property(r => r.Message).HasMaxLength(ImportJobRow.MessageMaxLength);
+        builder.HasIndex(r => new { r.ImportJobId, r.File, r.Line });
+    }
+}

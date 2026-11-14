@@ -1,0 +1,166 @@
+@page "/academic/imports/{Id:guid}"
+@rendermode InteractiveServer
+@attribute [RequirePermission(AcademicPermissions.Import)]
+@implements IDisposable
+@using Doctrina.Core.Results
+@using Doctrina.Modules.Academic.Application
+@using Doctrina.Modules.Academic.Components
+@using Doctrina.Modules.Academic.Domain
+@using Doctrina.Modules.Academic.Infrastructure
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.DependencyInjection
+@inject IServiceScopeFactory Scopes
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+@* An import job: status (refreshed every 2 seconds while it runs), summary, failed rows, the report as CSV and, after
+   a dry run, "Import for real" (spec academic-csv-import, design D7 of add-bulk-import). *@
+@if (_job is not null)
+{
+  <DcPageHeader Title="@(_job.DryRun ? "Dry run" : "Import")" DocumentTitle="@($"Import {_job.UploadName}")">
+    <Description><DcLink Href="/academic/imports">Recent imports</DcLink> · <DcLink Href="/academic/import">New import</DcLink></Description>
+  </DcPageHeader>
+
+  <div class="dc-stack">
+    <DcCard>
+      <dl class="dc-details" data-testid="job-details">
+        <dt>Status</dt><dd><DcBadge Variant="@StatusVariant" data-testid="job-status">@_job.Status.ToString().ToLowerInvariant()</DcBadge></dd>
+        <dt>File</dt><dd>@_job.UploadName@(_job.UploadType is null ? "" : $" ({_job.UploadType})")</dd>
+        <dt>Source</dt><dd>@_job.Source</dd>
+        <dt>Started by</dt><dd>@_job.StartedBy</dd>
+        <dt>Created (UTC)</dt><dd>@Time(_job.CreatedAt)</dd>
+        <dt>Finished (UTC)</dt><dd>@(_job.FinishedAt is { } finished ? Time(finished) : "–")</dd>
+      </dl>
+    </DcCard>
+
+    @if (_job.Status == ImportJobStatus.Failed)
+    {
+      <DcAlert Severity="DcSeverity.Danger" Title="Import failed" data-testid="job-message"><p>@_job.Message</p></DcAlert>
+    }
+    else if (_job.Status == ImportJobStatus.Completed)
+    {
+      <DcAlert Severity="@(_job.Failed > 0 ? DcSeverity.Warning : DcSeverity.Success)" Title="@(_job.DryRun ? "Dry run finished: nothing was saved" : "Import finished")" data-testid="job-summary">
+        <p>@_job.Created created, @_job.Updated updated, @_job.Unchanged unchanged, @_job.Failed failed.</p>
+      </DcAlert>
+      @if (_job.Warnings is { } warnings)
+      {
+        <DcAlert Severity="DcSeverity.Info" data-testid="job-warnings"><ul>@foreach (var warning in warnings.Split('\n')) { <li>@warning</li> }</ul></DcAlert>
+      }
+
+      <div class="dc-form__actions">
+        <DcButton Icon="arrow-right" OnClick="DownloadAsync" data-testid="download-report">Download report (CSV)</DcButton>
+        @if (_job.DryRun)
+        {
+          <DcButton Variant="DcButtonVariant.Primary" OnClick="RepeatAsync" Disabled="_job.Upload is null" data-testid="import-for-real">Import for real</DcButton>
+        }
+      </div>
+      <DcResult Error="_error" />
+
+      <DcTable TItem="ImportJobRow" Caption="Failed rows" Columns="Columns" Items="_failed"
+               EmptyText="No failed rows." data-testid="failed-rows" />
+      @if (_job.Failed > _failed.Count)
+      {
+        <p>The first @_failed.Count of @_job.Failed failed rows; the report has all of them.</p>
+      }
+    }
+    else
+    {
+      <DcAlert Severity="DcSeverity.Info" data-testid="job-running"><p>@(_job.Status == ImportJobStatus.Queued ? "Waiting to start…" : "Importing…") This page updates by itself.</p></DcAlert>
+    }
+  </div>
+}
+
+@code {
+    private const int MaxFailedShown = 200;
+
+    private static readonly DcTableColumn<ImportJobRow>[] Columns =
+    [
+        new("File", r => r.File),
+        new("Line", r => r.Line),
+        new("ID", r => r.Key),
+        new("Error code", Template: r => @<code>@r.Code</code>),
+        new("Message", r => r.Message),
+    ];
+
+    private ImportJob? _job;
+    private List<ImportJobRow> _failed = [];
+    private Error? _error;
+    private Timer? _timer;
+
+    [Parameter]
+    public Guid Id { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    private DcBadgeVariant StatusVariant => _job!.Status switch
+    {
+        ImportJobStatus.Completed => _job.Failed > 0 ? DcBadgeVariant.Warning : DcBadgeVariant.Success,
+        ImportJobStatus.Failed => DcBadgeVariant.Danger,
+        _ => DcBadgeVariant.Info,
+    };
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadAsync();
+        if (_job is null)
+        {
+            Navigation.NotFound();
+            return;
+        }
+
+        if (!_job.IsFinished && RendererInfo.IsInteractive)
+        {
+            _timer ??= new Timer(_ => InvokeAsync(RefreshAsync), null, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
+        }
+    }
+
+    private async Task RefreshAsync()
+    {
+        await LoadAsync();
+        if (_job?.IsFinished != false)
+        {
+            _timer?.Dispose();
+            _timer = null;
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task LoadAsync()
+    {
+        using var scope = Scopes.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AcademicDbContext>();
+        _job = await db.ImportJobs.AsNoTracking().SingleOrDefaultAsync(j => j.Id == Id);
+        _failed = _job?.IsFinished == true
+            ? await db.ImportJobRows.AsNoTracking()
+                .Where(r => r.ImportJobId == Id && r.Outcome == ImportRowOutcome.Failed)
+                .OrderBy(r => r.File).ThenBy(r => r.Line).Take(MaxFailedShown).ToListAsync()
+            : [];
+    }
+
+    private async Task DownloadAsync()
+    {
+        using var scope = Scopes.CreateScope();
+        var rows = await scope.ServiceProvider.GetRequiredService<AcademicDbContext>().ImportJobRows.AsNoTracking()
+            .Where(r => r.ImportJobId == Id).OrderBy(r => r.File).ThenBy(r => r.Line).ToListAsync();
+        await Downloads.SaveAsync(JS, $"import-{Id:N}-report.csv", ImportReportCsv.Encode(ImportReportCsv.Header, rows.Select(ImportReportCsv.Line)));
+    }
+
+    private async Task RepeatAsync()
+    {
+        var user = AuthenticationState is null ? null : (await AuthenticationState).User;
+        using var scope = Scopes.CreateScope();
+        var result = await scope.ServiceProvider.GetRequiredService<ImportJobs>().RepeatAsync(Id, user?.Identity?.Name ?? "(unknown)", CancellationToken.None);
+        _error = result.Error;
+        if (result.IsSuccess)
+        {
+            Navigation.NavigateTo($"/academic/imports/{result.Value!.Id:D}");
+        }
+    }
+
+    private static string Time(DateTimeOffset value) =>
+        value.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+
+    public void Dispose() => _timer?.Dispose();
+}

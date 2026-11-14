@@ -4,14 +4,18 @@ using Microsoft.VisualBasic.FileIO;
 
 namespace Doctrina.Modules.Academic.Application;
 
-/// <summary>Limits of the synchronous import (<c>Academic:Import</c>), see design D6.</summary>
+/// <summary>Limits of the import (<c>Academic:Import</c>), see design D6 of add-bulk-import.</summary>
 public sealed class AcademicImportOptions
 {
     public const string Section = "Academic:Import";
 
-    public int MaxRows { get; set; } = 10_000;
+    /// <summary>Rows over all files of one upload (change add-bulk-import).</summary>
+    public int MaxRows { get; set; } = 100_000;
 
-    public long MaxFileSize { get; set; } = 5 * 1024 * 1024;
+    public long MaxFileSize { get; set; } = 50 * 1024 * 1024;
+
+    /// <summary>Days an upload is kept; after that only the job and its report remain (design D9).</summary>
+    public int RetentionDays { get; set; } = 30;
 }
 
 /// <summary>A data row; <see cref="Line"/> is the line number in the file (the header is line 1).</summary>

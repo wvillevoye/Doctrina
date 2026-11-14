@@ -70,6 +70,23 @@ otherwise `SIS`; a `source` in the body is ignored. A system can only change or 
 (otherwise 403, `Academic.Record.OtherSource`). Upserts match on the key of the source system plus that source. Batches
 are limited per client (`Api:BatchesPerMinute`, default 60; above it 429).
 
+## API: import
+
+Larger deliveries go through an import job (change `add-bulk-import`), with scope `doctrina.import` (→ `Academic.Import`):
+
+| Endpoint | |
+|---|---|
+| `POST /api/v1/imports` | multipart: `file` (CSV or zip) and `type` for a CSV; `?dryRun=true` only shows what would happen. 202 with the job and a `Location` |
+| `GET /api/v1/imports/{id}` | `status` (`queued`, `running`, `completed`, `failed`), counts, message |
+| `GET /api/v1/imports/{id}/report` | result per row as JSON (paged), or `?format=csv` |
+| `GET /api/v1/imports/templates/{type}.csv` | empty CSV with the columns of a type |
+
+A zip holds one CSV per type; the type comes from `manifest.csv` (`file,type`) or the file name, and the files are
+processed in a fixed order (organizations → academic-sessions → courses → course-offerings → persons → associations), so
+records may refer to records in an earlier file of the same zip. The source is the client's (`Api:Sources:{azp}`), as
+with REST. A problem with a file as a whole (missing column, unknown file, too large) fails the job without saving
+anything; a bad row only fails that row. Uploads are rate-limited like batches.
+
 ## `appsettings.Development.json` en `appsettings.Secrets.json` voor Doctrina.Host
 
 ```json
@@ -151,7 +168,7 @@ Andere fouten blijven de foutpagina `/error` met status 500 geven.
 3. *Token configuration* → optionele claim `email` (ID-token), evt. `department`… via *Add optional claim*.
 4. *App roles* → aanmaken met **value** `admin`, `employee`, `student` (*Users/Groups*) en toewijzen via
    Enterprise applications → Users and groups.
-5. `.env` vullen (zie `.env.example`) en `dev-stack\scripts\configure-entra.ps1` draaien (standaard realm `doctrina`).
+5. In de map `Keycloak` (naast de checkout): `.env` vullen en `scripts\configure-entra.ps1` draaien (standaard realm `doctrina`).
 
 ## Later: Entra direct (zonder Keycloak)
 

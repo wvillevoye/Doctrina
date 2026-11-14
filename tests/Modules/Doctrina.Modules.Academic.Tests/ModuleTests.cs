@@ -14,7 +14,7 @@ public sealed class DeModuleMigreertNaarEenEigenSchema
             "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'academic' ORDER BY TABLE_NAME", Ct);
 
         Assert.Equal(
-            ["__EFMigrationsHistory", "AcademicSessions", "Associations", "CourseOfferings", "Courses", "Organizations", "PersonLogins", "Persons"],
+            ["__EFMigrationsHistory", "AcademicSessions", "Associations", "CourseOfferings", "Courses", "ImportJobRows", "ImportJobs", "Organizations", "PersonLogins", "Persons"],
             tables.Select(r => r[0]));
     }
 }

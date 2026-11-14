@@ -144,4 +144,22 @@
   <data name="Academic.Record.OtherSource" xml:space="preserve">
     <value>Record of another source</value>
   </data>
+  <data name="Academic.Import.NotFound" xml:space="preserve">
+    <value>Import not found</value>
+  </data>
+  <data name="Academic.Import.CannotRepeat" xml:space="preserve">
+    <value>Can't import this for real</value>
+  </data>
+  <data name="Academic.Import.UploadExpired" xml:space="preserve">
+    <value>Upload removed</value>
+  </data>
+  <data name="Academic.Import.UnknownFile" xml:space="preserve">
+    <value>Unknown file in zip</value>
+  </data>
+  <data name="Academic.Import.UnknownType" xml:space="preserve">
+    <value>Unknown type</value>
+  </data>
+  <data name="Academic.Import.BadZip" xml:space="preserve">
+    <value>Invalid zip</value>
+  </data>
 </root>

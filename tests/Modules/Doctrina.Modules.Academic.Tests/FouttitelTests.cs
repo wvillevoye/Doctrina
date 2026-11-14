@@ -14,7 +14,8 @@ public sealed class ElkeFoutcodeHeeftEenTitel
         [
             .. AcademicTypes.All.SelectMany(t => new[] { t.InvalidCode, t.ReferenceNotFoundCode, t.DuplicateCode, t.ConflictCode, t.NotFoundCode, t.DuplicateExternalIdCode }),
             .. Doctrina.Modules.Academic.Api.AcademicApiErrors.All,
-            CsvReader.EmptyCode, CsvReader.MissingColumnsCode, CsvReader.TooLargeCode, AcademicImporter.InvalidSourceCode, 
+            .. ImportErrors.All,
+            
         ];
 
     [Theory]

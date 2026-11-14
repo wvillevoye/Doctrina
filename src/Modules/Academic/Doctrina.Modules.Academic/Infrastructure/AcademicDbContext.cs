@@ -14,6 +14,8 @@ public sealed class AcademicDbContext(DbContextOptions<AcademicDbContext> option
     public DbSet<Person> Persons => Set<Person>();
     public DbSet<Association> Associations => Set<Association>();
     public DbSet<PersonLogin> PersonLogins => Set<PersonLogin>();
+    public DbSet<ImportJob> ImportJobs => Set<ImportJob>();
+    public DbSet<ImportJobRow> ImportJobRows => Set<ImportJobRow>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

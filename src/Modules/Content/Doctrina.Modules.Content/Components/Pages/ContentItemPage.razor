@@ -1,0 +1,96 @@
+@page "/courses/{OfferingId:guid}/content/{ItemId:guid}"
+@attribute [Authorize]
+@using Doctrina.Modules.Academic.Contracts
+@using Doctrina.Modules.Content.Application
+@using Doctrina.Modules.Content.Domain
+@inject IAcademicDirectory Directory
+@inject ContentService Content
+@inject ContentAccess Access
+@inject NavigationManager Navigation
+
+@* A content item of a course offering (spec course-content, design D8 of add-content): a page as formatted text, a
+   file with a download button; a link redirects to its address. 403 without read access, 404 for an unknown, deleted
+   or (for participants) unpublished item. *@
+@if (_item is not null)
+{
+  <DcPageHeader Title="@_item.Title" DocumentTitle="@($"{_item.Title} · {_offering!.Name}")">
+    <Description>
+      <DcLink Href="@($"/courses/{OfferingId:D}")">@_offering.Name</DcLink> · @_item.Section.Title
+      @if (!_item.IsVisible)
+      {
+        <DcBadge Variant="DcBadgeVariant.Warning" data-testid="draft">Draft</DcBadge>
+      }
+    </Description>
+    <Actions>
+      @if (_canManage && _item.Kind == ContentItemKind.Page)
+      {
+        <DcButton Href="@($"{ContentLabels.ItemUrl(OfferingId, ItemId)}/edit")" Icon="pencil" data-testid="edit-page">Edit</DcButton>
+      }
+    </Actions>
+  </DcPageHeader>
+
+  <DcCard>
+    @if (_item.Kind == ContentItemKind.Page)
+    {
+      <MarkdownView Text="@_item.Body" />
+    }
+    else
+    {
+      <dl class="dc-details" data-testid="file-details">
+        <dt>File</dt><dd>@_item.FileName</dd>
+        <dt>Size</dt><dd>@ContentLabels.Size(_item.Size ?? 0)</dd>
+      </dl>
+      <DownloadButton OfferingId="OfferingId" ItemId="ItemId" @rendermode="InteractiveServer" />
+    }
+  </DcCard>
+}
+
+@code {
+    private OfferingInfo? _offering;
+    private ContentItem? _item;
+    private bool _canManage;
+
+    [Parameter]
+    public Guid OfferingId { get; set; }
+
+    [Parameter]
+    public Guid ItemId { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var ct = CancellationToken.None;
+        var offering = await Directory.FindOfferingAsync(OfferingId, ct);
+        if (offering.IsFailure)
+        {
+            Navigation.NotFound();
+            return;
+        }
+
+        var user = AuthenticationState is null ? new ClaimsPrincipal() : (await AuthenticationState).User;
+        _canManage = await Access.CanManageAsync(user, OfferingId, ct);
+        if (!_canManage && !await Access.CanReadAsync(user, OfferingId, ct))
+        {
+            Navigation.NavigateTo("/access-denied");
+            return;
+        }
+
+        var item = await Content.FindItemAsync(OfferingId, ItemId, includeDrafts: _canManage, ct);
+        if (item is null)
+        {
+            Navigation.NotFound();
+            return;
+        }
+
+        if (item.Kind == ContentItemKind.Link)
+        {
+            Navigation.NavigateTo(item.Url!);
+            return;
+        }
+
+        _offering = offering.Value;
+        _item = item;
+    }
+}

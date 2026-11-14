@@ -51,3 +51,27 @@ public sealed class AcademicDirectoryVoorAndereModules
             members.Select(m => (m.ExternalId, m.Name, m.Role)));
     }
 }
+
+// add-content task 1.2 (design D4): the roles of the signed-in user in an offering, shared by Groups and Content.
+public sealed class RollenVanDeIngelogdeGebruikerInEenUitvoering
+{
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
+
+    [Fact]
+    public async Task RollenPerSoortGebruiker()
+    {
+        var directory = new Doctrina.TestKit.Fakes.FakeDirectory();
+        var lecturer = directory.Add("L1", OfferingRole.Lecturer);
+        var student = directory.Add("I6000001");
+        var outsider = Guid.NewGuid();
+
+        Task<IReadOnlyList<OfferingRole>> Roles(Guid? person, Guid? offering = null) =>
+            directory.CurrentRolesAsync(Doctrina.TestKit.Fakes.FakeDirectory.User(person), offering ?? directory.OfferingId, Ct);
+
+        Assert.Equal([OfferingRole.Lecturer], await Roles(lecturer.PersonId));
+        Assert.Equal([OfferingRole.Student], await Roles(student.PersonId));
+        Assert.Empty(await Roles(outsider));
+        Assert.Empty(await Roles(null));
+        Assert.Empty(await Roles(lecturer.PersonId, Guid.NewGuid()));
+    }
+}

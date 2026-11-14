@@ -16,6 +16,8 @@
   <ItemGroup Label="Overig (MIT / Apache-2.0)">
     <PackageVersion Include="Scalar.AspNetCore" Version="2.20.0" />
     <PackageVersion Include="AspNetCore.SassCompiler" Version="1.108.1" />
+    <!-- Markdown for pages (BSD-2-Clause; change add-content). -->
+    <PackageVersion Include="Markdig" Version="1.6.0" />
   </ItemGroup>
   <ItemGroup Label="Achtergrondtaken (LGPL-3.0, OSI; change add-bulk-import)">
     <PackageVersion Include="Hangfire.Core" Version="1.8.25" />

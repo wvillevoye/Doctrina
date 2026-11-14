@@ -112,6 +112,26 @@ With the test data imported, try the **Groups** module (also switched on in Deve
 
 Only lecturers and coordinators of the offering, and users with `Groups.Manage` (role `admin`), can manage groups.
 
+### Content
+
+With the test data imported, try the **Content** module (also switched on in Development):
+
+1. Sign in as `docent` and open **My courses** → **Cell biology**. The section **Content** says "No content yet." and has
+   the button **Manage content** (`/courses/{offering}/content`).
+2. Create a section ("Week 1"), then add a **page** (you write it in Markdown on the next screen, with a **Preview**),
+   a **link** (`https://…`) and a **file** (at most `Content:Files:MaxSizeMb`, 100 MB by default). New sections and items
+   are drafts: use **Publish** (and **Hide**) on both the section and the item, and **Move up** / **Move down** to
+   change the order.
+3. Sign in as `student`: **My courses** → **Cell biology** shows the published sections and items only. A page opens
+   on `/courses/{offering}/content/{item}`, a file has a **Download** button, a link opens in a new tab.
+
+Only lecturers and coordinators of the offering, and users with `Content.Manage` (role `admin`), can manage content;
+`Content.Read` allows reading published content without an enrolment.
+
+Files are kept in a folder (`Content:Files:Path`, by default `App_Data/content` below the content root of the host,
+ignored by Git), as `{offering}/{item}`, with the file name and size in the database. **Back up that folder together
+with the database**, and use a shared folder when more than one web server runs Doctrina.
+
 ## 6. De API proberen
 
 De API (`/api/v1`) accepteert alleen bearer-tokens. Een systeemtoken (client credentials) haal je zo op:

@@ -42,6 +42,11 @@ internal sealed class AcademicHost : IAsyncDisposable
     public static Task<AcademicHost> CreateAsync(DoctrinaHostFactory factory, (string Key, string? Value)[] settings, CancellationToken cancellationToken) =>
         CreateCoreAsync(factory, settings, [], cancellationToken);
 
+
+    /// <summary>As above, with extra settings and further modules switched on.</summary>
+    public static Task<AcademicHost> CreateAsync(DoctrinaHostFactory factory, (string Key, string? Value)[] settings, CancellationToken cancellationToken, params object[] enable) =>
+        CreateCoreAsync(factory, settings, enable, cancellationToken);
+
     private static async Task<AcademicHost> CreateCoreAsync(
         DoctrinaHostFactory factory, (string Key, string? Value)[] settings, object[] enable, CancellationToken cancellationToken)
     {

@@ -26,6 +26,23 @@ public interface IAcademicDirectory
     Task<IReadOnlyList<OfferingMember>> MembersAsync(Guid offeringId, CancellationToken cancellationToken);
 }
 
+public static class AcademicDirectoryExtensions
+{
+    /// <summary>
+    /// The roles of the signed-in user in the offering; empty without a person or an active enrolment (design D4 of
+    /// add-content). The shared base for "lecturer of this offering" checks in other modules.
+    /// </summary>
+    public static async Task<IReadOnlyList<OfferingRole>> CurrentRolesAsync(
+        this IAcademicDirectory directory, ClaimsPrincipal user, Guid offeringId, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(directory);
+        var personId = await directory.CurrentPersonIdAsync(user, cancellationToken);
+        return personId is null
+            ? []
+            : [.. (await directory.MembersAsync(offeringId, cancellationToken)).Where(m => m.PersonId == personId).Select(m => m.Role)];
+    }
+}
+
 /// <summary>
 /// A component shown on the page of a course offering (<c>/courses/{offering}</c>). The component gets the parameter
 /// <c>[Parameter] public Guid OfferingId { get; set; }</c>.

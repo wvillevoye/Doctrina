@@ -9,9 +9,18 @@
       <span class="dc-field__required">(required)</span>
     }
   </label>
-  <InputText id="@InputId" type="@Type" class="@(IsInvalid ? "form-control is-invalid" : "form-control")"
-             Value="@Value" ValueChanged="@ValueChanged" ValueExpression="@ValueExpression"
-             @attributes="InputAttributes" />
+  @if (Rows is { } rows)
+  {
+    <InputTextArea id="@InputId" rows="@rows" class="@(IsInvalid ? "form-control is-invalid" : "form-control")"
+                   Value="@Value" ValueChanged="@ValueChanged" ValueExpression="@ValueExpression"
+                   @attributes="InputAttributes" />
+  }
+  else
+  {
+    <InputText id="@InputId" type="@Type" class="@(IsInvalid ? "form-control is-invalid" : "form-control")"
+               Value="@Value" ValueChanged="@ValueChanged" ValueExpression="@ValueExpression"
+               @attributes="InputAttributes" />
+  }
   @if (Hint is not null)
   {
     <div id="@HintId" class="dc-field__hint">@Hint</div>
@@ -23,4 +32,8 @@
     /// <summary><c>text</c> (standaard), <c>email</c>, <c>password</c>, <c>tel</c>, <c>url</c>, <c>search</c>.</summary>
     [Parameter]
     public string Type { get; set; } = "text";
+
+    /// <summary>Number of visible lines; makes the field a <c>textarea</c> (change add-content).</summary>
+    [Parameter]
+    public int? Rows { get; set; }
 }

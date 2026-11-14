@@ -1,5 +1,6 @@
 using Doctrina.Infrastructure.Modules;
 using Doctrina.Modules.Academic;
+using Doctrina.Modules.Content;
 using Doctrina.Modules.Groups;
 
 namespace Doctrina.Host;
@@ -14,6 +15,7 @@ internal static class KnownModules
     {
         services.AddDoctrinaModule<AcademicModule>();
         services.AddDoctrinaModule<GroupsModule>();
+        services.AddDoctrinaModule<ContentModule>();
         return services;
     }
 }

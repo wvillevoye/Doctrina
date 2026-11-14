@@ -9,11 +9,26 @@ using Microsoft.EntityFrameworkCore;
 namespace Doctrina.Modules.Academic.Application;
 
 /// <summary>Implementation of the public contract <see cref="IAcademicDirectory"/> (design D1 of add-groups).</summary>
-internal sealed class AcademicDirectory(AcademicDbContext db, CurrentPerson currentPerson) : IAcademicDirectory
+internal sealed class AcademicDirectory(AcademicDbContext db, CurrentPerson currentPerson) : IAcademicDirectory, IDisposable
 {
     public const string OfferingNotFoundCode = "Academic.CourseOffering.NotFound";
 
-    public async Task<Result<OfferingInfo>> FindOfferingAsync(Guid offeringId, CancellationToken cancellationToken)
+    // Page sections call the directory at the same time and share this scoped DbContext, which allows one operation at a time.
+    private readonly SemaphoreSlim _gate = new(1, 1);
+
+    public void Dispose() => _gate.Dispose();
+
+    private async Task<T> SerializedAsync<T>(Func<Task<T>> operation, CancellationToken cancellationToken)
+    {
+        await _gate.WaitAsync(cancellationToken);
+        try { return await operation(); }
+        finally { _gate.Release(); }
+    }
+
+    public Task<Result<OfferingInfo>> FindOfferingAsync(Guid offeringId, CancellationToken cancellationToken) =>
+        SerializedAsync(() => FindOfferingCoreAsync(offeringId, cancellationToken), cancellationToken);
+
+    private async Task<Result<OfferingInfo>> FindOfferingCoreAsync(Guid offeringId, CancellationToken cancellationToken)
     {
         var offering = await db.CourseOfferings.AsNoTracking()
             .Where(o => o.Id == offeringId && o.Status == EntityStatus.Active)
@@ -24,10 +39,13 @@ internal sealed class AcademicDirectory(AcademicDbContext db, CurrentPerson curr
             : offering;
     }
 
-    public async Task<Guid?> CurrentPersonIdAsync(ClaimsPrincipal user, CancellationToken cancellationToken) =>
-        (await currentPerson.FindAsync(user, cancellationToken))?.Id;
+    public Task<Guid?> CurrentPersonIdAsync(ClaimsPrincipal user, CancellationToken cancellationToken) =>
+        SerializedAsync(async () => (await currentPerson.FindAsync(user, cancellationToken))?.Id, cancellationToken);
 
-    public async Task<IReadOnlyList<OfferingMember>> MembersAsync(Guid offeringId, CancellationToken cancellationToken)
+    public Task<IReadOnlyList<OfferingMember>> MembersAsync(Guid offeringId, CancellationToken cancellationToken) =>
+        SerializedAsync(() => MembersCoreAsync(offeringId, cancellationToken), cancellationToken);
+
+    private async Task<IReadOnlyList<OfferingMember>> MembersCoreAsync(Guid offeringId, CancellationToken cancellationToken)
     {
         var rows = await db.Associations.AsNoTracking()
             .Where(a => a.CourseOfferingId == offeringId && a.Status == EntityStatus.Active && a.Person.Status == EntityStatus.Active)

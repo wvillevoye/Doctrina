@@ -346,8 +346,6 @@ internal sealed class GroupsAccess(IAcademicDirectory directory)
             return true;
         }
 
-        var personId = await directory.CurrentPersonIdAsync(user, ct);
-        return personId is not null && (await directory.MembersAsync(offeringId, ct))
-            .Any(m => m.PersonId == personId && m.Role is OfferingRole.Lecturer or OfferingRole.Coordinator);
+        return (await directory.CurrentRolesAsync(user, offeringId, ct)).Any(r => r is OfferingRole.Lecturer or OfferingRole.Coordinator);
     }
 }

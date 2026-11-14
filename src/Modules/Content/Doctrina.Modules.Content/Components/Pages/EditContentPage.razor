@@ -1,0 +1,104 @@
+@page "/courses/{OfferingId:guid}/content/{ItemId:guid}/edit"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using Doctrina.Core.Results
+@using Doctrina.Modules.Academic.Contracts
+@using Doctrina.Modules.Content.Application
+@using Doctrina.Modules.Content.Domain
+@using Microsoft.Extensions.DependencyInjection
+@inject IServiceScopeFactory Scopes
+@inject NavigationManager Navigation
+
+@* Edit a page of a course offering in Markdown, with a preview (spec course-content, design D7 and D8 of
+   add-content). Access: lecturers and coordinators of the offering, and Content.Manage. *@
+@if (_loaded)
+{
+  <DcPageHeader Title="Edit page" DocumentTitle="@($"Edit {_form.Title}")">
+    <Description><DcLink Href="@($"/courses/{OfferingId:D}/content")">Manage content</DcLink></Description>
+  </DcPageHeader>
+
+  <div class="dc-stack">
+    <DcCard>
+      <DcForm Model="_form" Error="_error" OnValidSubmit="SaveAsync" FormName="edit-page" data-testid="edit-page-form">
+        <DcTextField Label="Title" Required @bind-Value="_form.Title" />
+        <DcTextField Label="Text" Rows="16" Hint="Markdown: # heading, **bold**, *italic*, - list, [link](https://…)." @bind-Value="_form.Body" />
+        <div class="dc-form__actions">
+          <DcButton Type="submit" Variant="DcButtonVariant.Primary">Save</DcButton>
+          <DcButton OnClick="() => _preview = !_preview" data-testid="preview-toggle">@(_preview ? "Hide preview" : "Preview")</DcButton>
+          <DcButton Variant="DcButtonVariant.Ghost" Href="@ContentLabels.ItemUrl(OfferingId, ItemId)">Cancel</DcButton>
+        </div>
+      </DcForm>
+    </DcCard>
+
+    @if (_preview)
+    {
+      <DcCard Title="Preview" data-testid="preview">
+        <MarkdownView Text="@_form.Body" />
+      </DcCard>
+    }
+  </div>
+}
+
+@code {
+    private readonly PageForm _form = new();
+    private Error? _error;
+    private bool _loaded;
+    private bool _preview;
+
+    [Parameter]
+    public Guid OfferingId { get; set; }
+
+    [Parameter]
+    public Guid ItemId { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var ct = CancellationToken.None;
+        using var scope = Scopes.CreateScope();
+        if ((await scope.ServiceProvider.GetRequiredService<IAcademicDirectory>().FindOfferingAsync(OfferingId, ct)).IsFailure)
+        {
+            Navigation.NotFound();
+            return;
+        }
+
+        var user = AuthenticationState is null ? new ClaimsPrincipal() : (await AuthenticationState).User;
+        if (!await scope.ServiceProvider.GetRequiredService<ContentAccess>().CanManageAsync(user, OfferingId, ct))
+        {
+            Navigation.NavigateTo("/access-denied");
+            return;
+        }
+
+        var item = await scope.ServiceProvider.GetRequiredService<ContentService>().FindItemAsync(OfferingId, ItemId, includeDrafts: true, ct);
+        if (item is null || item.Kind != ContentItemKind.Page)
+        {
+            Navigation.NotFound();
+            return;
+        }
+
+        (_form.Title, _form.Body) = (item.Title, item.Body);
+        _loaded = true;
+    }
+
+    private async Task SaveAsync()
+    {
+        using var scope = Scopes.CreateScope();
+        var result = await scope.ServiceProvider.GetRequiredService<ContentService>().SavePageAsync(ItemId, _form.Title, _form.Body, CancellationToken.None);
+        _error = result.Error;
+        if (result.IsSuccess)
+        {
+            Navigation.NavigateTo(ContentLabels.ItemUrl(OfferingId, ItemId));
+        }
+    }
+
+    private sealed class PageForm
+    {
+        [Required(ErrorMessage = "Enter a title.")]
+        public string? Title { get; set; }
+
+        public string? Body { get; set; }
+    }
+}

@@ -1,0 +1,365 @@
+@page "/courses/{OfferingId:guid}/content"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using Doctrina.Core.Results
+@using Doctrina.Modules.Academic.Contracts
+@using Doctrina.Modules.Content.Application
+@using Doctrina.Modules.Content.Domain
+@using Microsoft.Extensions.DependencyInjection
+@inject IServiceScopeFactory Scopes
+@inject NavigationManager Navigation
+
+@* Content management of a course offering (spec course-content, design D8 of add-content). Interactive; every action
+   runs in its own scope, like a request, and then reloads. Access: lecturers and coordinators of the offering, and
+   Content.Manage. *@
+@if (_offering is not null)
+{
+  <DcPageHeader Title="Content" DocumentTitle="@($"Content · {_offering.Name}")">
+    <Description><DcLink Href="@($"/courses/{OfferingId:D}")">@_offering.Name</DcLink></Description>
+  </DcPageHeader>
+
+  <div class="dc-stack">
+    @if (_message is not null)
+    {
+      <DcAlert Severity="DcSeverity.Success" data-testid="content-message"><p>@_message</p></DcAlert>
+    }
+    <DcResult Error="_error" />
+
+    @foreach (var section in _sections)
+    {
+      <DcCard Title="@section.Title" data-testid="section">
+        <ChildContent>
+          <p>@StatusBadge(section.Published)</p>
+          @if (section.Items.Count == 0)
+          {
+            <p>No items yet.</p>
+          }
+          <dl class="dc-details">
+            @foreach (var item in section.Items)
+            {
+              <dt data-testid="item-title">
+                @if (item.Kind == ContentItemKind.Link)
+                {
+                  <DcLink Href="@(item.Url!)" External>@item.Title</DcLink>
+                }
+                else
+                {
+                  <DcLink Href="@ContentLabels.ItemUrl(OfferingId, item.Id)">@item.Title</DcLink>
+                }
+              </dt>
+              <dd data-testid="item">
+                <p>
+                  @ContentLabels.Kind(item.Kind)@(item.Kind == ContentItemKind.File ? $": {item.FileName}, {ContentLabels.Size(item.Size ?? 0)}" : null)
+                  @StatusBadge(item.Published)
+                </p>
+                <div class="dc-form__actions">
+                  @if (item.Kind == ContentItemKind.Page)
+                  {
+                    <DcButton Variant="DcButtonVariant.Ghost" Icon="pencil" Href="@($"{ContentLabels.ItemUrl(OfferingId, item.Id)}/edit")" aria-label="@($"Edit: {item.Title}")">Edit</DcButton>
+                  }
+                  <DcButton Variant="DcButtonVariant.Ghost" OnClick="() => PublishAsync(item.Id, item.Title, !item.Published, isSection: false)" aria-label="@($"{PublishLabel(item.Published)}: {item.Title}")" data-testid="publish-item">@PublishLabel(item.Published)</DcButton>
+                  <DcButton Variant="DcButtonVariant.Ghost" OnClick="() => MoveAsync(item.Id, -1, isSection: false)" aria-label="@($"Move up: {item.Title}")" data-testid="item-up">Move up</DcButton>
+                  <DcButton Variant="DcButtonVariant.Ghost" OnClick="() => MoveAsync(item.Id, 1, isSection: false)" aria-label="@($"Move down: {item.Title}")" data-testid="item-down">Move down</DcButton>
+                  <DcButton Variant="DcButtonVariant.Ghost" Icon="pencil" Label="@($"Rename {item.Title}")" OnClick="() => AskRename(item.Id, item.Title, isSection: false)" />
+                  <DcButton Variant="DcButtonVariant.Ghost" Icon="trash-2" Label="@($"Delete {item.Title}")" OnClick="() => AskDelete(item.Id, item.Title, isSection: false)" data-testid="delete-item" />
+                </div>
+              </dd>
+            }
+          </dl>
+        </ChildContent>
+        <Footer>
+          <DcButton OnClick="() => PublishAsync(section.Id, section.Title, !section.Published, isSection: true)" data-testid="publish-section">@PublishLabel(section.Published) section</DcButton>
+          <DcButton OnClick="() => MoveAsync(section.Id, -1, isSection: true)" aria-label="@($"Move up: {section.Title}")" data-testid="section-up">Move up</DcButton>
+          <DcButton OnClick="() => MoveAsync(section.Id, 1, isSection: true)" aria-label="@($"Move down: {section.Title}")" data-testid="section-down">Move down</DcButton>
+          <DcButton Icon="pencil" OnClick="() => AskRename(section.Id, section.Title, isSection: true)">Rename section</DcButton>
+          <DcButton Variant="DcButtonVariant.Danger" Icon="trash-2" OnClick="() => AskDelete(section.Id, section.Title, isSection: true)" data-testid="delete-section">Delete section</DcButton>
+        </Footer>
+      </DcCard>
+    }
+
+    @if (_sections.Count > 0)
+    {
+      <DcCard Title="Add a page">
+        <DcForm Model="_newPage" OnValidSubmit="AddPageAsync" FormName="add-page" data-testid="add-page">
+          <DcSelect TValue="string" Label="Section" Required @bind-Value="_newPage.SectionId">@SectionOptions</DcSelect>
+          <DcTextField Label="Title" Required Hint="You write the text on the next page." @bind-Value="_newPage.Title" />
+          <div class="dc-form__actions"><DcButton Type="submit" Icon="plus">Add page</DcButton></div>
+        </DcForm>
+      </DcCard>
+
+      <DcCard Title="Add a link">
+        <DcForm Model="_newLink" OnValidSubmit="AddLinkAsync" FormName="add-link" data-testid="add-link">
+          <DcSelect TValue="string" Label="Section" Required @bind-Value="_newLink.SectionId">@SectionOptions</DcSelect>
+          <DcTextField Label="Title" Required @bind-Value="_newLink.Title" />
+          <DcTextField Label="Web address" Type="url" Required Hint="Starts with http:// or https://." @bind-Value="_newLink.Url" />
+          <div class="dc-form__actions"><DcButton Type="submit" Icon="plus">Add link</DcButton></div>
+        </DcForm>
+      </DcCard>
+
+      <DcCard Title="Add a file">
+        <DcForm Model="_newFile" OnValidSubmit="AddFileAsync" FormName="add-file" data-testid="add-file">
+          <DcSelect TValue="string" Label="Section" Required @bind-Value="_newFile.SectionId">@SectionOptions</DcSelect>
+          <div class="dc-field">
+            <label for="content-file" class="dc-field__label">File<span class="dc-field__required">(required)</span></label>
+            <InputFile id="content-file" OnChange="e => _file = e.File" />
+            <div class="dc-field__hint">At most @_maxSizeMb MB.</div>
+          </div>
+          <DcTextField Label="Title" Hint="Leave empty to use the file name." @bind-Value="_newFile.Title" />
+          <div class="dc-form__actions"><DcButton Type="submit" Icon="plus" Busy="_uploading">Add file</DcButton></div>
+        </DcForm>
+      </DcCard>
+    }
+
+    <DcCard Title="New section">
+      <DcForm Model="_newSection" OnValidSubmit="AddSectionAsync" FormName="new-section" data-testid="new-section">
+        <DcTextField Label="Title" Required Hint="For example “Week 1” or “Assignments”." @bind-Value="_newSection.Title" />
+        <div class="dc-form__actions"><DcButton Type="submit" Variant="DcButtonVariant.Primary" Icon="plus">Create section</DcButton></div>
+      </DcForm>
+    </DcCard>
+  </div>
+
+  <DcModal @ref="_renameModal" Title="Rename">
+    <ChildContent>
+      <DcForm Model="_rename" OnValidSubmit="RenameAsync" FormName="rename">
+        <DcTextField Label="Title" Required @bind-Value="_rename.Title" />
+        <div class="dc-form__actions"><DcButton Type="submit" Variant="DcButtonVariant.Primary">Save</DcButton></div>
+      </DcForm>
+    </ChildContent>
+  </DcModal>
+
+  <DcModal @ref="_deleteModal" Title="@($"Delete {_delete.Title}?")">
+    <ChildContent>
+      <p>@(_delete.IsSection ? "The section and all its items are deleted. Files in it can't be brought back." : "The item is deleted. A file can't be brought back.")</p>
+    </ChildContent>
+    <Footer>
+      <DcButton OnClick="() => _deleteModal!.CloseAsync()">Cancel</DcButton>
+      <DcButton Variant="DcButtonVariant.Danger" OnClick="DeleteAsync" data-testid="confirm-delete">Delete</DcButton>
+    </Footer>
+  </DcModal>
+}
+
+@code {
+    private OfferingInfo? _offering;
+    private IReadOnlyList<ContentSection> _sections = [];
+    private Error? _error;
+    private string? _message;
+    private int _maxSizeMb;
+    private bool _uploading;
+    private IBrowserFile? _file;
+    private readonly TitleForm _newSection = new();
+    private readonly NewItemForm _newPage = new();
+    private readonly NewLinkForm _newLink = new();
+    private readonly NewFileForm _newFile = new();
+    private readonly RenameForm _rename = new();
+    private (Guid Id, string Title, bool IsSection) _delete;
+    private DcModal? _renameModal;
+    private DcModal? _deleteModal;
+
+    [Parameter]
+    public Guid OfferingId { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    private RenderFragment SectionOptions => @<text>
+      <option value="">Choose a section…</option>
+      @foreach (var section in _sections)
+      {
+        <option value="@section.Id.ToString("D")">@section.Title</option>
+      }
+    </text>;
+
+    private static RenderFragment StatusBadge(bool published) =>
+        @<DcBadge Variant="@(published ? DcBadgeVariant.Success : DcBadgeVariant.Warning)">@(published ? "Published" : "Draft")</DcBadge>;
+
+    private static string PublishLabel(bool published) => published ? "Hide" : "Publish";
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var scope = Scopes.CreateScope();
+        var offering = await scope.ServiceProvider.GetRequiredService<IAcademicDirectory>().FindOfferingAsync(OfferingId, CancellationToken.None);
+        if (offering.IsFailure)
+        {
+            Navigation.NotFound();
+            return;
+        }
+
+        var user = AuthenticationState is null ? new ClaimsPrincipal() : (await AuthenticationState).User;
+        if (!await scope.ServiceProvider.GetRequiredService<ContentAccess>().CanManageAsync(user, OfferingId, CancellationToken.None))
+        {
+            Navigation.NavigateTo("/access-denied");
+            return;
+        }
+
+        _maxSizeMb = scope.ServiceProvider.GetRequiredService<ContentFileStore>().MaxSizeMb;
+        await ReloadAsync();
+        _offering = offering.Value; // only now: the page renders once, with its data
+    }
+
+    private async Task ReloadAsync()
+    {
+        using var scope = Scopes.CreateScope();
+        _sections = await scope.ServiceProvider.GetRequiredService<ContentService>().SectionsAsync(OfferingId, includeDrafts: true, CancellationToken.None);
+    }
+
+    /// <summary>Runs one change in its own scope, shows the outcome and reloads.</summary>
+    private async Task<bool> RunAsync(Func<ContentService, Task<Result>> change, string? success)
+    {
+        _message = null;
+        using (var scope = Scopes.CreateScope())
+        {
+            var result = await change(scope.ServiceProvider.GetRequiredService<ContentService>());
+            _error = result.Error;
+            _message = result.IsSuccess ? success : null;
+        }
+
+        await ReloadAsync();
+        return _error is null;
+    }
+
+    private async Task AddSectionAsync()
+    {
+        if (await RunAsync(async s => await s.CreateSectionAsync(OfferingId, _newSection.Title, CancellationToken.None), $"Section “{_newSection.Title}” created as a draft."))
+        {
+            _newSection.Title = null;
+        }
+    }
+
+    private async Task AddPageAsync()
+    {
+        Guid? id = null;
+        if (await RunAsync(
+            async s =>
+            {
+                var page = await s.AddPageAsync(Guid.Parse(_newPage.SectionId!), _newPage.Title, CancellationToken.None);
+                id = page.Value?.Id;
+                return page;
+            },
+            null))
+        {
+            Navigation.NavigateTo($"{ContentLabels.ItemUrl(OfferingId, id!.Value)}/edit");
+        }
+    }
+
+    private async Task AddLinkAsync()
+    {
+        if (await RunAsync(async s => await s.AddLinkAsync(Guid.Parse(_newLink.SectionId!), _newLink.Title, _newLink.Url, CancellationToken.None), $"Link “{_newLink.Title}” added as a draft."))
+        {
+            _newLink.Title = _newLink.Url = null;
+        }
+    }
+
+    private async Task AddFileAsync()
+    {
+        if (_file is null)
+        {
+            _error = ContentErrors.Invalid(ContentErrors.ItemInvalid, "file", "Choose a file.");
+            return;
+        }
+
+        var file = _file;
+        _uploading = true;
+        try
+        {
+            var added = await RunAsync(
+                async s =>
+                {
+                    // The browser's stream refuses more than the limit, so a larger file gets an empty stream and the
+                    // service reports the size itself.
+                    var max = _maxSizeMb * 1024L * 1024L;
+                    if (file.Size > max)
+                    {
+                        return ContentService.TooLarge(_maxSizeMb);
+                    }
+
+                    await using var stream = file.OpenReadStream(max);
+                    return await s.AddFileAsync(Guid.Parse(_newFile.SectionId!), _newFile.Title, file.Name, file.ContentType, stream, CancellationToken.None);
+                },
+                $"File “{file.Name}” added as a draft.");
+            if (added)
+            {
+                _newFile.Title = null;
+                _file = null;
+            }
+        }
+        finally
+        {
+            _uploading = false;
+        }
+    }
+
+    private Task PublishAsync(Guid id, string title, bool publish, bool isSection) =>
+        RunAsync(
+            s => isSection ? s.SetSectionPublishedAsync(id, publish, CancellationToken.None) : s.SetItemPublishedAsync(id, publish, CancellationToken.None),
+            publish ? $"“{title}” is published." : $"“{title}” is hidden.");
+
+    private Task MoveAsync(Guid id, int direction, bool isSection) =>
+        RunAsync(s => isSection ? s.MoveSectionAsync(id, direction, CancellationToken.None) : s.MoveItemAsync(id, direction, CancellationToken.None), null);
+
+    private Task AskRename(Guid id, string title, bool isSection)
+    {
+        (_rename.Id, _rename.Title, _rename.IsSection) = (id, title, isSection);
+        return _renameModal!.ShowAsync();
+    }
+
+    private async Task RenameAsync()
+    {
+        await RunAsync(
+            s => _rename.IsSection ? s.RenameSectionAsync(_rename.Id, _rename.Title, CancellationToken.None) : s.RenameItemAsync(_rename.Id, _rename.Title, CancellationToken.None),
+            $"Renamed to “{_rename.Title}”.");
+        await _renameModal!.CloseAsync();
+    }
+
+    private Task AskDelete(Guid id, string title, bool isSection)
+    {
+        _delete = (id, title, isSection);
+        return _deleteModal!.ShowAsync();
+    }
+
+    private async Task DeleteAsync()
+    {
+        var (id, title, isSection) = _delete;
+        await RunAsync(s => isSection ? s.DeleteSectionAsync(id, CancellationToken.None) : s.DeleteItemAsync(id, CancellationToken.None), $"“{title}” deleted.");
+        await _deleteModal!.CloseAsync();
+    }
+
+    private sealed class TitleForm
+    {
+        [Required(ErrorMessage = "Enter a title.")]
+        public string? Title { get; set; }
+    }
+
+    private class NewItemForm
+    {
+        [Required(ErrorMessage = "Choose a section.")]
+        public string? SectionId { get; set; }
+
+        [Required(ErrorMessage = "Enter a title.")]
+        public string? Title { get; set; }
+    }
+
+    private sealed class NewLinkForm : NewItemForm
+    {
+        [Required(ErrorMessage = "Enter a web address.")]
+        public string? Url { get; set; }
+    }
+
+    private sealed class NewFileForm
+    {
+        [Required(ErrorMessage = "Choose a section.")]
+        public string? SectionId { get; set; }
+
+        public string? Title { get; set; }
+    }
+
+    private sealed class RenameForm
+    {
+        public Guid Id { get; set; }
+
+        public bool IsSection { get; set; }
+
+        [Required(ErrorMessage = "Enter a title.")]
+        public string? Title { get; set; }
+    }
+}

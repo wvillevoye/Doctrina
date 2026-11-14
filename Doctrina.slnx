@@ -8,6 +8,7 @@
   <Folder Name="/src/Modules/">
     <Project Path="src/Modules/Academic/Doctrina.Modules.Academic.Contracts/Doctrina.Modules.Academic.Contracts.csproj" />
     <Project Path="src/Modules/Academic/Doctrina.Modules.Academic/Doctrina.Modules.Academic.csproj" />
+    <Project Path="src/Modules/Content/Doctrina.Modules.Content/Doctrina.Modules.Content.csproj" />
     <Project Path="src/Modules/Groups/Doctrina.Modules.Groups.Contracts/Doctrina.Modules.Groups.Contracts.csproj" />
     <Project Path="src/Modules/Groups/Doctrina.Modules.Groups/Doctrina.Modules.Groups.csproj" />
   </Folder>
@@ -20,6 +21,7 @@
   </Folder>
   <Folder Name="/tests/Modules/">
     <Project Path="tests/Modules/Doctrina.Modules.Academic.Tests/Doctrina.Modules.Academic.Tests.csproj" />
+    <Project Path="tests/Modules/Doctrina.Modules.Content.Tests/Doctrina.Modules.Content.Tests.csproj" />
     <Project Path="tests/Modules/Doctrina.Modules.Groups.Tests/Doctrina.Modules.Groups.Tests.csproj" />
   </Folder>
 </Solution>

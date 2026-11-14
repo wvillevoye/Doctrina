@@ -26,3 +26,6 @@ Thumbs.db
 
 # Gegenereerd door AspNetCore.SassCompiler tijdens dotnet build (change add-design-system)
 src/Doctrina.UI/wwwroot/css/doctrina.css
+
+# Uploaded content files (change add-content)
+App_Data/

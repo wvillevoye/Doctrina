@@ -1,0 +1,75 @@
+@using Doctrina.Modules.Content.Application
+@using Doctrina.Modules.Content.Domain
+@inject ContentService Content
+@inject ContentAccess Access
+
+@* Section "Content" on the page of a course offering (spec course-content, design D8 of add-content): the published
+   sections and items; for those who may manage also the drafts, and a link to content management. Nothing for those
+   who may not read. *@
+@if (_canRead)
+{
+  <DcCard Title="Content" data-testid="content">
+    @if (_sections.Count == 0)
+    {
+      <p>No content yet.</p>
+    }
+    @foreach (var section in _sections)
+    {
+      <h3 data-testid="content-section">
+        @section.Title
+        @if (!section.Published)
+        {
+          <DcBadge Variant="DcBadgeVariant.Warning">Draft</DcBadge>
+        }
+      </h3>
+      <ul data-testid="content-items">
+        @foreach (var item in section.Items)
+        {
+          <li>
+            @if (item.Kind == ContentItemKind.Link)
+            {
+              <DcLink Href="@(item.Url!)" External>@item.Title</DcLink>
+            }
+            else
+            {
+              <DcLink Href="@ContentLabels.ItemUrl(OfferingId, item.Id)">@item.Title</DcLink>
+            }
+            @if (item.Kind == ContentItemKind.File)
+            {
+              <span> (@item.FileName, @ContentLabels.Size(item.Size ?? 0))</span>
+            }
+            @if (!item.Published)
+            {
+              <DcBadge Variant="DcBadgeVariant.Warning">Draft</DcBadge>
+            }
+          </li>
+        }
+      </ul>
+    }
+    @if (_canManage)
+    {
+      <div class="dc-form__actions"><DcButton Href="@($"/courses/{OfferingId:D}/content")" Icon="settings" data-testid="manage-content">Manage content</DcButton></div>
+    }
+  </DcCard>
+}
+
+@code {
+    private IReadOnlyList<ContentSection> _sections = [];
+    private bool _canRead;
+    private bool _canManage;
+
+    [Parameter]
+    public Guid OfferingId { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var ct = CancellationToken.None;
+        var user = AuthenticationState is null ? new ClaimsPrincipal() : (await AuthenticationState).User;
+        _canManage = await Access.CanManageAsync(user, OfferingId, ct);
+        _canRead = _canManage || await Access.CanReadAsync(user, OfferingId, ct);
+        _sections = _canRead ? await Content.SectionsAsync(OfferingId, includeDrafts: _canManage, ct) : [];
+    }
+}

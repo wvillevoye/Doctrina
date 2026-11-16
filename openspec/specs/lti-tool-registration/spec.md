@@ -118,7 +118,7 @@ De module SHALL RSA-sleutelparen (RS256) beheren, de privésleutel versleuteld o
 - **THEN** wordt een nieuw sleutelpaar aangemaakt en gebruikt, en staat de onleesbare sleutel niet meer in de JWKS
 
 ### Requirement: Deep linking per tool
-Een tool SHALL optioneel een `Deep linking URL` (waar Doctrina het deep linking-verzoek naartoe stuurt) en een `Public keys URL` (JWKS van de tool) hebben. Een deep linking URL SHALL altijd samen met een public keys URL worden ingevuld; een public keys URL MAG ook zonder deep linking URL bestaan als de tool cijferservices heeft. Alle adressen volgen dezelfde adresregels als de andere adressen. Fouten hebben de codes `Lti.Tool.*`.
+Een tool SHALL optioneel een `Deep linking URL` (waar Doctrina het deep linking-verzoek naartoe stuurt) en een `Public keys URL` (JWKS van de tool) hebben. Een deep linking URL SHALL altijd samen met een public keys URL worden ingevuld; een public keys URL MAG ook zonder deep linking URL bestaan als de tool cijferservices of ledenservices heeft. Alle adressen volgen dezelfde adresregels als de andere adressen. Fouten hebben de codes `Lti.Tool.*`.
 
 #### Scenario: Tool met deep linking opslaan
 - **GIVEN** een beheerder met `Lti.Manage` op `/lti/tools`
@@ -131,7 +131,7 @@ Een tool SHALL optioneel een `Deep linking URL` (waar Doctrina het deep linking-
 - **THEN** wordt niets opgeslagen en geeft de service de foutcode `Lti.Tool.PublicKeysUrlRequired`
 
 #### Scenario: Public keys URL zonder deep linking URL wordt geweigerd
-- **GIVEN** een beheerder met `Lti.Manage` en een tool met cijferservices uit
+- **GIVEN** een beheerder met `Lti.Manage` en een tool met cijferservices en ledenservices uit
 - **WHEN** de beheerder een tool opslaat met alleen een public keys URL
 - **THEN** wordt niets opgeslagen en geeft de service de foutcode `Lti.Tool.DeepLinkingUrlRequired`
 
@@ -167,3 +167,24 @@ Een tool SHALL een instelling "Grade services" hebben (standaard uit). Staat ze 
 - **GIVEN** een beheerder met `Lti.Manage`
 - **WHEN** de beheerder `/lti/tools` opent
 - **THEN** toont de pagina het adres van het tokenendpoint (`/lti/token`) naast de andere platformgegevens
+
+### Requirement: Ledenservices per tool
+Een tool SHALL een instelling "Membership services" hebben (standaard uit). Staat ze aan, dan SHALL de tool een `Public
+keys URL` hebben (de foutcode is anders `Lti.Tool.PublicKeysUrlRequired`) en SHALL Doctrina haar de NRPS-scope
+`contextmembership.readonly` toestaan. De naam en het e-mailadres van deelnemers gaan alleen mee volgens de bestaande
+instellingen "Send name" en "Send email".
+
+#### Scenario: Tool met ledenservices opslaan
+- **GIVEN** een beheerder met `Lti.Manage`
+- **WHEN** de beheerder een tool opslaat met "Membership services" aan en een public keys URL
+- **THEN** is de instelling bewaard en staat de tool als geschikt voor ledenservices in de lijst
+
+#### Scenario: Ledenservices zonder public keys URL wordt geweigerd
+- **GIVEN** een beheerder met `Lti.Manage`
+- **WHEN** de beheerder een tool opslaat met "Membership services" aan en zonder public keys URL
+- **THEN** wordt niets opgeslagen en geeft de service de foutcode `Lti.Tool.PublicKeysUrlRequired`
+
+#### Scenario: Bestaande tool heeft geen ledenservices
+- **GIVEN** een tool die vóór deze change is geregistreerd
+- **WHEN** de tool de NRPS-scope vraagt
+- **THEN** wordt die scope geweigerd

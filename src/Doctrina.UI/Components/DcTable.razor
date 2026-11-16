@@ -1,0 +1,69 @@
+@typeparam TItem
+
+@* Semantische tabel (spec ui-components "Tabellen zijn semantisch en hebben een lege toestand"): bijschrift,
+   kolomkoppen met scope="col" en een melding in plaats van een lege tabel. Een brede tabel scrolt binnen een
+   benoemde regio die met het toetsenbord bereikbaar is (WCAG 2.1.1, 1.4.10). *@
+@if (Items.Count == 0)
+{
+  <p class="dc-table__empty" data-testid="table-empty">@EmptyText</p>
+}
+else
+{
+  <div class="dc-table" role="region" aria-labelledby="@_captionId" tabindex="0" @attributes="AdditionalAttributes">
+    <table class="table dc-table__table">
+      <caption id="@_captionId" class="@(HideCaption ? "visually-hidden" : "dc-table__caption")">@Caption</caption>
+      <thead>
+        <tr>
+          @foreach (var column in Columns)
+          {
+            <th scope="col">@column.Title</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var item in Items)
+        {
+          <tr>
+            @foreach (var column in Columns)
+            {
+              <td>@if (column.Template is not null) { @column.Template(item) } else { @column.Value?.Invoke(item) }</td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@code {
+    private readonly string _captionId = DcIds.New("table");
+
+    /// <summary>Bijschrift; verplicht, want het is de naam van de tabel.</summary>
+    [Parameter, EditorRequired]
+    public string Caption { get; set; } = string.Empty;
+
+    /// <summary>Bijschrift alleen voor hulptechnologie (als de kop erboven al zegt wat de tabel is).</summary>
+    [Parameter]
+    public bool HideCaption { get; set; }
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<DcTableColumn<TItem>> Columns { get; set; } = [];
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<TItem> Items { get; set; } = [];
+
+    /// <summary>Tekst als er geen rijen zijn, bv. "Nog geen cursussen.".</summary>
+    [Parameter, EditorRequired]
+    public string EmptyText { get; set; } = string.Empty;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrWhiteSpace(Caption))
+        {
+            throw new InvalidOperationException("DcTable heeft een bijschrift (Caption) nodig als naam van de tabel.");
+        }
+    }
+}

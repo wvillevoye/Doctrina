@@ -1,0 +1,38 @@
+@page "/academic"
+@attribute [RequirePermission(AcademicPermissions.Read)]
+@using Doctrina.Modules.Academic.Application
+@using Doctrina.Modules.Academic.Components
+@inject AcademicQueries Queries
+
+@* Start of the admin pages: a list per type with its number of records (spec academic-admin). Read-only. *@
+<DcPageHeader Title="Academic">
+  <Description>Organizations, sessions, courses, offerings, persons and enrolments from the student information system. Changes go through the source.</Description>
+  <Actions>
+    @if (_canImport)
+    {
+      <DcButton Href="/academic/import" Variant="DcButtonVariant.Primary">Import</DcButton>
+    }
+  </Actions>
+</DcPageHeader>
+
+<ul class="dc-stack" data-testid="academic-types">
+  @foreach (var type in AcademicTypes.All)
+  {
+    <li><DcLink Href="@($"/academic/{type.Name}")">@Labels.Type(type)</DcLink> (@_counts.GetValueOrDefault(type.Name))</li>
+  }
+</ul>
+
+@code {
+    private IReadOnlyDictionary<string, int> _counts = new Dictionary<string, int>();
+    private bool _canImport;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _counts = await Queries.CountsAsync(CancellationToken.None);
+        var user = AuthenticationState is null ? null : (await AuthenticationState).User;
+        _canImport = user?.HasClaim(Doctrina.Infrastructure.Authentication.DoctrinaClaimTypes.Permission, AcademicPermissions.Import) == true;
+    }
+}

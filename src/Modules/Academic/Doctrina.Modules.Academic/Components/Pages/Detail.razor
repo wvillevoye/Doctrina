@@ -1,0 +1,157 @@
+@page "/academic/{TypeName}/{Id:guid}"
+@attribute [RequirePermission(AcademicPermissions.Read)]
+@using Doctrina.Core.Entities
+@using Doctrina.Modules.Academic.Application
+@using Doctrina.Modules.Academic.Components
+@using Doctrina.Modules.Academic.Domain
+@inject AcademicQueries Queries
+@inject NavigationManager Navigation
+
+@* Detail page of one record with its direct relations as links (spec academic-admin, design D8). Read-only:
+   no forms or buttons to change anything. *@
+@if (_record is not null)
+{
+  <DcPageHeader Title="@_title" DocumentTitle="@($"{_title} · {Labels.Type(TypeName)}")">
+    <Description><DcLink Href="/academic">Academic</DcLink> · <DcLink Href="@($"/academic/{TypeName}")">@Labels.Type(TypeName)</DcLink></Description>
+  </DcPageHeader>
+
+  <div class="dc-stack">
+    <DcCard Title="Details">
+      <dl class="dc-details" data-testid="details">
+        @switch (_record)
+        {
+          case Organization o:
+            <dt>Name</dt><dd>@o.Name</dd>
+            <dt>Short name</dt><dd>@(o.ShortName ?? "–")</dd>
+            <dt>Type</dt><dd>@o.OrganizationType</dd>
+            <dt>Parent</dt><dd>@if (o.Parent is { } parent) { <DcLink Href="@Labels.Href("organizations", parent.Id)">@parent.Name</DcLink> } else { <span>–</span> }</dd>
+            break;
+          case AcademicSession s:
+            <dt>Name</dt><dd>@s.Name</dd>
+            <dt>Type</dt><dd>@s.AcademicSessionType</dd>
+            <dt>Start date</dt><dd>@Labels.Date(s.StartDate)</dd>
+            <dt>End date</dt><dd>@Labels.Date(s.EndDate)</dd>
+            <dt>Parent</dt><dd>@if (s.Parent is { } sessionParent) { <DcLink Href="@Labels.Href("academic-sessions", sessionParent.Id)">@sessionParent.Name</DcLink> } else { <span>–</span> }</dd>
+            break;
+          case Course c:
+            <dt>Name</dt><dd>@c.Name</dd>
+            <dt>Abbreviation</dt><dd>@(c.Abbreviation ?? "–")</dd>
+            <dt>Description</dt><dd>@(c.Description ?? "–")</dd>
+            <dt>Study load (ECTS)</dt><dd>@(c.StudyLoad?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "–")</dd>
+            <dt>Organization</dt><dd>@if (c.Organization is { } org) { <DcLink Href="@Labels.Href("organizations", org.Id)">@org.Name</DcLink> } else { <span>–</span> }</dd>
+            break;
+          case CourseOffering o:
+            <dt>Name</dt><dd>@o.Name</dd>
+            <dt>Course</dt><dd><DcLink Href="@Labels.Href("courses", o.Course.Id)">@o.Course.Name</DcLink></dd>
+            <dt>Academic session</dt><dd><DcLink Href="@Labels.Href("academic-sessions", o.AcademicSession.Id)">@o.AcademicSession.Name</DcLink></dd>
+            <dt>Start date</dt><dd>@Labels.Date(o.StartDate)</dd>
+            <dt>End date</dt><dd>@Labels.Date(o.EndDate)</dd>
+            break;
+          case Person p:
+            <dt>Given name</dt><dd>@p.GivenName</dd>
+            <dt>Surname prefix</dt><dd>@(p.SurnamePrefix ?? "–")</dd>
+            <dt>Surname</dt><dd>@p.Surname</dd>
+            <dt>Display name</dt><dd>@(p.DisplayName ?? "–")</dd>
+            <dt>Email</dt><dd>@(p.Mail ?? "–")</dd>
+            break;
+          case Association a:
+            <dt>Person</dt><dd><DcLink Href="@Labels.Href("persons", a.Person.Id)">@a.Person.FullName</DcLink></dd>
+            <dt>Course offering</dt><dd><DcLink Href="@Labels.Href("course-offerings", a.CourseOffering.Id)">@a.CourseOffering.Name</DcLink></dd>
+            <dt>Role</dt><dd>@Labels.Role(a.Role)</dd>
+            break;
+        }
+        <dt>ID</dt><dd data-testid="external-id">@_record.ExternalId</dd>
+        <dt>Source</dt><dd>@_record.Source</dd>
+        <dt>Status</dt><dd><DcBadge Variant="@Labels.StatusVariant(_record.Status)">@Labels.Status(_record.Status)</DcBadge></dd>
+        <dt>Last modified (UTC)</dt><dd>@_record.DateLastModified.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture)</dd>
+      </dl>
+    </DcCard>
+
+    @switch (_record)
+    {
+      case Course c:
+        <DcTable TItem="CourseOffering" Caption="Offerings" Items="c.Offerings" EmptyText="This course has no offerings."
+                 Columns="OfferingColumns" data-testid="offerings" />
+        break;
+      case CourseOffering o:
+        <DcTable TItem="Association" Caption="Enrolments" Items="Sorted(o.Associations)" EmptyText="Nobody is enrolled in this offering."
+                 Columns="EnrolmentColumns" data-testid="enrolments" />
+        break;
+      case Person p:
+        <DcTable TItem="Association" Caption="Enrolments" Items="Sorted(p.Associations)" EmptyText="This person has no enrolments."
+                 Columns="PersonEnrolmentColumns" data-testid="enrolments" />
+        <DcTable TItem="PersonLogin" Caption="Linked sign-ins" Items="p.Logins" EmptyText="This person hasn't signed in yet."
+                 Columns="LoginColumns" data-testid="logins" />
+        break;
+    }
+  </div>
+}
+
+@code {
+    private static readonly DcTableColumn<CourseOffering>[] OfferingColumns =
+    [
+        new("Offering", Template: o => @<DcLink Href="@Labels.Href("course-offerings", o.Id)">@o.Name</DcLink>),
+        new("Academic session", o => o.AcademicSession.Name),
+        new("Status", o => Labels.Status(o.Status)),
+    ];
+
+    private static readonly DcTableColumn<Association>[] EnrolmentColumns =
+    [
+        new("Person", Template: a => @<DcLink Href="@Labels.Href("persons", a.Person.Id)">@a.Person.FullName</DcLink>),
+        new("Role", a => Labels.Role(a.Role)),
+        new("Status", a => Labels.Status(a.Status)),
+    ];
+
+    private static readonly DcTableColumn<Association>[] PersonEnrolmentColumns =
+    [
+        new("Course offering", Template: a => @<DcLink Href="@Labels.Href("course-offerings", a.CourseOffering.Id)">@a.CourseOffering.Name</DcLink>),
+        new("Academic session", a => a.CourseOffering.AcademicSession.Name),
+        new("Role", a => Labels.Role(a.Role)),
+        new("Status", a => Labels.Status(a.Status)),
+    ];
+
+    private static readonly DcTableColumn<PersonLogin>[] LoginColumns = [new("Issuer", l => l.Issuer), new("Object ID (oid)", l => l.Oid)];
+
+    private ExchangeableEntity? _record;
+    private string _title = string.Empty;
+
+    [Parameter]
+    public string TypeName { get; set; } = string.Empty;
+
+    [Parameter]
+    public Guid Id { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var ct = CancellationToken.None;
+        _record = TypeName switch
+        {
+            "organizations" => await Queries.OrganizationAsync(Id, ct),
+            "academic-sessions" => await Queries.SessionAsync(Id, ct),
+            "courses" => await Queries.CourseAsync(Id, ct),
+            "course-offerings" => await Queries.OfferingAsync(Id, ct),
+            "persons" => await Queries.PersonAsync(Id, ct),
+            "associations" => await Queries.AssociationAsync(Id, ct),
+            _ => null,
+        };
+        if (_record is null)
+        {
+            Navigation.NotFound();
+            return;
+        }
+
+        _title = _record switch
+        {
+            Organization o => o.Name,
+            AcademicSession s => s.Name,
+            Course c => c.Name,
+            CourseOffering o => o.Name,
+            Person p => p.FullName,
+            Association a => $"{a.Person.FullName} in {a.CourseOffering.Name}",
+            _ => _record.ExternalId,
+        };
+    }
+
+    private static List<Association> Sorted(IEnumerable<Association> associations) =>
+        [.. associations.OrderBy(a => a.Role).ThenBy(a => a.Person?.Surname).ThenBy(a => a.CourseOffering?.Name)];
+}

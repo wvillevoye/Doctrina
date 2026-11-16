@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <!-- Componenttests (bUnit) en tests op tokens en gecompileerde CSS van Doctrina.UI (design D12). -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Doctrina.UI.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="bunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Doctrina.UI\Doctrina.UI.csproj" />
+    <ProjectReference Include="..\..\src\Doctrina.Core\Doctrina.Core.csproj" />
+  </ItemGroup>
+</Project>

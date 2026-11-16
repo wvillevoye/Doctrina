@@ -26,11 +26,14 @@ Zonder dit bestand start de host niet: je krijgt dan een melding dat `Authentica
 ## 2. Dev-stack starten
 
 ```powershell
-cd dev-stack; docker compose up -d; cd ..
+docker compose -f ..\..\Keycloak\docker-compose.yml up -d
 ```
 
+Keycloak and Mailpit run in a shared stack outside this repository: the folder `Keycloak` next to the folder of this
+checkout. It reads Doctrina's realm from `dev-stack/realm/doctrina-realm.json` in this repository.
+
 Dit start Keycloak (http://localhost:8080) en Mailpit (http://localhost:8025). Wacht tot Keycloak gezond is:
-`docker ps` toont dan `keycloak … (healthy)`. Meer over de dev-stack: [`dev-stack/README.md`](../../dev-stack/README.md).
+`docker ps` toont dan `keycloak … (healthy)`. Meer over het Doctrina-deel: [`dev-stack/README.md`](../../dev-stack/README.md).
 
 De database draait niet in Docker maar op LocalDB. De host maakt de database `Doctrina` en de tabellen zelf aan bij het
 starten, zodra er een ingeschakelde module met migraties is (zie [database.md](database.md)). Zolang er nog geen
@@ -47,24 +50,126 @@ dotnet run --project src/Doctrina.Host --launch-profile https
 Open https://localhost:5001. De omgeving is `Development`; de instellingen komen uit
 `src/Doctrina.Host/appsettings.Development.json` plus je `appsettings.Secrets.json`.
 
+De eerste build compileert ook de stylesheet (`AspNetCore.SassCompiler`, zonder Node.js). Rechtsboven in de header
+kies je het thema: licht, donker of systeem (standaard). De keuze wordt onthouden in een cookie. Alle componenten
+staan in de stijlgids op https://localhost:5001/style-guide (alleen in `Development`); meer in
+[vormgeving.md](vormgeving.md).
+
 ## 4. Inloggen
 
-Klik op **Inloggen**. Je komt bij Keycloak; log in met een testaccount:
+Klik op **Sign in**. Je komt bij Keycloak; log in met een testaccount:
 
 | Account | Wachtwoord | Rollen | Wat je ziet |
 |---|---|---|---|
-| `student` | `student` | `student` | profiel zonder permissies |
-| `docent` | `docent` | `employee` | profiel zonder permissies |
-| `beheerder` | `beheerder` | `admin`, `employee` | alle permissies van ingeschakelde modules (`admin` → `*`) |
+| `student` | `student` | `student` | **My courses** (na het importeren van de testdata, zie §5) |
+| `docent` | `docent` | `employee` | **My courses**, als lecturer |
+| `beheerder` | `beheerder` | `admin`, `employee` | alle permissies van ingeschakelde modules (`admin` → `*`), ook **Academic** en **Import** |
 | bv. `femke.coenen` | `test123` | wisselend | een van de 250 nepgebruikers |
 
-Na het inloggen ga je naar **Mijn profiel** (`/profiel`): naam, persoonsnummer (`personId`, bv. `I6000001`), de issuer
-(`http://localhost:8080/realms/doctrina`), je rollen en je permissies, met per rol waar ze vandaan komen. **Uitloggen**
+Na het inloggen ga je naar **My profile** (`/profile`): naam, persoonsnummer (`personId`, bv. `I6000001`), de issuer
+(`http://localhost:8080/realms/doctrina`), je rollen en je permissies, met per rol waar ze vandaan komen. **Sign out**
 beëindigt de sessie bij Doctrina én bij Keycloak.
 
-Welke rol welke permissies geeft, staat in `Authorization:RolePermissions` in `appsettings.json`.
+Welke rol welke permissies geeft, staat in `Authorization:RolePermissions` in `appsettings.json` (en voor de module
+Academic in `appsettings.Development.json`).
 
-## 5. De API proberen
+## 5. Academic test data
+
+In Development the **Academic** module is switched on (`Modules:Enabled` in `appsettings.Development.json`); its
+schema `academic` is created on start-up. The database starts empty. The dev-stack has CSV files with the same people
+as in Keycloak (same `personId`), plus organizations, sessions, courses, offerings and enrolments:
+
+1. Sign in as `beheerder` and open **Academic** → **Import** (`/academic/import`).
+2. Upload `dev-stack/data/academic-testdata.zip` with source `SIS` and **Dry run** ticked. The import runs in the
+   background; its page refreshes by itself and shows what would happen (every row `created`), without saving anything.
+3. Choose **Import for real**. Importing the same zip again gives `unchanged` for every row. The report is downloadable
+   as CSV; **Recent imports** (`/academic/imports`) lists earlier imports. A single CSV also works: pick its type.
+4. Sign out and sign in as `student`: **My courses** (`/my-courses`) shows three courses. As `docent` you see two, as lecturer.
+
+Background jobs run with Hangfire (schema `hangfire`); `beheerder` can follow them on the dashboard at `/hangfire`.
+
+Under **Academic** (`/academic`) the admin pages list every type with search and a detail page per record. They are
+read-only: changes go through the source (CSV now, REST later).
+
+The CSV files are generated together with the realm by `dev-stack/scripts/generate-realm.ps1` (see
+`dev-stack/README.md`), together with `academic-testdata.zip`. The format: one file per type, a header row with OOAPI
+field names, `,` or `;`, UTF-8 with or without BOM, dates as `YYYY-MM-DD`, and an optional `status` column (`active` or
+`toBeDeleted`). In a zip the type of each file comes from `manifest.csv` (columns `file,type`) or from the file name
+(`persons.csv`); the files are imported in the order above, whatever their order in the zip. Empty templates per type are
+on the import page. Limits: 100,000 rows and 50 MB per upload (`Academic:Import`); uploads are removed after 30 days.
+
+### Groups
+
+With the test data imported, try the **Groups** module (also switched on in Development):
+
+1. Sign in as `docent` and open **My courses** → **Cell biology** (`/courses/{offering}`). The page shows the course,
+   the period and your role, and a section **My groups** with the button **Manage groups**.
+2. On **Manage groups** (`/courses/{offering}/groups`): create a group set (for example "Project teams", visible to
+   students), then **Distribute randomly** over a number of groups, or add groups and put students in them one by one.
+   A student is in at most one group per set; a maximum group size is optional.
+3. Sign in as `student`: **My courses** → **Cell biology** shows your group and its members under **My groups**,
+   for sets that are visible to students.
+
+Only lecturers and coordinators of the offering, and users with `Groups.Manage` (role `admin`), can manage groups.
+
+### Content
+
+With the test data imported, try the **Content** module (also switched on in Development):
+
+1. Sign in as `docent` and open **My courses** → **Cell biology**. The section **Content** says "No content yet." and has
+   the button **Manage content** (`/courses/{offering}/content`).
+2. Create a section ("Week 1"), then add a **page** (you write it in Markdown on the next screen, with a **Preview**),
+   a **link** (`https://…`) and a **file** (at most `Content:Files:MaxSizeMb`, 100 MB by default). New sections and items
+   are drafts: use **Publish** (and **Hide**) on both the section and the item, and **Move up** / **Move down** to
+   change the order.
+3. Sign in as `student`: **My courses** → **Cell biology** shows the published sections and items only. A page opens
+   on `/courses/{offering}/content/{item}`, a file has a **Download** button, a link opens in a new tab.
+
+Only lecturers and coordinators of the offering, and users with `Content.Manage` (role `admin`), can manage content;
+`Content.Read` allows reading published content without an enrolment.
+
+Files are kept in a folder (`Content:Files:Path`, by default `App_Data/content` below the content root of the host,
+ignored by Git), as `{offering}/{item}`, with the file name and size in the database. **Back up that folder together
+with the database**, and use a shared folder when more than one web server runs Doctrina.
+
+#### Start a new offering from an earlier one
+
+An offering without sections shows the card **Copy content** on its **Manage content** page when the course has other
+offerings. Choose the offering to copy from and press **Copy content**: all sections and items (pages, files, links and
+tool links) are copied as **drafts**, so students see nothing until you publish. Files are copied too. Items that cannot
+be copied (a tool that no longer exists, a file that is gone) are skipped and counted in the message. The source stays
+as it is, and you must be allowed to manage the content of both offerings.
+
+### LTI tools
+
+With **Lti** switched on (it is in Development), Doctrina is an LTI 1.3 platform: a teacher starts an external tool from
+a course and students arrive in it without signing in again.
+
+1. Sign in as a user with `Lti.Manage` (role `admin`) and open **LTI tools** (`/lti/tools`). The page shows the platform
+   details to enter in the tool: the **issuer**, the **authorization endpoint** (`/lti/authorize`) and the **JWKS URL**
+   (`/lti/jwks.json`). Register a tool with the name, the login initiation URL, the launch URL, one or more redirect
+   URIs, and whether to share the name and e-mail address of the user (off by default). The page then shows the
+   **client id** and **deployment id** for the tool. **Rotate key** gives the platform a new signing key; the old one
+   stays in the JWKS for `Lti:Keys:RetireAfterDays` days (7).
+2. Sign in as `docent`, open **Cell biology** → **Manage content** and use **Add tool link** in a section, then publish
+   the item. Students see a **Launch** button that opens the tool in a new tab.
+
+**Deep linking** lets a teacher choose content in the tool instead of typing a title. Give the tool a **Deep linking URL**
+(where Doctrina sends the request) and a **Public keys URL** (its JWKS, to check its response); both or neither. Then, in
+**Manage content**, use **Add from a tool**: the tool opens in the same tab, the teacher picks one or more items, and
+Doctrina shows them on a confirmation page. **Add to section** adds them as draft tool links that launch the address the
+tool chose. Only `ltiResourceLink` items on the same origin as the launch URL are accepted. Doctrina fetches the public
+keys server-side from the registered address (https, 5 s timeout, no redirects, at most 64 kB, cached 5 minutes), so only
+register tools you trust.
+
+`Lti:Issuer` sets the issuer; by default it is the address the request came in on (`https://localhost:5001` locally).
+Set it in production, because tools remember it.
+
+The login hints and the signing keys are protected with ASP.NET Core Data Protection. **In production the Data
+Protection key ring must be persistent** (and shared between servers); otherwise a restart invalidates launches that
+are under way and makes the stored private keys unreadable.
+
+## 6. De API proberen
 
 De API (`/api/v1`) accepteert alleen bearer-tokens. Een systeemtoken (client credentials) haal je zo op:
 
@@ -77,11 +182,36 @@ Invoke-RestMethod https://localhost:5001/api/v1/me -Headers @{ Authorization = "
 De documentatie van de API staat in Development op https://localhost:5001/scalar (OpenAPI-document:
 `/openapi/v1.json`). Health: `/health/live` en `/health/ready`.
 
-## 6. Inloggen via Microsoft Entra ID
+### Academic and group data through the API
+
+`doctrina-sis-sync` has the scopes `doctrina.persons.*` and `doctrina.courses.*`; in Development they give
+`Academic.Read`, `Groups.Read` and `Academic.Write`. What it writes gets source `SIS` (`Api:Sources:{client}` can
+change that per client). With the token from above:
+
+```powershell
+$h = @{ Authorization = "Bearer $token" }
+# Create or update a person by the key of the source system (201 when new, 200 otherwise)
+Invoke-RestMethod -Method Put https://localhost:5001/api/v1/persons/by-external-id/I6999001 -Headers $h `
+  -ContentType "application/json" -Body '{ "givenName": "Test", "surname": "Person", "mail": "test@example.test" }'
+# Changes since a moment (delta), 100 per page
+Invoke-RestMethod "https://localhost:5001/api/v1/persons?modifiedSince=2026-11-13T00:00:00Z" -Headers $h
+# Up to 500 records at once, with a result per record
+Invoke-RestMethod -Method Post https://localhost:5001/api/v1/courses/batch -Headers $h -ContentType "application/json" `
+  -Body '[ { "courseId": "TST100", "name": "Test course" }, { "courseId": "TST200" } ]' | ForEach-Object { $_ } | Format-Table
+# Groups of an offering (offeringId = the Doctrina id, e.g. from /api/v1/course-offerings)
+Invoke-RestMethod "https://localhost:5001/api/v1/groups?offeringId=<id>" -Headers $h
+```
+
+Every type has the same endpoints: `GET /api/v1/{type}`, `GET …/{id}`, `POST`, `PUT …/by-external-id/{key}`,
+`PATCH …/{id}`, `DELETE …/{id}` (sets status `toBeDeleted`) and `POST …/batch`. The fields are the CSV columns (§5);
+Scalar lists them per endpoint. Errors are ProblemDetails with a `code`, e.g. `Academic.Person.Invalid` with the fields in
+`errors`.
+
+## 7. Inloggen via Microsoft Entra ID
 
 Keycloak kan Entra ID als identity provider doorgeven. Eenmalig inrichten: zie
 [doctrina-integratie.md](../doctrina-integratie.md#entra-koppelen-lokaal-via-keycloak) en draai daarna
-`dev-stack\scripts\configure-entra.ps1`.
+`scripts\configure-entra.ps1` in de map `Keycloak`.
 
 Daarna overslaan van het Keycloak-scherm, zodat je direct naar Microsoft gaat: zet in
 `appsettings.Secrets.json` (of in een omgevingsvariabele `Authentication__Oidc__IdpHint`):
@@ -92,7 +222,7 @@ Daarna overslaan van het Keycloak-scherm, zodat je direct naar Microsoft gaat: z
 
 Laat de waarde leeg om weer met de testaccounts in te loggen. Doctrina zelf verandert niet: alleen de configuratie.
 
-## 7. Tests draaien
+## 8. Tests draaien
 
 ```powershell
 dotnet test                              # alle tests: geen Keycloak en geen Docker nodig (nagebootste provider, LocalDB)
@@ -107,14 +237,14 @@ Rooktest tegen de échte Keycloak (Git Bash, terwijl Doctrina draait):
 bash dev-stack/scripts/smoke-login.sh
 ```
 
-Die logt in als `student` en `beheerder`, controleert `/profiel` en roept de API aan met een systeemtoken.
+Die logt in als `student` en `beheerder`, controleert `/profile` en roept de API aan met een systeemtoken.
 
 ## Problemen
 
 | Melding of symptoom | Oplossing |
 |---|---|
 | `Authentication:Oidc:ClientSecret ontbreekt` | stap 1: `appsettings.Secrets.example.json` kopiëren naar `appsettings.Secrets.json` |
-| Inloggen hangt of geeft een fout over `.well-known/openid-configuration` | dev-stack draait niet of Keycloak is nog niet gezond: `docker ps` |
+| Pagina "Sign-in unavailable" (`/sign-in-unavailable`) bij inloggen of uitloggen | dev-stack draait niet of Keycloak is nog niet gezond: `docker ps`, zo nodig `docker compose -f ..\..\Keycloak\docker-compose.yml up -d`, daarna "Try again" |
 | Browser waarschuwt voor het certificaat | `dotnet dev-certs https --trust` en de browser opnieuw starten |
 | `/health/ready` geeft 503 met `"database": "Unhealthy"` | database `Doctrina` bestaat nog niet (zie stap 2) of LocalDB is gestopt |
 | Fout over `(localdb)\MSSQLLocalDB` | `sqllocaldb start MSSQLLocalDB` (zie [database.md](database.md#problemen)) |

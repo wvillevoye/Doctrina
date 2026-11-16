@@ -1,0 +1,56 @@
+@using Doctrina.Core.Results
+@using Doctrina.Modules.Content.Application
+@using Microsoft.Extensions.DependencyInjection
+@inject IServiceScopeFactory Scopes
+@inject IJSRuntime JS
+
+@* Downloads the file of a content item through the shared JS download (design D6 of add-content). Checks access and
+   visibility again at the click. *@
+<DcResult Error="_error" />
+<DcButton Variant="DcButtonVariant.Primary" Busy="_busy" OnClick="DownloadAsync" data-testid="download">Download</DcButton>
+
+@code {
+    private Error? _error;
+    private bool _busy;
+
+    [Parameter]
+    public Guid OfferingId { get; set; }
+
+    [Parameter]
+    public Guid ItemId { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    private async Task DownloadAsync()
+    {
+        _error = null;
+        _busy = true;
+        try
+        {
+            var ct = CancellationToken.None;
+            var user = AuthenticationState is null ? new ClaimsPrincipal() : (await AuthenticationState).User;
+            using var scope = Scopes.CreateScope();
+            var access = scope.ServiceProvider.GetRequiredService<ContentAccess>();
+            var content = scope.ServiceProvider.GetRequiredService<ContentService>();
+            var canManage = await access.CanManageAsync(user, OfferingId, ct);
+            var item = canManage || await access.CanReadAsync(user, OfferingId, ct)
+                ? await content.FindItemAsync(OfferingId, ItemId, includeDrafts: canManage, ct)
+                : null;
+            var file = item is null
+                ? Error.NotFound(ContentErrors.ItemNotFound, "The item is not available.")
+                : content.OpenFile(item);
+            if (file.IsFailure)
+            {
+                _error = file.Error;
+                return;
+            }
+
+            await Downloads.SaveAsync(JS, item!.FileName!, file.Value!);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

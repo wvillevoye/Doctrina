@@ -1,0 +1,9 @@
+@using Doctrina.Modules.Content.Application
+
+@* The Markdown text of a page as safe HTML (design D7 of add-content). *@
+<div data-testid="markdown">@((MarkupString)Markdown.ToSafeHtml(Text))</div>
+
+@code {
+    [Parameter]
+    public string? Text { get; set; }
+}

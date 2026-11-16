@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Public contracts of the Groups module (change add-groups). -->
+  <PropertyGroup>
+    <RootNamespace>Doctrina.Modules.Groups.Contracts</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Doctrina.Core\Doctrina.Core.csproj" />
+  </ItemGroup>
+</Project>

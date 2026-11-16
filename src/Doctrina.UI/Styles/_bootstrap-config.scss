@@ -1,0 +1,46 @@
+// Sass-variabelen van Bootstrap (compile-time). Kleuren komen uit _tokens.scss; tijdens runtime zet
+// _bootstrap-bridge.scss Bootstrap's CSS-variabelen op de --dc-tokens (design D2).
+
+$prefix: bs-;
+
+$enable-dark-mode: false; // donker thema komt uit de tokens (data-dc-theme), niet uit Bootstrap's color modes
+$enable-shadows: false;
+$enable-gradients: false;
+$enable-reduced-motion: true;
+$enable-smooth-scroll: false;
+
+$primary: $dc-accent;
+$secondary: $dc-stone-600;
+$success: $dc-light-success;
+$info: $dc-light-info;
+$warning: $dc-light-warning;
+$danger: $dc-light-danger;
+$light: $dc-stone-50;
+$dark: $dc-ink;
+
+$body-bg: $dc-paper;
+$body-color: $dc-ink;
+$border-color: $dc-stone-200;
+
+$font-family-sans-serif: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+$font-family-monospace: ui-monospace, "Cascadia Mono", Consolas, monospace;
+$headings-font-family: "Fraunces", Georgia, "Times New Roman", serif;
+$headings-font-weight: 600;
+$line-height-base: 1.6;
+
+$border-radius: 0.5rem;
+$border-radius-sm: 0.375rem;
+$border-radius-lg: 0.75rem;
+$card-border-radius: 0.75rem;
+
+$btn-padding-y: 0.625rem;
+$btn-padding-x: 1.125rem;
+$btn-font-weight: 600;
+$input-padding-y: 0.5rem;
+$input-padding-x: 0.75rem;
+
+$form-select-indicator-color: $dc-stone-500;
+$link-decoration: underline;
+
+$transition-base: all 0.18s cubic-bezier(0.2, 0, 0, 1);
+$btn-transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;

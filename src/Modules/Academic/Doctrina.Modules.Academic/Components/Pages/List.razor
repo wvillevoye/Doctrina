@@ -1,0 +1,70 @@
+@page "/academic/{TypeName}"
+@attribute [RequirePermission(AcademicPermissions.Read)]
+@using Doctrina.Modules.Academic.Application
+@using Doctrina.Modules.Academic.Components
+@inject AcademicQueries Queries
+@inject NavigationManager Navigation
+
+@* List per type with search and paging, statically rendered (spec academic-admin, design D8). Read-only. *@
+@if (_page is not null)
+{
+  <DcPageHeader Title="@Labels.Type(TypeName)">
+    <Description><DcLink Href="/academic">Academic</DcLink> · @_page.Total record(s)</Description>
+  </DcPageHeader>
+
+  <SearchForm Action="@($"/academic/{TypeName}")" Query="@Q" />
+
+  <DcTable TItem="ListRow" Caption="@Labels.Type(TypeName)" HideCaption Columns="_columns" Items="_page.Rows"
+           EmptyText="@(string.IsNullOrWhiteSpace(Q) ? "There are no records yet." : $"Nothing matches \"{Q}\".")" data-testid="academic-list" />
+
+  @if (_page.PageCount > 1)
+  {
+    <nav aria-label="Pages" class="dc-form__actions" data-testid="pager">
+      @if (_page.Page > 1)
+      {
+        <DcButton Href="@PageHref(_page.Page - 1)">Previous</DcButton>
+      }
+      <span aria-current="page">Page @_page.Page of @_page.PageCount</span>
+      @if (_page.Page < _page.PageCount)
+      {
+        <DcButton Href="@PageHref(_page.Page + 1)">Next</DcButton>
+      }
+    </nav>
+  }
+}
+
+@code {
+    private ListPage? _page;
+    private DcTableColumn<ListRow>[] _columns = [];
+
+    [Parameter]
+    public string TypeName { get; set; } = string.Empty;
+
+    [SupplyParameterFromQuery(Name = "q")]
+    private string? Q { get; set; }
+
+    [SupplyParameterFromQuery(Name = "page")]
+    private int? PageNumber { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _page = await Queries.ListAsync(TypeName, Q, PageNumber ?? 1, CancellationToken.None);
+        if (_page is null)
+        {
+            Navigation.NotFound();
+            return;
+        }
+
+        _columns =
+        [
+            new("Name", Template: r => @<DcLink Href="@Labels.Href(TypeName, r.Id)">@r.Name</DcLink>),
+            new("ID", r => r.ExternalId),
+            new("Details", r => r.Summary),
+            new("Status", Template: r => @<DcBadge Variant="@Labels.StatusVariant(r.Status)">@Labels.Status(r.Status)</DcBadge>),
+            new("Source", r => r.Source),
+        ];
+    }
+
+    private string PageHref(int page) =>
+        Navigation.GetUriWithQueryParameters($"/academic/{TypeName}", new Dictionary<string, object?> { ["q"] = Q, ["page"] = page });
+}

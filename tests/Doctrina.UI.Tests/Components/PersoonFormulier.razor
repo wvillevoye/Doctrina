@@ -1,0 +1,38 @@
+@using System.ComponentModel.DataAnnotations
+@using Doctrina.Core.Results
+@using Doctrina.UI.Components
+
+@* Testformulier voor DcForm en de velden (taken 5.2 en 5.3). *@
+<DcForm Model="Model" Error="Error" FormName="persoon" OnValidSubmit="() => Submitted++">
+  <DcTextField Label="E-mailadres" Type="email" Required @bind-Value="Model.Email" Hint="Je instellingsadres." />
+  <DcTextField Label="Voornaam" @bind-Value="Model.GivenName" />
+  <DcSelect TValue="string" Label="Rol" @bind-Value="Model.Role">
+    <option value="">Kies…</option>
+    <option value="student">Student</option>
+  </DcSelect>
+  <DcCheckbox Label="Ik ga akkoord" @bind-Value="Model.Agree" />
+  <DcButton Type="submit" Variant="DcButtonVariant.Primary">Opslaan</DcButton>
+</DcForm>
+
+@code {
+    [Parameter]
+    public Persoon Model { get; set; } = new();
+
+    [Parameter]
+    public Error? Error { get; set; }
+
+    public int Submitted { get; private set; }
+
+    public sealed class Persoon
+    {
+        [Required(ErrorMessage = "Vul een e-mailadres in.")]
+        [EmailAddress(ErrorMessage = "Ongeldig e-mailadres.")]
+        public string? Email { get; set; }
+
+        public string? GivenName { get; set; }
+
+        public string? Role { get; set; }
+
+        public bool Agree { get; set; }
+    }
+}

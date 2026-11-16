@@ -1,85 +1,74 @@
-# Dev-stack (Keycloak · Mailpit)
+# Dev-stack (Doctrina's part)
 
-Lokale ontwikkelomgeving voor **Doctrina** (zie `../docs/Doctrina-voorstel.md` §3.3) en een algemene demo-realm.
-Hoe Doctrina hierop inlogt (ook via **Entra ID**): **[docs/doctrina-integratie.md](../docs/doctrina-integratie.md)**.
+Keycloak and Mailpit no longer live here. They run in a shared stack outside this repository, in the folder `Keycloak`
+next to the folder of this checkout (`..\..\Keycloak` from the repository root), so other applications can use the
+same Keycloak. Start it with:
 
-| Dienst | Adres | Inlog |
-|---|---|---|
-| Keycloak admin | http://localhost:8080 | `admin` / `admin` |
-| Realm `doctrina` | http://localhost:8080/realms/doctrina | testgebruikers hieronder |
-| Realm `demo` | http://localhost:8080/realms/demo | `alice`, `bob`, `carol` (wachtwoord = naam) |
-| Mailpit (mail van Keycloak) | http://localhost:8025 · SMTP `localhost:1025` | – |
+    docker compose -f ..\..\Keycloak\docker-compose.yml up -d      # from the repository root
 
-Versies: Keycloak `quay.io/keycloak/keycloak:26.6.1`, `axllent/mailpit:v1.28` — aan te passen via `.env`.
+That stack reads Doctrina's realm from `dev-stack/realm/doctrina-realm.json` in this repository. Starting, stopping,
+resetting and Entra ID: see the README in the `Keycloak` folder. How Doctrina signs in:
+**[docs/doctrina-integratie.md](../docs/doctrina-integratie.md)**.
 
-De **database** zit niet in de dev-stack: Doctrina gebruikt lokaal en in de tests SQL Server LocalDB
-(`(localdb)\MSSQLLocalDB`, Windows-authenticatie, geen wachtwoord). LocalDB wordt met Visual Studio meegeïnstalleerd;
-controleer met `sqllocaldb info MSSQLLocalDB`.
+The **database** is not in Docker: Doctrina uses SQL Server LocalDB locally and in the tests
+(`(localdb)\MSSQLLocalDB`, Windows authentication, no password). Check with `sqllocaldb info MSSQLLocalDB`.
 
-## Starten / stoppen
+## Test users (realm `doctrina`)
 
-    docker compose up -d          # starten
-    docker compose logs -f keycloak
-    docker compose down           # stoppen (data blijft bewaard)
-    docker compose down -v        # alles resetten (realms worden opnieuw geïmporteerd)
-
-## Testgebruikers
-
-Beide realms: **250 nepgebruikers** (175 studenten, 75 medewerkers), wachtwoord `test123`, bijv. `femke.coenen`.
-Attributen: e-mail, voor/achternaam, `affiliation`, `department` (korte code) + `departmentName`, `studentNumber`+`program` of `employeeNumber`+`jobTitle`.
-
-| `department` | Naam | Wie |
-|---|---|---|
-| FHML | Faculty of Health, Medicine and Life Sciences | studenten + medewerkers |
-| SBE | School of Business and Economics | studenten + medewerkers |
-| FdR | Faculteit der Rechtsgeleerdheid | studenten + medewerkers |
-| FPN | Faculty of Psychology and Neuroscience | studenten + medewerkers |
-| FASoS | Faculty of Arts and Social Sciences | studenten + medewerkers |
-| FSE | Faculty of Science and Engineering | studenten + medewerkers |
-| ICTS · FS · SSC | ICT Service Centre · Facility Services · Student Services Centre | alleen medewerkers |
-| UB · FIN · MUO | University Library · Finance · Maastricht University Office | alleen medewerkers |
-
-Ongeveer 30% van de medewerkers zit bij een dienst (`$serviceShare` in de generator). Indeling aanpassen: `$faculties` / `$services` bovenin `scripts\generate-realm.ps1`.
-
-| Realm `doctrina` | Wachtwoord | Rollen |
+| Account | Password | Roles |
 |---|---|---|
 | `beheerder` | beheerder | admin, employee |
 | `docent` | docent | employee |
 | `student` | student | student |
-| 250 nepgebruikers | test123 | `employee` of `student` |
+| 250 generated users, e.g. `femke.coenen` | test123 | `employee` or `student` |
 
-In `doctrina` volgen rollen en `affiliation` de OOAPI-waarden (`employee`/`student`); in `demo` heten ze `medewerker`/`student`.
+Roles and `affiliation` follow the OOAPI values (`employee`/`student`). Attributes: e-mail, first and last name,
+`affiliation`, `department` (short code) + `departmentName`, `studentNumber`+`program` or `employeeNumber`+`jobTitle`.
 
-**Nummers en `personId` (alleen realm `doctrina`):** studenten `I6` + 6 cijfers (bv. `I6834263`), medewerkers `P7` + 6 cijfers
-(bv. `P7066509`), uniek per gebruiker. Hetzelfde nummer staat in `studentNumber`/`employeeNumber` én in `personId`;
-alle drie gaan als claim mee (`student_number`/`employee_number`/`personId`). Vaste accounts: `beheerder` P7000001,
-`docent` P7000002, `student` I6000001. In realm `demo` blijft het oude formaat (`i6…`, `E…`), zonder `personId`.
+| `department` | Name | Who |
+|---|---|---|
+| FHML | Faculty of Health, Medicine and Life Sciences | students + employees |
+| SBE | School of Business and Economics | students + employees |
+| FdR | Faculteit der Rechtsgeleerdheid | students + employees |
+| FPN | Faculty of Psychology and Neuroscience | students + employees |
+| FASoS | Faculty of Arts and Social Sciences | students + employees |
+| FSE | Faculty of Science and Engineering | students + employees |
+| ICTS · FS · SSC | ICT Service Centre · Facility Services · Student Services Centre | employees only |
+| UB · FIN · MUO | University Library · Finance · Maastricht University Office | employees only |
 
-Opnieuw genereren (ander aantal / verhouding):
+About 30% of the employees work at a service (`$serviceShare` in the generator). Change the list: `$faculties` /
+`$services` at the top of `scripts\generate-realm.ps1`.
+
+**Numbers and `personId`:** students `I6` + 6 digits (e.g. `I6834263`), employees `P7` + 6 digits (e.g. `P7066509`),
+unique per user. The same number is in `studentNumber`/`employeeNumber` and in `personId`; all three are sent as a
+claim (`student_number`/`employee_number`/`personId`). Fixed accounts: `beheerder` P7000001, `docent` P7000002,
+`student` I6000001.
+
+Generate again (other count / ratio), then reset the shared Keycloak so it imports the new file:
 
     powershell -ExecutionPolicy Bypass -File scripts\generate-realm.ps1 -Count 250 -StudentRatio 0.8
-    docker compose down -v; docker compose up -d
+    docker compose -f ..\..\Keycloak\docker-compose.yml down -v      # from the repository root
+    docker compose -f ..\..\Keycloak\docker-compose.yml up -d
 
-## Entra ID koppelen
+The generator can still write the `demo` realm (`-Realm demo`), but the shared Keycloak reads its own copy: copy
+`realm\demo-realm.json` to `..\..\Keycloak\realm\` afterwards.
 
-    copy .env.example .env      # ENTRA_TENANT_ID / ENTRA_CLIENT_ID / ENTRA_CLIENT_SECRET invullen
-    powershell -ExecutionPolicy Bypass -File scripts\configure-entra.ps1              # realm doctrina
-    powershell -ExecutionPolicy Bypass -File scripts\configure-entra.ps1 -Realm demo  # of demo
+### Academic CSV files
 
-Redirect URI in de Entra app-registratie: `http://localhost:8080/realms/<realm>/broker/entra/endpoint`.
-Stappen en app-rollen: zie [docs/doctrina-integratie.md](../docs/doctrina-integratie.md#entra-koppelen-lokaal-via-keycloak).
-Na `docker compose down -v` het script opnieuw draaien.
+The script also writes `data/*.csv` in Doctrina's import format (change `add-academic-core`): the same people with the
+same `personId`, the UM faculties, academic year 2026-2027 with periods 1 and 2, eleven courses with one offering
+each, and enrolments. Fixed accounts: `student` is enrolled in three offerings, `docent` is lecturer in two,
+`beheerder` is coordinator of one. Generated students get two offerings, preferably of their own faculty.
 
-> In een universiteitstenant mag je vaak zelf geen app registreren (of is admin consent nodig).
-> Een Microsoft 365 developer-tenant of eigen Azure-tenant werkt ook.
+The script also writes `data/academic-testdata.zip` with all six. Import that zip in Doctrina at `/academic/import`
+(as `beheerder`, source `SIS`); the order comes from the file names. Steps:
+[docs/ontwikkelen/starten.md](../docs/ontwikkelen/starten.md) §5. After regenerating, import again: unchanged rows say
+`unchanged`; records that are no longer in a file stay (use `status` = `toBeDeleted` to hide them).
 
-## Inhoud
+## Contents
 
-    docker-compose.yml
-    realm/                      demo-realm.json, doctrina-realm.json (gegenereerd)
-    scripts/generate-realm.ps1  genereert de realms
-    scripts/configure-entra.ps1 Entra als identity provider
-    samples/Doctrina.AuthCheck  .NET 10 referentie-app (OIDC + API) + test-e2e.sh
-    ../docs/                    Doctrina-voorstel, integratie (in de repo-root)
-
-> Alleen voor lokaal gebruik: `start-dev`, HTTP, vaste secrets en simpele wachtwoorden.
+    realm/doctrina-realm.json   realm for the shared Keycloak (generated)
+    data/                       Academic CSV files (generated, same people as the realm)
+    scripts/generate-realm.ps1  generates the realm and data/*.csv
+    scripts/smoke-login.sh      smoke test: sign in to Doctrina.Host through Keycloak
+    samples/Doctrina.AuthCheck  .NET 10 reference app (OIDC + API) + test-e2e.sh

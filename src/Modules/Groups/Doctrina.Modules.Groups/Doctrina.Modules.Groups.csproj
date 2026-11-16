@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <!-- Groups module: group sets and groups in a course offering (change add-groups). -->
+  <PropertyGroup>
+    <RootNamespace>Doctrina.Modules.Groups</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Only for dotnet ef (migrations), see docs/ontwikkelen/database.md. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Doctrina.Modules.Groups.Tests" />
+    <InternalsVisibleTo Include="Doctrina.Host.IntegrationTests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Doctrina.Core\Doctrina.Core.csproj" />
+    <ProjectReference Include="..\..\..\Doctrina.Infrastructure\Doctrina.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Doctrina.UI\Doctrina.UI.csproj" />
+    <ProjectReference Include="..\Doctrina.Modules.Groups.Contracts\Doctrina.Modules.Groups.Contracts.csproj" />
+    <ProjectReference Include="..\..\Academic\Doctrina.Modules.Academic.Contracts\Doctrina.Modules.Academic.Contracts.csproj" />
+  </ItemGroup>
+</Project>

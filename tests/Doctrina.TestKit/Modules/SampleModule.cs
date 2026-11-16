@@ -27,7 +27,7 @@ public sealed class SampleModule : TestModule
         : base(ModuleName)
     {
         NavItems.Add(new NavItem(NavTitle, "/sample", Order: 10));
-        NavItems.Add(new NavItem(ManageNavTitle, "/sample/beheer", "Sample.Manage", Order: 20));
+        NavItems.Add(new NavItem(ManageNavTitle, "/sample/manage", "Sample.Manage", Order: 20));
         DeclaredPermissions.Add(new Permission("Sample.Read", "Voorbeelden bekijken"));
         DeclaredPermissions.Add(new Permission("Sample.Manage", "Voorbeelden beheren"));
     }

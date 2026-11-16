@@ -21,18 +21,20 @@ In Claude Code: `/opsx:explore`, `/opsx:propose "<idee>"`, `/opsx:apply`, `/opsx
 
 ## Zo start je (inloggen via Keycloak)
 
-    cd dev-stack; docker compose up -d; cd ..          # Keycloak, Mailpit (database: LocalDB)
+    docker compose -f ..\..\Keycloak\docker-compose.yml up -d   # gedeelde Keycloak, Mailpit (database: LocalDB)
     copy src\Doctrina.Hostppsettings.Secrets.example.json src\Doctrina.Hostppsettings.Secrets.json
     dotnet run --project src/Doctrina.Host --launch-profile https
 
 Open https://localhost:5001 → **Inloggen** → bijv. `student` / `student`, `beheerder` / `beheerder` of `femke.coenen` / `test123`.
-Via Entra ID: zet `Authentication:Oidc:IdpHint` op `entra` (na `dev-stack/scripts/configure-entra.ps1`).
+Via Entra ID: zet `Authentication:Oidc:IdpHint` op `entra` (na `scripts\configure-entra.ps1` in de map `Keycloak`).
 
     dotnet test                                         # tests (zonder Keycloak en Docker; nagebootste provider, LocalDB)
     bash dev-stack/scripts/smoke-login.sh               # rooktest tegen de echte Keycloak (Git Bash, Host moet draaien)
 
 ## Lokale omgeving
 
-De dev-stack (Keycloak, Mailpit) staat in [`dev-stack/`](dev-stack/README.md): `cd dev-stack; docker compose up -d`.
+Keycloak en Mailpit draaien in een gedeelde stack buiten deze repo: de map `Keycloak` naast de map van deze checkout
+(`..\..\Keycloak`, zie de README daar). Het Doctrina-deel (realm, generator, CSV-testdata, rooktest) staat in
+[`dev-stack/`](dev-stack/README.md).
 De database is SQL Server LocalDB `(localdb)\MSSQLLocalDB`. Configuratie: `appsettings.json` +
 `appsettings.{Development,Test,Production}.json`; secrets in het niet-gecommitte `appsettings.Secrets.json`.

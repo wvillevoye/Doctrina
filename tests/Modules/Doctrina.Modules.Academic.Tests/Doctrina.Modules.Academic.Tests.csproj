@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <!-- Unit tests and LocalDB tests of the Academic module (design D1 of add-academic-core). -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Doctrina.Modules.Academic.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <PackageReference Include="bunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Modules\Academic\Doctrina.Modules.Academic\Doctrina.Modules.Academic.csproj" />
+    <ProjectReference Include="..\..\Doctrina.TestKit\Doctrina.TestKit.csproj" />
+  </ItemGroup>
+</Project>

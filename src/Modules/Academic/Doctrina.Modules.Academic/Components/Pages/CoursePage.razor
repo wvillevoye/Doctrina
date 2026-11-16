@@ -1,0 +1,64 @@
+@page "/courses/{OfferingId:guid}"
+@attribute [Authorize]
+@using Doctrina.Infrastructure.Authentication
+@using Doctrina.Modules.Academic.Components
+@using Doctrina.Modules.Academic.Contracts
+@inject IAcademicDirectory Directory
+@inject IEnumerable<OfferingPageSection> Sections
+@inject NavigationManager Navigation
+
+@* The page of a course offering for its participants, with sections from other modules (spec course-page, design
+   D2 of add-groups). Access: an active enrolment in the offering, or Academic.Read. *@
+@if (_offering is not null)
+{
+  <DcPageHeader Title="@_offering.CourseName" DocumentTitle="@_offering.Name">
+    <Description>@_offering.Name</Description>
+  </DcPageHeader>
+
+  <div class="dc-stack">
+    <DcCard>
+      <dl class="dc-details" data-testid="offering-details">
+        <dt>Academic session</dt><dd>@_offering.SessionName</dd>
+        <dt>My role</dt><dd data-testid="my-role">@(_roles.Count == 0 ? "–" : string.Join(", ", _roles.Select(Labels.Role)))</dd>
+      </dl>
+    </DcCard>
+
+    @foreach (var section in Sections.OrderBy(s => s.Order))
+    {
+      <DynamicComponent Type="section.Component" Parameters="@(new Dictionary<string, object> { ["OfferingId"] = OfferingId })" />
+    }
+  </div>
+}
+
+@code {
+    private OfferingInfo? _offering;
+    private List<OfferingRole> _roles = [];
+
+    [Parameter]
+    public Guid OfferingId { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var ct = CancellationToken.None;
+        var offering = await Directory.FindOfferingAsync(OfferingId, ct);
+        if (offering.IsFailure)
+        {
+            Navigation.NotFound();
+            return;
+        }
+
+        var user = AuthenticationState is null ? new ClaimsPrincipal() : (await AuthenticationState).User;
+        var personId = await Directory.CurrentPersonIdAsync(user, ct);
+        _roles = personId is null ? [] : [.. (await Directory.MembersAsync(OfferingId, ct)).Where(m => m.PersonId == personId).Select(m => m.Role)];
+        if (_roles.Count == 0 && !user.HasClaim(DoctrinaClaimTypes.Permission, AcademicPermissions.Read))
+        {
+            Navigation.NavigateTo("/access-denied");
+            return;
+        }
+
+        _offering = offering.Value;
+    }
+}

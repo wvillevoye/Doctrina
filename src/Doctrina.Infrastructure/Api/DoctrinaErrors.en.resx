@@ -21,4 +21,7 @@
   <data name="Server.Unexpected" xml:space="preserve">
     <value>An unexpected error occurred</value>
   </data>
+  <data name="Api.TooManyRequests" xml:space="preserve">
+    <value>Too many requests</value>
+  </data>
 </root>

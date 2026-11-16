@@ -1,0 +1,38 @@
+@page "/academic/imports"
+@attribute [RequirePermission(AcademicPermissions.Import)]
+@using Doctrina.Modules.Academic.Components
+@using Doctrina.Modules.Academic.Domain
+@using Doctrina.Modules.Academic.Infrastructure
+@using Microsoft.EntityFrameworkCore
+@inject AcademicDbContext Db
+
+@* The latest imports (design D7 of add-bulk-import). *@
+<DcPageHeader Title="Recent imports">
+  <Description><DcLink Href="/academic">Academic</DcLink></Description>
+  <Actions><DcButton Href="/academic/import" Variant="DcButtonVariant.Primary">New import</DcButton></Actions>
+</DcPageHeader>
+
+<DcTable TItem="Row" Caption="Recent imports" HideCaption Columns="Columns" Items="_rows" EmptyText="Nothing has been imported yet." data-testid="import-jobs" />
+
+@code {
+    private const int Shown = 25;
+
+    private static readonly DcTableColumn<Row>[] Columns =
+    [
+        new("Created (UTC)", Template: r => @<DcLink Href="@($"/academic/imports/{r.Id:D}")">@r.CreatedAt.UtcDateTime.ToString("yyyy-MM-dd HH:mm", System.Globalization.CultureInfo.InvariantCulture)</DcLink>),
+        new("File", r => r.DryRun ? $"{r.UploadName} (dry run)" : r.UploadName),
+        new("Source", r => r.Source),
+        new("Started by", r => r.StartedBy),
+        new("Status", r => r.Status.ToString().ToLowerInvariant()),
+        new("Result", r => r.Status == ImportJobStatus.Completed ? $"{r.Created} created, {r.Updated} updated, {r.Unchanged} unchanged, {r.Failed} failed" : null),
+    ];
+
+    private List<Row> _rows = [];
+
+    protected override async Task OnInitializedAsync() =>
+        _rows = await Db.ImportJobs.AsNoTracking().OrderByDescending(j => j.CreatedAt).Take(Shown)
+            .Select(j => new Row(j.Id, j.CreatedAt, j.UploadName, j.DryRun, j.Source, j.StartedBy, j.Status, j.Created, j.Updated, j.Unchanged, j.Failed))
+            .ToListAsync();
+
+    private sealed record Row(Guid Id, DateTimeOffset CreatedAt, string UploadName, bool DryRun, string Source, string StartedBy, ImportJobStatus Status, int Created, int Updated, int Unchanged, int Failed);
+}

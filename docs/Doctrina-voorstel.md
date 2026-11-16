@@ -280,7 +280,7 @@ GroupSets binnen een offering; groepen handmatig, willekeurig of zelf-inschrijve
 
 ### 6.3 Templates
 Een **Course** dient als template; een **CourseOffering** wordt daaruit aangemaakt (structuur, componenten, content, LTI-links kopiëren). Daarnaast herbruikbare **contentblok-templates**.
-> *Open vraag: bedoelen we vooral cursussjablonen, pagina-/layouttemplates, of beide?*
+> *Eerste stap (`add-course-templates`, besluit 2026-11-14): een lege uitvoering vullen met de content van een eerdere uitvoering van dezelfde cursus (handmatig, als concept). Contentblok-templates en een template-inhoud per `Course` zijn nog open.*
 
 ### 6.4 Content
 Modules/secties binnen een offering, pagina's, bestanden, links, LTI-items; publiceren / verbergen; volgorde.
@@ -417,11 +417,14 @@ Wat Bootstrap herkenbaar maakt en wij aanpassen: font, knoppen (vorm, kleur, gew
 | 5 | `add-api-and-import` | REST per resource (incl. upsert op ExternalId, batch) + CSV/zip-import, dry-run, jobs, rapportage | 3 |
 | 6 | `add-ooapi-interop` | OOAPI v5-endpoints aanbieden/consumeren | 3, 5 |
 | 7 | `add-content` | Content-structuur binnen offerings | 3 |
-| 8 | `add-lti-platform` | LTI 1.3 core + Deep Linking + AGS + NRPS | 3, 7 |
+| 8 | `add-lti-platform` | LTI 1.3 core (tools registreren, sleutels/JWKS, resource link launch) | 3, 7 |
+| 8a | `add-lti-deep-linking` | LTI Deep Linking 2.0 (tool links kiezen in de tool) | 8 |
+| 8b | `add-lti-ags` | LTI Assignment and Grade Services (cijfers) | 8 |
+| 8c | `add-lti-nrps` | LTI Names and Role Provisioning Services (deelnemers) | 8 |
 | 9 | `add-course-templates` | Offering aanmaken vanuit cursus-template | 3, 7, 8 |
 | later | `add-oneroster-interop`, `add-common-cartridge-import`, `add-lti-tool-role`, `add-xapi` | | |
 
-Per change: `proposal.md`, `tasks.md`, `design.md` (bij architectuurkeuzes), delta-specs in `specs/<capability>/spec.md`. Specs in het Engels (SHALL/MUST), gebruikersdocumentatie in het Nederlands.
+Per change: `proposal.md`, `tasks.md`, `design.md` (bij architectuurkeuzes), delta-specs in `specs/<capability>/spec.md`. Alle artefacten (ook de specs) en de gebruikersdocumentatie in het Nederlands; alleen de structuurwoorden die de validator nodig heeft blijven Engels (`## Why`, `### Requirement:`, `#### Scenario:`, SHALL/MUST, GIVEN/WHEN/THEN) — design D12 van `add-modular-foundation`.
 
 ## 9. Huisregels voor Claude (voor `AGENTS.md` / `CLAUDE.md`)
 

@@ -1,0 +1,13 @@
+@* Klein label voor een status of categorie. De betekenis staat in de tekst, niet alleen in de kleur. *@
+<span class="dc-badge dc-badge--@Variant.ToString().ToLowerInvariant()" @attributes="AdditionalAttributes">@ChildContent</span>
+
+@code {
+    [Parameter]
+    public DcBadgeVariant Variant { get; set; } = DcBadgeVariant.Neutral;
+
+    [Parameter, EditorRequired]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+}

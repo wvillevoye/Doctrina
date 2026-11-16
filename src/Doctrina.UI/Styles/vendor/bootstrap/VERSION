@@ -1,0 +1,6 @@
+Bootstrap 5.3.9 — alleen de SCSS-bronnen (map scss/ van het pakket), zonder JavaScript en zonder de
+ingangsbestanden bootstrap*.scss; Doctrina importeert zelf de benodigde onderdelen (Styles/doctrina.scss).
+Bron: https://registry.npmjs.org/bootstrap/-/bootstrap-5.3.9.tgz
+Integriteit (npm): sha512-20cU0rcfw8WdxtVbmfU+xT2EjvVTw9Ror/h1Qvd7DXCujRg8OO9mdBCsmTHdJFf3BuadmBNJtgIuUXsBqSkk/w==
+Licentie: MIT (zie LICENSE)
+Bijwerken: vervang de inhoud van deze map door scss/ van een nieuwere 5.3.x, pas dit bestand aan en loop de stijlgids na.

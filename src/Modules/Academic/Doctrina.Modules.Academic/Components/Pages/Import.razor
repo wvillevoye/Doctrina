@@ -1,0 +1,115 @@
+@page "/academic/import"
+@rendermode InteractiveServer
+@attribute [RequirePermission(AcademicPermissions.Import)]
+@using System.ComponentModel.DataAnnotations
+@using Doctrina.Core.Results
+@using Doctrina.Modules.Academic.Application
+@using Doctrina.Modules.Academic.Components
+@using Microsoft.Extensions.DependencyInjection
+@using Microsoft.Extensions.Options
+@inject IServiceScopeFactory Scopes
+@inject IOptions<AcademicImportOptions> Options
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+@* Upload of a CSV or zip; creates an import job and goes to its page (spec academic-csv-import, design D7 of
+   add-bulk-import). The processing runs in the background. *@
+<DcPageHeader Title="Import">
+  <Description>Upload a CSV file for one type, or a zip with several. A zip is imported in this order: organizations, academic sessions, courses, course offerings, persons, associations. <DcLink Href="/academic/imports">Recent imports</DcLink></Description>
+</DcPageHeader>
+
+<div class="dc-stack">
+  <DcForm Model="_form" Error="_error" OnValidSubmit="ImportAsync" data-testid="import-form">
+    <div class="dc-field">
+      <label for="import-file" class="dc-field__label">File (CSV or zip)<span class="dc-field__required">(required)</span></label>
+      <InputFile id="import-file" accept=".csv,.zip,text/csv,application/zip" OnChange="FileChanged" />
+    </div>
+    <DcSelect TValue="string" Label="Type" Hint="Only for a CSV file; in a zip the type comes from manifest.csv or the file name." @bind-Value="_form.Type">
+      @foreach (var type in AcademicTypes.All)
+      {
+        <option value="@type.Name">@Labels.Type(type)</option>
+      }
+    </DcSelect>
+    <DcTextField Label="Source" Required Hint="The system the data comes from; records are matched on ID and source." @bind-Value="_form.Source" />
+    <DcCheckbox Label="Dry run: show what would happen, without saving" @bind-Value="_form.DryRun" />
+    <div class="dc-form__actions">
+      <DcButton Type="submit" Variant="DcButtonVariant.Primary" Busy="_busy">Import</DcButton>
+    </div>
+  </DcForm>
+
+  <DcCard Title="Templates">
+    <p>An empty CSV file with the columns of a type.</p>
+    <div class="dc-form__actions">
+      @foreach (var type in AcademicTypes.All)
+      {
+        <DcButton Variant="DcButtonVariant.Ghost" OnClick="() => TemplateAsync(type)" data-testid="@($"template-{type.Name}")">@($"{type.Name}.csv")</DcButton>
+      }
+    </div>
+  </DcCard>
+</div>
+
+@code {
+    private readonly ImportForm _form = new();
+    private IBrowserFile? _file;
+    private Error? _error;
+    private bool _busy;
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    private void FileChanged(InputFileChangeEventArgs e) => _file = e.File;
+
+    private async Task ImportAsync()
+    {
+        _error = null;
+        if (_file is null)
+        {
+            _error = CsvReader.FileError(CsvReader.EmptyCode, "Choose a CSV or zip file.");
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            // Read one byte more than allowed, so ImportJobs can say the file is too large.
+            var max = Options.Value.MaxFileSize;
+            await using var stream = _file.OpenReadStream(max + 1);
+            using var buffer = new MemoryStream();
+            var chunk = new byte[81920];
+            int read;
+            while (buffer.Length <= max && (read = await stream.ReadAsync(chunk.AsMemory(0, (int)Math.Min(chunk.Length, max + 1 - buffer.Length)))) > 0)
+            {
+                buffer.Write(chunk, 0, read);
+            }
+
+            var user = AuthenticationState is null ? null : (await AuthenticationState).User;
+            using var scope = Scopes.CreateScope();
+            var result = await scope.ServiceProvider.GetRequiredService<ImportJobs>().CreateAsync(
+                buffer.ToArray(), _file.Name, _form.Type, _form.Source ?? string.Empty, _form.DryRun, user?.Identity?.Name ?? "(unknown)", CancellationToken.None);
+            if (result.IsFailure)
+            {
+                _error = result.Error;
+                return;
+            }
+
+            Navigation.NavigateTo($"/academic/imports/{result.Value!.Id:D}");
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private Task TemplateAsync(AcademicType type) =>
+        Downloads.SaveAsync(JS, $"{type.Name}.csv", System.Text.Encoding.UTF8.GetBytes(ImportReportCsv.Template(type)));
+
+    private sealed class ImportForm
+    {
+        public string Type { get; set; } = AcademicTypes.All[0].Name;
+
+        [Required(ErrorMessage = "Enter a source.")]
+        public string? Source { get; set; } = "SIS";
+
+        public bool DryRun { get; set; }
+    }
+}

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Lti.Tool.Invalid" xml:space="preserve">
+    <value>Invalid tool</value>
+  </data>
+  <data name="Lti.Tool.NameRequired" xml:space="preserve">
+    <value>Name is required</value>
+  </data>
+  <data name="Lti.Tool.InvalidUrl" xml:space="preserve">
+    <value>Invalid address</value>
+  </data>
+  <data name="Lti.Tool.RedirectUriRequired" xml:space="preserve">
+    <value>Redirect URI is required</value>
+  </data>
+  <data name="Lti.Tool.NotFound" xml:space="preserve">
+    <value>Tool not found</value>
+  </data>
+  <data name="Lti.Tool.DeepLinkingUrlRequired" xml:space="preserve">
+    <value>Deep linking URL is required</value>
+  </data>
+  <data name="Lti.Tool.PublicKeysUrlRequired" xml:space="preserve">
+    <value>Public keys URL is required</value>
+  </data>
+  <data name="Lti.DeepLinking.NotSupported" xml:space="preserve">
+    <value>Tool does not support deep linking</value>
+  </data>
+  <data name="Lti.DeepLinking.InvalidToken" xml:space="preserve">
+    <value>Invalid response from the tool</value>
+  </data>
+  <data name="Lti.DeepLinking.InvalidData" xml:space="preserve">
+    <value>Invalid or expired deep linking data</value>
+  </data>
+  <data name="Lti.DeepLinking.InvalidItem" xml:space="preserve">
+    <value>Invalid item in the response of the tool</value>
+  </data>
+  <data name="Lti.DeepLinking.Replayed" xml:space="preserve">
+    <value>The response of the tool was already processed</value>
+  </data>
+  <data name="Lti.DeepLinking.SelectionNotFound" xml:space="preserve">
+    <value>Selection not found or expired</value>
+  </data>
+  <data name="Lti.DeepLinking.UserMismatch" xml:space="preserve">
+    <value>The selection belongs to another user</value>
+  </data>
+  <data name="Lti.Launch.UnknownClient" xml:space="preserve">
+    <value>Unknown client_id</value>
+  </data>
+  <data name="Lti.Launch.InvalidRedirectUri" xml:space="preserve">
+    <value>Invalid redirect_uri</value>
+  </data>
+  <data name="Lti.Launch.InvalidHint" xml:space="preserve">
+    <value>Invalid or expired lti_message_hint</value>
+  </data>
+  <data name="Lti.Launch.UserMismatch" xml:space="preserve">
+    <value>Request belongs to another user</value>
+  </data>
+  <data name="Lti.Launch.InvalidRequest" xml:space="preserve">
+    <value>Invalid authentication request</value>
+  </data>
+  <data name="Lti.Launch.Forbidden" xml:space="preserve">
+    <value>No access to this tool link</value>
+  </data>
+</root>

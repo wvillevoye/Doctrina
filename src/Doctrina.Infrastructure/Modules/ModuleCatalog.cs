@@ -97,7 +97,12 @@ public sealed class ModuleCatalog
         }
 
         var ordered = SortByDependencies(enabled, enabledByName, errors);
-        var permissions = PermissionRegistry.Create(ordered, rolePermissions ?? new Dictionary<string, IReadOnlyList<string>>(), errors);
+        // Permissions of known but disabled modules may stay in the role mapping, so switching a module off doesn't
+        // require editing the mapping as well (change add-academic-core).
+        var disabledPermissions = knownByName.Values.Except(enabled)
+            .SelectMany(m => m.Permissions.Select(p => p.Name))
+            .ToHashSet(StringComparer.Ordinal);
+        var permissions = PermissionRegistry.Create(ordered, rolePermissions ?? new Dictionary<string, IReadOnlyList<string>>(), errors, disabledPermissions);
 
         if (errors.Count > 0)
         {

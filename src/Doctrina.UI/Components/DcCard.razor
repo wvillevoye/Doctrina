@@ -1,0 +1,57 @@
+@* Vlak met dunne rand en ruime radius (voorstel §7.0). Met een titel is het een benoemde sectie. *@
+@if (Title is not null)
+{
+  <section class="card dc-card" aria-labelledby="@_titleId" @attributes="AdditionalAttributes">
+    <div class="card-body">
+      @switch (HeadingLevel)
+      {
+        case 3:
+          <h3 id="@_titleId" class="dc-card__title">@Title</h3>
+          break;
+        case 4:
+          <h4 id="@_titleId" class="dc-card__title">@Title</h4>
+          break;
+        default:
+          <h2 id="@_titleId" class="dc-card__title">@Title</h2>
+          break;
+      }
+      @ChildContent
+    </div>
+    @if (Footer is not null)
+    {
+      <div class="dc-card__footer">@Footer</div>
+    }
+  </section>
+}
+else
+{
+  <div class="card dc-card" @attributes="AdditionalAttributes">
+    <div class="card-body">@ChildContent</div>
+    @if (Footer is not null)
+    {
+      <div class="dc-card__footer">@Footer</div>
+    }
+  </div>
+}
+
+@code {
+    private readonly string _titleId = DcIds.New("card");
+
+    /// <summary>Titel; maakt van de card een sectie die naar die titel heet.</summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>Kopniveau van de titel: 2 (standaard, onder de h1 van <see cref="DcPageHeader"/>), 3 of 4.</summary>
+    [Parameter]
+    public int HeadingLevel { get; set; } = 2;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Onderrand met acties.</summary>
+    [Parameter]
+    public RenderFragment? Footer { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+}

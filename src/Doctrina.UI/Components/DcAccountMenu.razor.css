@@ -1,0 +1,56 @@
+.dc-account__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dc-space-2);
+  min-height: 2.5rem;
+  padding: var(--dc-space-2) var(--dc-space-3);
+  border: var(--dc-border-width) solid var(--dc-border-strong);
+  border-radius: var(--dc-radius);
+  color: var(--dc-text);
+  background-color: var(--dc-surface);
+  font-weight: var(--dc-font-weight-medium);
+  cursor: pointer;
+}
+
+.dc-account__menu {
+  inset: 4rem var(--dc-space-4) auto auto;
+  min-width: 14rem;
+  margin: 0;
+  padding: var(--dc-space-2);
+  border: var(--dc-border-width) solid var(--dc-border);
+  border-radius: var(--dc-radius-lg);
+  color: var(--dc-text);
+  background-color: var(--dc-surface);
+  box-shadow: var(--dc-shadow-float);
+}
+
+.dc-account__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dc-account__form {
+  margin: 0;
+}
+
+.dc-account__item {
+  display: flex;
+  align-items: center;
+  gap: var(--dc-space-2);
+  width: 100%;
+  padding: var(--dc-space-2) var(--dc-space-3);
+  border: 0;
+  border-radius: var(--dc-radius);
+  color: var(--dc-text);
+  background: transparent;
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.dc-account__item:hover {
+  color: var(--dc-text);
+  background-color: var(--dc-neutral-subtle);
+}

@@ -1,0 +1,8 @@
+organizationId,name,shortName,organizationType,parentOrganizationId
+UM,Maastricht University,UM,root,
+FHML,"Faculty of Health, Medicine and Life Sciences",FHML,faculty,UM
+SBE,School of Business and Economics,SBE,faculty,UM
+FdR,Faculteit der Rechtsgeleerdheid,FdR,faculty,UM
+FPN,Faculty of Psychology and Neuroscience,FPN,faculty,UM
+FASoS,Faculty of Arts and Social Sciences,FASoS,faculty,UM
+FSE,Faculty of Science and Engineering,FSE,faculty,UM

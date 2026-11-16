@@ -26,7 +26,7 @@ public sealed partial class UnexpectedExceptionHandler(
         ArgumentNullException.ThrowIfNull(httpContext);
         ArgumentNullException.ThrowIfNull(exception);
 
-        // De exception-middleware wist endpoint en pad (bij een foutpagina is het pad al /fout); het oorspronkelijke
+        // De exception-middleware wist endpoint en pad (bij een foutpagina is het pad al /error); het oorspronkelijke
         // verzoek staat in de feature. Pagina's krijgen geen JSON maar de foutpagina van de host.
         var feature = httpContext.Features.Get<IExceptionHandlerFeature>();
         var path = feature?.Path ?? httpContext.Request.Path.Value;

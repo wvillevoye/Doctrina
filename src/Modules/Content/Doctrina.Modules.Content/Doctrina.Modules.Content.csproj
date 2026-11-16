@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <!-- Content module: sections with pages, files and links in a course offering (change add-content). -->
+  <PropertyGroup>
+    <RootNamespace>Doctrina.Modules.Content</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Markdown to HTML for pages (design D7). -->
+    <PackageReference Include="Markdig" />
+    <!-- Only for dotnet ef (migrations), see docs/ontwikkelen/database.md. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Doctrina.Modules.Content.Tests" />
+    <InternalsVisibleTo Include="Doctrina.Host.IntegrationTests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Doctrina.Core\Doctrina.Core.csproj" />
+    <ProjectReference Include="..\..\..\Doctrina.Infrastructure\Doctrina.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\Doctrina.UI\Doctrina.UI.csproj" />
+    <ProjectReference Include="..\..\Academic\Doctrina.Modules.Academic.Contracts\Doctrina.Modules.Academic.Contracts.csproj" />
+    <ProjectReference Include="..\Doctrina.Modules.Content.Contracts\Doctrina.Modules.Content.Contracts.csproj" />
+    <ProjectReference Include="..\..\Lti\Doctrina.Modules.Lti.Contracts\Doctrina.Modules.Lti.Contracts.csproj" />
+  </ItemGroup>
+</Project>

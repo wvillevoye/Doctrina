@@ -1,0 +1,11 @@
+{
+  "Source": "Styles/doctrina.scss",
+  "Target": "wwwroot/css/doctrina.css",
+  "Arguments": "--style=compressed --no-source-map --error-css --quiet-deps --silence-deprecation=import --silence-deprecation=global-builtin --silence-deprecation=color-functions --silence-deprecation=if-function",
+  "GenerateScopedCss": false,
+  "Configurations": {
+    "Debug": {
+      "Arguments": "--style=expanded --no-source-map --error-css --quiet-deps --silence-deprecation=import --silence-deprecation=global-builtin --silence-deprecation=color-functions --silence-deprecation=if-function"
+    }
+  }
+}

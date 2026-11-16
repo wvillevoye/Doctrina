@@ -1,0 +1,93 @@
+@using System.Reflection
+
+@* Formulier rond EditForm (design D7, D8): validatie met DataAnnotations, en een fout uit een Result wordt getoond met
+   DcResult; de meldingen per veld (Error.Details) komen bij de velden, met hoofdletterongevoelige veldnamen
+   (API-sleutels zijn camelCase, eigenschappen PascalCase). novalidate: de meldingen van Doctrina in plaats van die van
+   de browser, zodat ze overal gelijk en gekoppeld zijn. *@
+<EditForm EditContext="_editContext" FormName="@FormName" OnValidSubmit="OnValidSubmit" OnInvalidSubmit="OnInvalidSubmit"
+          class="dc-form" novalidate @attributes="AdditionalAttributes">
+  @if (Validate)
+  {
+    <DataAnnotationsValidator />
+  }
+  <DcResult Error="Error" Messages="_unmatched" />
+  @ChildContent
+</EditForm>
+
+@code {
+    private EditContext? _editContext;
+    private ValidationMessageStore? _serverMessages;
+    private Error? _appliedError;
+    private List<string> _unmatched = [];
+
+    /// <summary>Het model waaraan de velden gebonden zijn.</summary>
+    [Parameter, EditorRequired]
+    public object Model { get; set; } = default!;
+
+    /// <summary>Naam van het formulier; nodig bij statische weergave (SSR) met meerdere formulieren.</summary>
+    [Parameter]
+    public string? FormName { get; set; }
+
+    [Parameter]
+    public EventCallback<EditContext> OnValidSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback<EditContext> OnInvalidSubmit { get; set; }
+
+    /// <summary>Fout uit het laatste <c>Result</c> (bv. van de upsert-service); <see langword="null"/> = geen fout.</summary>
+    [Parameter]
+    public Error? Error { get; set; }
+
+    /// <summary>Validatie met DataAnnotations aan (standaard).</summary>
+    [Parameter]
+    public bool Validate { get; set; } = true;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(Model);
+        if (_editContext is null || !ReferenceEquals(_editContext.Model, Model))
+        {
+            _editContext = new EditContext(Model);
+            _serverMessages = new ValidationMessageStore(_editContext);
+            // Een veld dat de gebruiker wijzigt, verliest de melding van de server.
+            _editContext.OnFieldChanged += (_, e) => _serverMessages.Clear(e.FieldIdentifier);
+            _appliedError = null;
+        }
+
+        if (!ReferenceEquals(Error, _appliedError))
+        {
+            _appliedError = Error;
+            ApplyError();
+        }
+    }
+
+    private void ApplyError()
+    {
+        _serverMessages!.Clear();
+        _unmatched = [];
+        if (Error?.Details is { } details)
+        {
+            var properties = Model.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var (key, messages) in details)
+            {
+                var property = properties.FirstOrDefault(p => string.Equals(p.Name, key, StringComparison.OrdinalIgnoreCase));
+                if (property is null)
+                {
+                    _unmatched.AddRange(messages);
+                }
+                else
+                {
+                    _serverMessages.Add(new FieldIdentifier(Model, property.Name), messages);
+                }
+            }
+        }
+
+        _editContext!.NotifyValidationStateChanged();
+    }
+}

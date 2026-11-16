@@ -1,0 +1,43 @@
+@using Microsoft.Extensions.DependencyInjection
+@inject IServiceProvider Services
+
+@* Toont een verwachte fout uit een Result (spec ui-components "Fouten uit een Result worden eenduidig getoond"):
+   de vertaalde titel bij de foutcode (IErrorTitles, design D8) in een melding die direct wordt aangekondigd. *@
+@if (Error is not null)
+{
+  <DcAlert Severity="DcSeverity.Danger" Title="@Title" data-testid="result-error" data-error-code="@Error.Code">
+    @if (_messages.Count > 0)
+    {
+      <ul class="dc-result__messages">
+        @foreach (var message in _messages)
+        {
+          <li>@message</li>
+        }
+      </ul>
+    }
+  </DcAlert>
+}
+
+@code {
+    private List<string> _messages = [];
+
+    /// <summary>De fout; zonder fout toont het component niets.</summary>
+    [Parameter]
+    public Error? Error { get; set; }
+
+    /// <summary>
+    /// Meldingen onder de titel. Standaard alle meldingen per veld uit <see cref="Error.Details"/>; <see cref="DcForm"/>
+    /// geeft hier alleen de meldingen die niet bij een veld horen.
+    /// </summary>
+    [Parameter]
+    public IReadOnlyList<string>? Messages { get; set; }
+
+    private string Title => Error is null
+        ? string.Empty
+        : Services.GetService<IErrorTitles>()?.For(Error.Code, Error.Message) ?? Error.Message;
+
+    protected override void OnParametersSet() =>
+        _messages = Messages is not null
+            ? [.. Messages]
+            : [.. Error?.Details?.SelectMany(d => d.Value) ?? []];
+}

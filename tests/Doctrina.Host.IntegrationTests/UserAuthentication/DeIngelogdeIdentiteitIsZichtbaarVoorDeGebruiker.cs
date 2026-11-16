@@ -17,7 +17,7 @@ public sealed class DeIngelogdeIdentiteitIsZichtbaarVoorDeGebruiker(DoctrinaHost
             .WithAppSettings((AccessHosts.Mapping("employee", 0), "Sample.Read"));
         using var browser = host.CreateBrowser();
 
-        var html = await browser.SignInAndGetAsync("/profiel", factory.Idp, new StubUser("sub-3", "Dirk Docent", ["employee"], PersonId: "P7002809"), Ct);
+        var html = await browser.SignInAndGetAsync("/profile", factory.Idp, new StubUser("sub-3", "Dirk Docent", ["employee"], PersonId: "P7002809"), Ct);
 
         Assert.Contains("data-testid=\"name\">Dirk Docent<", html, StringComparison.Ordinal);
         Assert.Contains("data-testid=\"person-id\">P7002809<", html, StringComparison.Ordinal);
@@ -33,7 +33,7 @@ public sealed class DeIngelogdeIdentiteitIsZichtbaarVoorDeGebruiker(DoctrinaHost
     {
         using var browser = factory.CreateBrowser();
 
-        var html = await browser.SignInAndGetAsync("/profiel", factory.Idp, new StubUser("sub-4", "Zonder Nummer", ["student"]), Ct);
+        var html = await browser.SignInAndGetAsync("/profile", factory.Idp, new StubUser("sub-4", "Zonder Nummer", ["student"]), Ct);
 
         // Blazor codeert "–" als &#x2013;; vergelijk de gedecodeerde tekst.
         Assert.Contains("data-testid=\"person-id\">–<", WebUtility.HtmlDecode(html), StringComparison.Ordinal);

@@ -65,7 +65,8 @@ public sealed class PermissionRegistry
     internal static PermissionRegistry Create(
         IReadOnlyList<IModule> enabled,
         IReadOnlyDictionary<string, IReadOnlyList<string>> mapping,
-        List<string> errors)
+        List<string> errors,
+        IReadOnlySet<string>? ignoredPermissions = null)
     {
         var byName = new Dictionary<string, Permission>(StringComparer.Ordinal);
         var declaredBy = new Dictionary<string, List<string>>(StringComparer.Ordinal);
@@ -96,7 +97,7 @@ public sealed class PermissionRegistry
         var byRole = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
         foreach (var (role, permissions) in mapping)
         {
-            foreach (var unknown in permissions.Where(p => p != Wildcard && !byName.ContainsKey(p)))
+            foreach (var unknown in permissions.Where(p => p != Wildcard && !byName.ContainsKey(p) && ignoredPermissions?.Contains(p) != true))
             {
                 errors.Add($"Rol '{role}' in {RolePermissionsSection} verwijst naar onbekende permissie '{unknown}'.");
             }

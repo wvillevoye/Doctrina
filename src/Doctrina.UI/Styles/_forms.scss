@@ -1,0 +1,35 @@
+// Formuliervelden (DcTextField, DcSelect, DcCheckbox). Globaal i.p.v. .razor.css, omdat de velden dezelfde opmaak
+// delen en de invoerelementen door InputBase worden gerenderd (buiten de CSS-scope van het veld).
+
+.dc-field {
+  margin-bottom: var(--dc-space-4);
+}
+
+.dc-field__label {
+  font-weight: var(--dc-font-weight-semibold);
+}
+
+.dc-field__required {
+  margin-left: var(--dc-space-1);
+  color: var(--dc-text-muted);
+  font-size: var(--dc-font-size-sm);
+  font-weight: var(--dc-font-weight-normal);
+}
+
+.dc-field__hint {
+  margin-top: var(--dc-space-1);
+  color: var(--dc-text-muted);
+  font-size: var(--dc-font-size-sm);
+}
+
+.dc-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dc-space-2);
+  margin-top: var(--dc-space-5);
+}
+
+.dc-result__messages {
+  margin: var(--dc-space-2) 0 0;
+  padding-left: var(--dc-space-5);
+}

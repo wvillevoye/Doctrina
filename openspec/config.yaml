@@ -17,14 +17,17 @@ context: |
   Authenticatie is standaard OpenID Connect en moet ongewijzigd werken tegen Keycloak (lokale dev-stack), Microsoft Entra ID
   en SURFconext: rollen komen uit een platte "roles"-claim, de weergavenaam uit "name", inbound claim mapping staat uit.
   Systemen roepen de API aan met OAuth 2.0 client credentials; hun permissies komen ook in de "roles"-claim.
-  De lokale dev-stack (Keycloak, Mailpit) staat in dev-stack/ (docker compose-project doctrina-dev);
-  het claimcontract staat in docs/doctrina-integratie.md. De realm-bestanden daar worden gegenereerd door dev-stack/scripts/generate-realm.ps1.
+  Keycloak en Mailpit draaien lokaal in een gedeelde stack buiten deze repo (map Keycloak naast de checkout, docker
+  compose-project keycloak-dev); dev-stack/ bevat alleen het Doctrina-deel: de realm, de generator en de CSV-testdata.
+  Het claimcontract staat in docs/doctrina-integratie.md. Het realm-bestand wordt gegenereerd door dev-stack/scripts/generate-realm.ps1.
   Configuratie: appsettings.json + appsettings.{Development,Test,Production}.json; secrets alleen in het niet-gecommitte
   appsettings.Secrets.json (voorbeeld: appsettings.Secrets.example.json). Omgeving Test = de geautomatiseerde tests.
   Doctrina.Host draait in development op https://localhost:5001 (en http://localhost:5000).
   Ontwikkelaars werken op Windows met Docker Desktop; scripts en documentatie moeten daar werken.
   Toegankelijkheid WCAG 2.2 AA, privacy by design (AVG): geen persoonsgegevens in logs.
   Alle OpenSpec-artefacten zijn in het Nederlands (design D12 van add-modular-foundation).
+  De gebruikersinterface is Engels; nieuwe documentatie en codecommentaar ook (besluit 2026-11-12, zie AGENTS.md).
+  Zichtbare UI-teksten in scenario's dus in het Engels, tussen aanhalingstekens.
 
 rules:
   proposal:
@@ -40,4 +43,4 @@ rules:
   tasks:
     - Schrijf in het Nederlands.
     - Elk spec-scenario wordt gedekt door minstens één testtaak; noem de test naar de requirement/het scenario (Nederlandse namen, testklasse = requirement, methode = scenario).
-    - Gebruikersdocumentatie is in het Nederlands.
+    - Nieuwe documentatie (docs/, README's) en codecommentaar zijn in het Engels; bestaande Nederlandse documentatie blijft staan.

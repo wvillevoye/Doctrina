@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Lti.Tool.Invalid" xml:space="preserve">
+    <value>Ongeldige tool</value>
+  </data>
+  <data name="Lti.Tool.NameRequired" xml:space="preserve">
+    <value>Naam ontbreekt</value>
+  </data>
+  <data name="Lti.Tool.InvalidUrl" xml:space="preserve">
+    <value>Ongeldig adres</value>
+  </data>
+  <data name="Lti.Tool.RedirectUriRequired" xml:space="preserve">
+    <value>Redirect-URI ontbreekt</value>
+  </data>
+  <data name="Lti.Tool.NotFound" xml:space="preserve">
+    <value>Tool niet gevonden</value>
+  </data>
+  <data name="Lti.Tool.DeepLinkingUrlRequired" xml:space="preserve">
+    <value>Deep linking URL ontbreekt</value>
+  </data>
+  <data name="Lti.Tool.PublicKeysUrlRequired" xml:space="preserve">
+    <value>Public keys URL ontbreekt</value>
+  </data>
+  <data name="Lti.DeepLinking.NotSupported" xml:space="preserve">
+    <value>Tool ondersteunt geen deep linking</value>
+  </data>
+  <data name="Lti.DeepLinking.InvalidToken" xml:space="preserve">
+    <value>Ongeldig antwoord van de tool</value>
+  </data>
+  <data name="Lti.DeepLinking.InvalidData" xml:space="preserve">
+    <value>Ongeldige of verlopen deep linking-gegevens</value>
+  </data>
+  <data name="Lti.DeepLinking.InvalidItem" xml:space="preserve">
+    <value>Ongeldig item in het antwoord van de tool</value>
+  </data>
+  <data name="Lti.DeepLinking.Replayed" xml:space="preserve">
+    <value>Antwoord van de tool is al verwerkt</value>
+  </data>
+  <data name="Lti.DeepLinking.SelectionNotFound" xml:space="preserve">
+    <value>Selectie niet gevonden of verlopen</value>
+  </data>
+  <data name="Lti.DeepLinking.UserMismatch" xml:space="preserve">
+    <value>Selectie hoort bij een andere gebruiker</value>
+  </data>
+  <data name="Lti.Launch.UnknownClient" xml:space="preserve">
+    <value>Onbekende client_id</value>
+  </data>
+  <data name="Lti.Launch.InvalidRedirectUri" xml:space="preserve">
+    <value>Ongeldige redirect_uri</value>
+  </data>
+  <data name="Lti.Launch.InvalidHint" xml:space="preserve">
+    <value>Ongeldige of verlopen lti_message_hint</value>
+  </data>
+  <data name="Lti.Launch.UserMismatch" xml:space="preserve">
+    <value>Verzoek hoort bij een andere gebruiker</value>
+  </data>
+  <data name="Lti.Launch.InvalidRequest" xml:space="preserve">
+    <value>Ongeldig authenticatieverzoek</value>
+  </data>
+  <data name="Lti.Launch.Forbidden" xml:space="preserve">
+    <value>Geen toegang tot deze tool link</value>
+  </data>
+</root>

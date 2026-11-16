@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Public contracts of the Academic module for other modules (design D1 of add-academic-core). -->
+  <PropertyGroup>
+    <RootNamespace>Doctrina.Modules.Academic.Contracts</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Doctrina.Core\Doctrina.Core.csproj" />
+  </ItemGroup>
+</Project>

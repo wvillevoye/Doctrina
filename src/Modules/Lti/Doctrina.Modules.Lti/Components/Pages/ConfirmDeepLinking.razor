@@ -1,0 +1,105 @@
+@page "/lti/deep-linking/selection/{SelectionId:guid}"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@using Doctrina.Core.Results
+@using Doctrina.Modules.Content.Contracts
+@using Doctrina.Modules.Lti.Application
+@using Microsoft.Extensions.DependencyInjection
+@inject IServiceScopeFactory Scopes
+@inject NavigationManager Navigation
+
+@* The teacher confirms what a tool chose (spec lti-deep-linking, design D4 of add-lti-deep-linking). The tool's response
+   arrives without a session, so it is kept as a selection; only the user who started the request may add it. *@
+@if (_items is not null)
+{
+  <DcPageHeader Title="Add content from tool" DocumentTitle="Add content from tool">
+    <Description>The tool chose the items below. They are added to the section as drafts; students see nothing until you publish.</Description>
+  </DcPageHeader>
+
+  <div class="dc-stack">
+    <DcResult Error="_error" />
+    <DcCard Title="@($"{_items.Count} {(_items.Count == 1 ? "item" : "items")}")" data-testid="selection">
+      <ChildContent>
+        <ul>
+          @foreach (var item in _items)
+          {
+            <li data-testid="selection-item">@item.Title</li>
+          }
+        </ul>
+      </ChildContent>
+      <Footer>
+        <DcButton Variant="DcButtonVariant.Primary" Icon="plus" OnClick="AddAsync" data-testid="add-selection">Add to section</DcButton>
+        <DcButton Variant="DcButtonVariant.Ghost" Href="@BackUrl">Cancel</DcButton>
+      </Footer>
+    </DcCard>
+  </div>
+}
+
+@code {
+    private IReadOnlyList<DeepLinkItem>? _items;
+    private (Guid Id, Guid Section, Guid Tool) _selection;
+    private Error? _error;
+
+    [Parameter]
+    public Guid SelectionId { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    private string BackUrl => $"/lti/deep-linking/back/{_selection.Section:D}";
+
+    private async Task<ClaimsPrincipal> UserAsync() => AuthenticationState is null ? new ClaimsPrincipal() : (await AuthenticationState).User;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var ct = CancellationToken.None;
+        var user = await UserAsync();
+        using var scope = Scopes.CreateScope();
+        var found = await scope.ServiceProvider.GetRequiredService<DeepLinkingService>().FindSelectionAsync(SelectionId, ct);
+        if (found.IsFailure)
+        {
+            Navigation.NotFound();
+            return;
+        }
+
+        var (selection, items) = found.Value;
+        if (selection.Subject != await scope.ServiceProvider.GetRequiredService<LaunchService>().SubjectAsync(user, ct))
+        {
+            Navigation.NavigateTo("/access-denied"); // Lti.DeepLinking.UserMismatch
+            return;
+        }
+
+        var section = await scope.ServiceProvider.GetRequiredService<IContentDirectory>().FindSectionForManagingAsync(user, selection.SectionId, ct);
+        if (section.Error is { } denied)
+        {
+            if (denied.Code == IContentDirectory.AccessForbiddenCode)
+            {
+                Navigation.NavigateTo("/access-denied");
+            }
+            else
+            {
+                Navigation.NotFound();
+            }
+
+            return;
+        }
+
+        _selection = (selection.Id, selection.SectionId, selection.ToolId);
+        _items = items;
+    }
+
+    private async Task AddAsync()
+    {
+        var ct = CancellationToken.None;
+        using var scope = Scopes.CreateScope();
+        var links = _items!.Select(i => new NewToolLink(i.Title, i.Url)).ToList();
+        var result = await scope.ServiceProvider.GetRequiredService<IContentDirectory>()
+            .AddToolLinksAsync(await UserAsync(), _selection.Section, _selection.Tool, links, ct);
+        _error = result.Error;
+        if (result.IsSuccess)
+        {
+            await scope.ServiceProvider.GetRequiredService<DeepLinkingService>().DiscardSelectionAsync(_selection.Id, ct);
+            Navigation.NavigateTo(BackUrl, forceLoad: true); // an endpoint, not a component
+        }
+    }
+}

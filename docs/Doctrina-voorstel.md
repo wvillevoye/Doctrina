@@ -356,7 +356,7 @@ Beheerder uploadt CSV/zip → ziet dry-run-resultaat → bevestigt → volgt voo
 
 ### 6.7 Interop.OOAPI
 - Biedt OOAPI v5-endpoints aan onder `/ooapi/v5`, **alleen-lezen** (change `add-ooapi-interop`); schrijven blijft op `/api/v1`. Alleen de paden van de standaard (geen top-level `/offerings` of `/associations`); verplichte velden die Doctrina niet bewaart worden afgeleid of staan onder `Ooapi:` in de instellingen.
-- Kan OOAPI-bronnen consumeren om het LMS te vullen (via bulk-pipeline).
+- Kan een OOAPI v5-bron lezen om het LMS te vullen (change `add-ooapi-consumer`): volledige run per bron, op schema (cron) of op verzoek, via dezelfde validator en upsert als de CSV-import; de uitkomst is een importjob met rapport. Verdwenen records worden niet verwijderd.
 - Implementeer de **profielen/consumers** die de instelling en koppelpartners echt gebruiken, niet de hele spec.
 
 ## 7. Styling — Bootstrap, maar niet Bootstrap-look
@@ -417,7 +417,8 @@ Wat Bootstrap herkenbaar maakt en wij aanpassen: font, knoppen (vorm, kleur, gew
 | 3 | `add-academic-core` | OOAPI-gebaseerd kernmodel + beheerschermen + "mijn cursussen" | 1, 2 |
 | 4 | `add-groups` | GroupSets en groepen | 3 |
 | 5 | `add-api-and-import` | REST per resource (incl. upsert op ExternalId, batch) + CSV/zip-import, dry-run, jobs, rapportage | 3 |
-| 6 | `add-ooapi-interop` | OOAPI v5-endpoints aanbieden (alleen-lezen; consumeren later) | 3, 5 |
+| 6 | `add-ooapi-interop` | OOAPI v5-endpoints aanbieden (alleen-lezen) | 3, 5 |
+| 6a | `add-ooapi-consumer` | OOAPI v5-bron lezen en via de gedeelde upsert in Academic laden (schema en op verzoek) | 6 |
 | 7 | `add-content` | Content-structuur binnen offerings | 3 |
 | 8 | `add-lti-platform` | LTI 1.3 core (tools registreren, sleutels/JWKS, resource link launch) | 3, 7 |
 | 8a | `add-lti-deep-linking` | LTI Deep Linking 2.0 (tool links kiezen in de tool) | 8 |

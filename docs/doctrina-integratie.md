@@ -101,6 +101,40 @@ description is the name) or set per installation under `Ooapi:`: `Language` (lan
 curl -H "Authorization: Bearer $TOKEN" "https://localhost:5001/ooapi/v5/courses?pageSize=20&pageNumber=2"
 ```
 
+## Reading an OOAPI v5 source
+
+Doctrina can also *read* an OOAPI v5 source (change `add-ooapi-consumer`, module `Ooapi`) and load what it finds into
+Academic, through the same validator and upsert as the CSV import and the REST API. A read is an import job: it shows
+on the import pages with a report per record and supports a dry run.
+
+Configure a source under `Ooapi:Sources:<name>`. The name becomes the `Source` of every record read from it, so keep it
+stable (at most 64 characters): renaming a source makes the next run create a second set of records next to the old one.
+
+| Setting | |
+|---|---|
+| `BaseUrl` | the OOAPI base, e.g. `https://sis.example.org/ooapi/v5` |
+| `TokenUrl`, `ClientId`, `Scope` | OAuth 2.0 client credentials (`Scope` is optional) |
+| `ClientSecret` | **only** in `appsettings.Secrets.json`, never in the other appsettings files |
+| `Schedule` | cron expression with 5 fields (UTC), e.g. `0 3 * * *`; empty = only on request |
+| `PageSize` | 10, 20, 50, 100 (default) or 250 |
+| `Enabled` | default `true` |
+
+Outside Development `BaseUrl` and `TokenUrl` must use `https`; a wrong source stops the host from starting. Texts are read
+in `Ooapi:Language` (else the first language); organizations, academic sessions, courses, the offerings of every course,
+persons and the associations of every offering are read in that order. Records are keyed by `primaryCode` (an association
+by its `associationId`); only `courseOfferingAssociation`s with state `associated` are read. Records that disappear from the
+source stay in Doctrina; a run only creates and updates. Transient errors (network, time-out, 429, 5xx) are tried three times
+in all; any other error ends the run as `failed`, keeping what was saved.
+
+To start a run yourself, use a system with scope `doctrina.import` (→ `Ooapi.Sync`):
+
+```bash
+curl -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d '{"dryRun":true}'   https://localhost:5001/api/v1/ooapi-sources/ooapi-sis/syncs
+```
+
+The answer is `202` with `jobId`; follow it at `GET /api/v1/imports/{jobId}` and `…/report`. An unknown or disabled source
+is `404`, a source that is already being read is `409` (the lock is per process).
+
 ## API: import
 
 Larger deliveries go through an import job (change `add-bulk-import`), with scope `doctrina.import` (→ `Academic.Import`):

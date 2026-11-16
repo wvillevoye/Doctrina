@@ -1,4 +1,4 @@
-using Doctrina.Core.Entities;
+﻿using Doctrina.Core.Entities;
 using Doctrina.Core.Results;
 using Doctrina.Modules.Academic.Contracts;
 using Doctrina.Modules.Content.Contracts;
@@ -335,7 +335,7 @@ internal sealed class GradeService(LtiDbContext db, IContentDirectory content, I
             System.Linq.Expressions.Expression.GreaterThan(call, System.Linq.Expressions.Expression.Constant(0)), key.Parameters);
     }
 
-    private static int? Limit(int? limit) => limit is null ? DefaultLimit : limit is >= 1 and <= MaxLimit ? limit : null;
+    internal static int? Limit(int? limit) => limit is null ? DefaultLimit : limit is >= 1 and <= MaxLimit ? limit : null;
 
     private static bool TooLong(string? value) => value?.Trim().Length > LtiDbContext.IdMaxLength;
 

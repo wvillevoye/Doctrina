@@ -1,4 +1,4 @@
-using Doctrina.Core.Entities;
+﻿using Doctrina.Core.Entities;
 
 namespace Doctrina.Modules.Lti.Domain;
 
@@ -31,6 +31,9 @@ public sealed class LtiTool : ExchangeableEntity
 
     /// <summary>The tool may use Assignment and Grade Services (line items, scores, results); needs <see cref="PublicKeysUrl"/>.</summary>
     public bool GradeServices { get; set; }
+
+    /// <summary>The tool may read the course membership (NRPS); needs <see cref="PublicKeysUrl"/>.</summary>
+    public bool MembershipServices { get; set; }
 
     /// <summary>Share name, given name and family name with this tool.</summary>
     public bool SendName { get; set; }

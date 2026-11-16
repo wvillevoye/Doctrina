@@ -1,6 +1,7 @@
-using Doctrina.Core.Results;
+﻿using Doctrina.Core.Results;
 using Doctrina.Modules.Academic.Application;
 using Doctrina.Modules.Academic.Contracts;
+using Doctrina.Modules.Academic.Infrastructure;
 
 namespace Doctrina.Modules.Academic.Tests;
 
@@ -49,6 +50,78 @@ public sealed class AcademicDirectoryVoorAndereModules
         Assert.Equal(
             [("P7000002", "Dirk Docent", OfferingRole.Lecturer), ("I6000001", "Sanne Student", OfferingRole.Student)],
             members.Select(m => (m.ExternalId, m.Name, m.Role)));
+    }
+}
+
+// add-lti-nrps task 2.1 (design D4): one page of members with person details.
+public sealed class GepagineerdeDeelnemersVoorAndereModules
+{
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
+
+    private static async Task<(AcademicDirectory Directory, Guid Offering)> SeedAsync(AcademicDbContext context, int students)
+    {
+        await context.SeedOfferingAndPersonAsync(Ct);
+        await context.UpsertAsync("associations", Fields.Association("A1"), Ct);
+        for (var i = 2; i <= students; i++)
+        {
+            await context.UpsertAsync("persons", Fields.Of(("personId", $"I600{i:D4}"), ("givenName", "Stu"), ("surname", $"Dent{i}"), ("mail", $"s{i}@example.test")), Ct);
+            await context.UpsertAsync("associations", Fields.Association($"A{i}", $"I600{i:D4}"), Ct);
+        }
+
+        return (new AcademicDirectory(context, new CurrentPerson(context)), context.CourseOfferings.Single().Id);
+    }
+
+    [Fact]
+    public async Task PaginasZonderDubbelen()
+    {
+        await using var db = await AcademicDatabase.CreateAsync(Ct);
+        await using var context = db.CreateContext();
+        var (directory, offering) = await SeedAsync(context, 5);
+
+        var first = await directory.MemberPageAsync(offering, null, null, 2, Ct);
+        var second = await directory.MemberPageAsync(offering, null, first.Next, 2, Ct);
+        var third = await directory.MemberPageAsync(offering, null, second.Next, 2, Ct);
+
+        Assert.Equal([2, 2, 1], [first.Items.Count, second.Items.Count, third.Items.Count]);
+        Assert.NotNull(first.Next);
+        Assert.NotNull(second.Next);
+        Assert.Null(third.Next);
+        var ids = first.Items.Concat(second.Items).Concat(third.Items).Select(m => m.PersonId).ToList();
+        Assert.Equal(5, ids.Distinct().Count());
+    }
+
+    [Fact]
+    public async Task PersoonMetTweeRollenKomtEenmaalVoor()
+    {
+        await using var db = await AcademicDatabase.CreateAsync(Ct);
+        await using var context = db.CreateContext();
+        var (directory, offering) = await SeedAsync(context, 1);
+        await context.UpsertAsync("associations", Fields.Association("A9", "I6000001", role: "teaching-assistant"), Ct);
+
+        var all = await directory.MemberPageAsync(offering, null, null, 10, Ct);
+        var filtered = await directory.MemberPageAsync(offering, [OfferingRole.TeachingAssistant], null, 10, Ct);
+
+        var person = Assert.Single(all.Items);
+        Assert.Equal([OfferingRole.Student, OfferingRole.TeachingAssistant], person.Roles);
+        Assert.Equal("Sanne Student", person.Name);
+        Assert.Equal([OfferingRole.Student, OfferingRole.TeachingAssistant], Assert.Single(filtered.Items).Roles);
+        Assert.Empty((await directory.MemberPageAsync(offering, [OfferingRole.Lecturer], null, 10, Ct)).Items);
+    }
+
+    [Fact]
+    public async Task VerwijderdeInschrijvingOfPersoonOntbreekt()
+    {
+        await using var db = await AcademicDatabase.CreateAsync(Ct);
+        await using var context = db.CreateContext();
+        var (directory, offering) = await SeedAsync(context, 1);
+        await context.UpsertAsync("persons", Fields.Of(("personId", "I6000002"), ("givenName", "Gone"), ("surname", "Person"), ("status", "toBeDeleted")), Ct);
+        await context.UpsertAsync("persons", Fields.Of(("personId", "I6000003"), ("givenName", "Kept"), ("surname", "Person")), Ct);
+        await context.UpsertAsync("associations", Fields.Association("A2", "I6000002"), Ct);
+        await context.UpsertAsync("associations", Fields.Association("A3", "I6000003", status: "toBeDeleted"), Ct);
+
+        var page = await directory.MemberPageAsync(offering, null, null, 10, Ct);
+
+        Assert.Equal("Sanne Student", Assert.Single(page.Items).Name);
     }
 }
 

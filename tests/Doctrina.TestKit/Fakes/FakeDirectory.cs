@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Doctrina.Core.Results;
 using Doctrina.Infrastructure.Authentication;
 using Doctrina.Modules.Academic.Contracts;
@@ -74,4 +74,15 @@ public sealed class FakeDirectory : IAcademicDirectory
     public Task<IReadOnlyList<OfferingMember>> MembersAsync(Guid offeringId, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyList<OfferingMember>>(
             offeringId == OfferingId ? [.. Members] : offeringId == SourceOfferingId ? [.. SourceMembers] : []);
+
+    public Task<OfferingMemberPage> MemberPageAsync(Guid offeringId, IReadOnlyCollection<OfferingRole>? roles, Guid? after, int take, CancellationToken cancellationToken)
+    {
+        var people = (offeringId == OfferingId ? Members : offeringId == SourceOfferingId ? SourceMembers : [])
+            .GroupBy(m => m.PersonId)
+            .Where(g => (roles is null || g.Any(m => roles.Contains(m.Role))) && (after is null || g.Key.CompareTo(after.Value) > 0))
+            .OrderBy(g => g.Key).Take(take + 1).ToList();
+        var items = people.Take(take).Select(g => new OfferingMemberDetail(
+            g.Key, [.. g.Select(m => m.Role).Distinct().Order()], g.First().Name, g.First().ExternalId, "Name", g.First().ExternalId + "@example.test")).ToList();
+        return Task.FromResult(new OfferingMemberPage(items, people.Count > take ? items[^1].PersonId : null));
+    }
 }

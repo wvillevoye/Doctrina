@@ -1,12 +1,12 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Doctrina.Core.Results;
 using Doctrina.Modules.Lti.Application;
 using Doctrina.Modules.Lti.Domain;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
+using static Doctrina.Modules.Lti.ServiceEndpoints;
 
 namespace Doctrina.Modules.Lti;
 
@@ -113,46 +113,6 @@ internal static class AgsEndpoints
             }, ct));
     }
 
-    /// <summary>Checks the token (any of <paramref name="scopes"/>) and runs the endpoint with the tool and the issuer.</summary>
-    private static async Task<IResult> RunAsync(
-        HttpContext http, ServiceTokenValidator validator, IOptions<LtiOptions> options, string[] scopes, Func<ServiceCaller, string, Task<IResult>> run, CancellationToken ct)
-    {
-        http.Response.Headers.CacheControl = "no-store";
-        var issuer = LtiEndpoints.Issuer(options.Value, http.Request);
-        var auth = await validator.AuthorizeAsync(http.Request.Headers.Authorization.ToString(), issuer, scopes, ct);
-        if (auth.Error is { } denied)
-        {
-            if (denied.Type == ErrorType.Unauthorized)
-            {
-                http.Response.Headers.WWWAuthenticate = "Bearer";
-            }
-
-            return Problem(denied);
-        }
-
-        return await run(auth.Value!, issuer);
-    }
-
-    private static Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult Problem(Error error)
-    {
-        var status = error.Type switch
-        {
-            ErrorType.Validation => StatusCodes.Status422UnprocessableEntity,
-            ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
-            ErrorType.Forbidden => StatusCodes.Status403Forbidden,
-            ErrorType.NotFound => StatusCodes.Status404NotFound,
-            ErrorType.Conflict => StatusCodes.Status409Conflict,
-            _ => StatusCodes.Status500InternalServerError,
-        };
-        var extensions = new Dictionary<string, object?> { ["code"] = error.Code };
-        if (error.Details is not null)
-        {
-            extensions["errors"] = error.Details;
-        }
-
-        return TypedResults.Problem(title: error.Message, statusCode: status, extensions: extensions);
-    }
-
     private static Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult BadBody() =>
         Problem(Error.Validation(LtiErrors.AgsInvalidLineItem, "The request body is missing, too large or not valid JSON."));
 
@@ -174,12 +134,6 @@ internal static class AgsEndpoints
     }
 
     private static LineItemInput ToInput(LineItemBody b) => new(b.Label, b.ScoreMaximum, b.ResourceId, b.Tag, b.ResourceLinkId, b.StartDateTime, b.EndDateTime);
-
-    private static string? Param(IQueryCollection query, string name) => query.TryGetValue(name, out var v) && !string.IsNullOrEmpty(v) ? v.ToString() : null;
-
-    private static int? Limit(IQueryCollection query) => Param(query, "limit") is { } v ? (int.TryParse(v, out var n) ? n : 0) : null;
-
-    private static Guid? After(IQueryCollection query) => Param(query, "after") is { } v && Guid.TryParse(v, out var g) ? g : null;
 
     private static Dictionary<string, object?> LineItemJson(string issuer, LineItem l)
     {
@@ -222,13 +176,7 @@ internal static class AgsEndpoints
     /// <summary>A JSON array with a <c>Link</c> header (<c>rel="next"</c>) when there is another page.</summary>
     private static IResult Container<T>(HttpContext http, string contentType, Page<T> page, Func<T, Dictionary<string, object?>> json, string path)
     {
-        if (page.Next is { } next)
-        {
-            var query = http.Request.Query.Where(p => p.Key != "after").ToDictionary(p => p.Key, p => (string?)p.Value.ToString());
-            query["after"] = next.ToString("D");
-            http.Response.Headers.Link = $"<{QueryHelpers.AddQueryString(path, query)}>; rel=\"next\"";
-        }
-
+        ServiceEndpoints.NextLink(http, path, page.Next);
         return Results.Json(page.Items.Select(json), contentType: contentType);
     }
 }

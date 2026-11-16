@@ -1,4 +1,4 @@
-@page "/lti/tools"
+﻿@page "/lti/tools"
 @attribute [RequirePermission(LtiPermissions.Manage)]
 @rendermode InteractiveServer
 @using System.ComponentModel.DataAnnotations
@@ -64,6 +64,10 @@
           {
             <dt>Grade services</dt><dd data-testid="grade-services">Enabled</dd>
           }
+          @if (tool.MembershipServices)
+          {
+            <dt>Membership services</dt><dd data-testid="membership-services">Enabled</dd>
+          }
           <dt>Redirect URIs</dt><dd>@tool.RedirectUris.Replace("\n", ", ")</dd>
           <dt>Shared with the tool</dt><dd>@Shared(tool)</dd>
         </dl>
@@ -82,8 +86,9 @@
       <DcTextField Label="Launch URL" Type="url" Required Hint="The address of the tool that is started (target link URI)." @bind-Value="_form.LaunchUrl" />
       <DcTextField Label="Redirect URIs" Required Rows="3" Hint="One address per line. Only these addresses receive a launch." @bind-Value="_form.RedirectUris" />
       <DcTextField Label="Deep linking URL" Type="url" Hint="Optional. Where Doctrina sends the request when a teacher picks content in the tool." @bind-Value="_form.DeepLinkingUrl" />
-      <DcTextField Label="Public keys URL" Type="url" Hint="The tool's JWKS URL; required with a deep linking URL or grade services, to check what the tool signs." @bind-Value="_form.PublicKeysUrl" />
+      <DcTextField Label="Public keys URL" Type="url" Hint="The tool's JWKS URL; required with a deep linking URL, grade services or membership services, to check what the tool signs." @bind-Value="_form.PublicKeysUrl" />
       <DcCheckbox Label="Grade services" Hint="Let the tool create line items and send scores back (LTI Assignment and Grade Services). Needs the public keys URL." @bind-Value="_form.GradeServices" />
+      <DcCheckbox Label="Membership services" Hint="Let the tool read the participants of a course and their roles (LTI Names and Role Provisioning Services). Needs the public keys URL." @bind-Value="_form.MembershipServices" />
       <DcCheckbox Label="Send name" Hint="Share the name of the user with this tool." @bind-Value="_form.SendName" />
       <DcCheckbox Label="Send email" Hint="Share the email address of the user with this tool." @bind-Value="_form.SendEmail" />
       <div class="dc-form__actions">
@@ -158,7 +163,7 @@
         return _error is null;
     }
 
-    private ToolInput Input() => new(_form.Name, _form.LoginUrl, _form.LaunchUrl, _form.RedirectUris, _form.SendName, _form.SendEmail, _form.DeepLinkingUrl, _form.PublicKeysUrl, _form.GradeServices);
+    private ToolInput Input() => new(_form.Name, _form.LoginUrl, _form.LaunchUrl, _form.RedirectUris, _form.SendName, _form.SendEmail, _form.DeepLinkingUrl, _form.PublicKeysUrl, _form.GradeServices, _form.MembershipServices);
 
     private async Task SaveAsync()
     {
@@ -186,6 +191,7 @@
             DeepLinkingUrl = tool.DeepLinkingUrl,
             PublicKeysUrl = tool.PublicKeysUrl,
             GradeServices = tool.GradeServices,
+            MembershipServices = tool.MembershipServices,
         };
         _error = null;
         _message = null;
@@ -241,6 +247,7 @@
         public string? PublicKeysUrl { get; set; }
 
         public bool GradeServices { get; set; }
+        public bool MembershipServices { get; set; }
 
         public bool SendName { get; set; }
 

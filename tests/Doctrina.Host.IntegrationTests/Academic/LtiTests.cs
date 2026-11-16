@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
 using Doctrina.Host.IntegrationTests.AccessControl;
 using Doctrina.Host.IntegrationTests.HostUi;
@@ -41,12 +41,12 @@ public sealed class DoctrinaPubliceertEigenOndertekeningssleutelsOpHetWeb(Doctri
 
 internal static class LtiTools
 {
-    public static async Task<Doctrina.Modules.Lti.Domain.LtiTool> ToolAsync(this AcademicHost academic, string name = "Quiz tool", bool sendName = false, bool sendEmail = false, bool deepLinking = false, bool gradeServices = false)
+    public static async Task<Doctrina.Modules.Lti.Domain.LtiTool> ToolAsync(this AcademicHost academic, string name = "Quiz tool", bool sendName = false, bool sendEmail = false, bool deepLinking = false, bool gradeServices = false, bool membershipServices = false)
     {
         using var scope = academic.Host.Services.CreateScope();
         var result = await scope.ServiceProvider.GetRequiredService<ToolService>().CreateAsync(
             new ToolInput(name, "https://tool.example.org/login", "https://tool.example.org/launch", "https://tool.example.org/launch", sendName, sendEmail,
-                deepLinking ? "https://tool.example.org/deep-linking" : null, deepLinking || gradeServices ? "https://tool.example.org/jwks" : null, gradeServices), CancellationToken.None);
+                deepLinking ? "https://tool.example.org/deep-linking" : null, deepLinking || gradeServices || membershipServices ? "https://tool.example.org/jwks" : null, gradeServices, membershipServices), CancellationToken.None);
         Assert.True(result.IsSuccess, result.Error?.ToString());
         return result.Value!;
     }

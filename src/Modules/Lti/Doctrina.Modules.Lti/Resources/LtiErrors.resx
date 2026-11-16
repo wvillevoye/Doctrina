@@ -108,4 +108,13 @@
   <data name="Lti.Ags.ScoreOutdated" xml:space="preserve">
     <value>Er is al een nieuwere score</value>
   </data>
+  <data name="Lti.Nrps.ContextNotFound" xml:space="preserve">
+    <value>De uitvoering is niet gevonden voor deze tool</value>
+  </data>
+  <data name="Lti.Nrps.InvalidRequest" xml:space="preserve">
+    <value>Het verzoek is niet geldig</value>
+  </data>
+  <data name="Lti.Nrps.ResourceLinkNotFound" xml:space="preserve">
+    <value>De resource link is niet gevonden in deze uitvoering</value>
+  </data>
 </root>

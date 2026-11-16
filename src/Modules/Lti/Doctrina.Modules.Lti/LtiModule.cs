@@ -42,6 +42,7 @@ public sealed class LtiModule : IModule
         services.AddScoped<ServiceAuthService>();
         services.AddScoped<ServiceTokenValidator>();
         services.AddScoped<GradeService>();
+        services.AddScoped<MembershipService>();
         services.AddOfferingPageSection<Components.MyScoresSection>(order: 30);
         services.AddMemoryCache();
         services.AddHttpClient<JwksClient>(client => client.Timeout = TimeSpan.FromSeconds(5))

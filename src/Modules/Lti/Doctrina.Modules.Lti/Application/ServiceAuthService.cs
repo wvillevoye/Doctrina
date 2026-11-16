@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Doctrina.Core.Results;
 using Doctrina.Modules.Lti.Domain;
 using Doctrina.Modules.Lti.Infrastructure;
@@ -22,10 +22,11 @@ internal static class LtiScopes
     public const string LineItemReadOnly = Ags + "lineitem.readonly";
     public const string ResultReadOnly = Ags + "result.readonly";
     public const string Score = Ags + "score";
+    public const string MembershipReadOnly = "https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly";
 
-    /// <summary>The scopes a tool may be given: all four AGS scopes if it has grade services.</summary>
+    /// <summary>The scopes a tool may be given: the four AGS scopes with grade services, the NRPS scope with membership services.</summary>
     public static IReadOnlyList<string> AllowedFor(LtiTool tool) =>
-        tool.GradeServices ? [LineItem, LineItemReadOnly, ResultReadOnly, Score] : [];
+        [.. tool.GradeServices ? [LineItem, LineItemReadOnly, ResultReadOnly, Score] : Array.Empty<string>(), .. tool.MembershipServices ? [MembershipReadOnly] : Array.Empty<string>()];
 }
 
 /// <summary>

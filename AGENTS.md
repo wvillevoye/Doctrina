@@ -51,6 +51,8 @@ staat alleen wat van Doctrina is: de realm, de generator, de CSV-testdata en de 
 Realm `doctrina`, client `doctrina-web`, testaccounts `beheerder`, `docent`, `student`
 (wachtwoord = naam) en 250 nepgebruikers (`test123`). Doctrina.Host draait op `https://localhost:5001`.
 
+Testdatabases: elke test krijgt een eigen LocalDB-database `Doctrina_Test_<id>` (wordt na de test verwijderd). Maximaal 3 tegelijk per testproject (`tests/xunit.runner.json`, `maxParallelThreads`); blijven er na een afgebroken run databases over, verwijder dan alle `Doctrina_Test_*`.
+
 Configuratie: `appsettings.json` + `appsettings.{Development,Test,Production}.json` (`Test` = de geautomatiseerde tests).
 Secrets (client secrets, wachtwoorden) **alleen** in `appsettings.Secrets.json` — staat in `.gitignore`, voorbeeld in
 `appsettings.Secrets.example.json`; nooit in de andere appsettings-bestanden.

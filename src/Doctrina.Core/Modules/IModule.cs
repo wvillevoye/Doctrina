@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Routing;
+﻿using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -47,6 +47,17 @@ public interface IModule
     /// <c>AllowAnonymous()</c> maken.
     /// </param>
     void MapBrowserEndpoints(IEndpointRouteBuilder app)
+    {
+    }
+
+    /// <summary>
+    /// Koppelt de endpoints van een externe standaard-API die onder <c>/ooapi/v5</c> staat (change add-ooapi-interop).
+    /// Standaard doet een module niets.
+    /// </summary>
+    /// <param name="ooapi">
+    /// De <c>/ooapi/v5</c>-routegroep: net als <c>/api/v1</c> alleen bearer-tokens en standaard authenticatie vereist.
+    /// </param>
+    void MapOoapiEndpoints(IEndpointRouteBuilder ooapi)
     {
     }
 }

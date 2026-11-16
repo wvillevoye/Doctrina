@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Doctrina.Infrastructure.Authentication;
 
 namespace Doctrina.Host.Api;
@@ -24,6 +24,18 @@ internal static class ApiV1Endpoints
 
         return api;
     }
+}
+
+/// <summary>
+/// De <c>/ooapi/v5</c>-groep voor modules die OOAPI aanbieden (change add-ooapi-interop): hetzelfde als <c>/api/v1</c>,
+/// alleen bearer-tokens, nooit de sessiecookie, geen redirects.
+/// </summary>
+internal static class OoapiV5Endpoints
+{
+    public const string Prefix = "/ooapi/v5";
+
+    public static RouteGroupBuilder MapOoapiV5(this IEndpointRouteBuilder endpoints) =>
+        endpoints.MapGroup(Prefix).RequireAuthorization(DoctrinaPolicies.ApiCaller);
 }
 
 /// <summary>Antwoord van <c>GET /api/v1/me</c>.</summary>

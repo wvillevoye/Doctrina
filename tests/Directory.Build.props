@@ -6,6 +6,10 @@
     <!-- Exitcode 8 = "zero tests ran": testprojecten die nog geen tests hebben (tests volgen per taakgroep) laten de run niet falen. -->
     <TestingPlatformCommandLineArguments>$(TestingPlatformCommandLineArguments) --ignore-exit-code 8</TestingPlatformCommandLineArguments>
   </PropertyGroup>
+  <!-- Maximaal 3 tests tegelijk per testproject, dus maximaal 3 LocalDB-testdatabases per project (elke test heeft zijn eigen database). -->
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)xunit.runner.json" Link="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
   <ItemGroup Condition="'$(MSBuildProjectName)' != 'Doctrina.TestKit' and '$(ArchitectureFixture)' != 'true'">
     <Using Include="Xunit" />
   </ItemGroup>

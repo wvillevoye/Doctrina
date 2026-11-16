@@ -1,4 +1,4 @@
-using Doctrina.Core.Modules;
+﻿using Doctrina.Core.Modules;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -62,6 +62,19 @@ public static class ModuleServiceCollectionExtensions
         }
 
         return api;
+    }
+
+    /// <summary>Koppelt de endpoints van de ingeschakelde modules aan de <c>/ooapi/v5</c>-groep (bearer-only, zoals <c>/api/v1</c>).</summary>
+    public static IEndpointRouteBuilder MapDoctrinaOoapiModules(this IEndpointRouteBuilder ooapi)
+    {
+        ArgumentNullException.ThrowIfNull(ooapi);
+        var catalog = ooapi.ServiceProvider.GetRequiredService<ModuleCatalog>();
+        foreach (var module in catalog.Enabled)
+        {
+            module.MapOoapiEndpoints(ooapi.MapGroup(string.Empty).WithTags(module.Name));
+        }
+
+        return ooapi;
     }
 
     /// <summary>

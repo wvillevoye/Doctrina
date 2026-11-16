@@ -2,6 +2,7 @@ using Doctrina.Infrastructure.Modules;
 using Doctrina.Modules.Academic;
 using Doctrina.Modules.Content;
 using Doctrina.Modules.Groups;
+using Doctrina.Modules.Interop.OOAPI;
 using Doctrina.Modules.Lti;
 
 namespace Doctrina.Host;
@@ -18,6 +19,7 @@ internal static class KnownModules
         services.AddDoctrinaModule<GroupsModule>();
         services.AddDoctrinaModule<ContentModule>();
         services.AddDoctrinaModule<LtiModule>();
+        services.AddDoctrinaModule<OoapiModule>();
         return services;
     }
 }

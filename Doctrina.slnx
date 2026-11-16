@@ -14,6 +14,7 @@
     <Project Path="src/Modules/Lti/Doctrina.Modules.Lti/Doctrina.Modules.Lti.csproj" />
     <Project Path="src/Modules/Groups/Doctrina.Modules.Groups.Contracts/Doctrina.Modules.Groups.Contracts.csproj" />
     <Project Path="src/Modules/Groups/Doctrina.Modules.Groups/Doctrina.Modules.Groups.csproj" />
+    <Project Path="src/Modules/Interop/Doctrina.Modules.Interop.OOAPI/Doctrina.Modules.Interop.OOAPI.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Doctrina.Architecture.Tests/Doctrina.Architecture.Tests.csproj" />

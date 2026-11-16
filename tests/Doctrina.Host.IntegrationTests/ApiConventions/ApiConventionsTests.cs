@@ -1,9 +1,11 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Doctrina.Core.Results;
 using Doctrina.Host.IntegrationTests.AccessControl;
+using Doctrina.Host.IntegrationTests.HostUi;
+using Doctrina.TestKit.Authentication;
 using Doctrina.Host.IntegrationTests.DataPersistence;
 using Doctrina.Host.IntegrationTests.ModuleSystem;
 using Doctrina.Infrastructure.Api;
@@ -62,6 +64,42 @@ public sealed class ModuleEndpointsStaanGeversioneerdOnderApiV1(DoctrinaHostFact
         Assert.Equal(HttpStatusCode.OK, versioned.StatusCode);
         Assert.Equal(SampleModule.Samples, await versioned.Content.ReadFromJsonAsync<string[]>(Ct));
         Assert.Equal(HttpStatusCode.NotFound, unversioned.StatusCode);
+    }
+
+    // Spec api-conventions of change add-ooapi-interop; task 2.1.
+    [Fact]
+    public async Task StandaardApiOnderEigenPrefix()
+    {
+        using var host = factory.WithModules([new SampleModule()], SampleModule.ModuleName);
+        using var client = factory.CreateApiClient(host);
+
+        using var response = await client.GetAsync(new Uri("/ooapi/v5/samples", UriKind.Relative), Ct);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(SampleModule.Samples, await response.Content.ReadFromJsonAsync<string[]>(Ct));
+    }
+
+    [Fact]
+    public async Task StandaardApiZonderTokenGeeft401()
+    {
+        using var host = factory.WithModules([new SampleModule()], SampleModule.ModuleName);
+        using var client = host.CreateBrowser();
+
+        using var response = await client.GetAsync(new Uri("/ooapi/v5/samples", UriKind.Relative), Ct);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task StandaardApiMetAlleenEenSessiecookieGeeft401()
+    {
+        using var host = factory.WithModules([new SampleModule()], SampleModule.ModuleName);
+        using var browser = host.CreateBrowser();
+        await browser.SignInAndGetAsync("/profile", factory.Idp, StubUser.Student, Ct);
+
+        using var response = await browser.GetAsync(new Uri("/ooapi/v5/samples", UriKind.Relative), Ct);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 }
 

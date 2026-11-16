@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Ooapi module: Doctrina offers the core model read-only as OOAPI v5 under /ooapi/v5 (change add-ooapi-interop). No storage, so no DbContext. -->
+  <PropertyGroup>
+    <RootNamespace>Doctrina.Modules.Interop.OOAPI</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Doctrina.Modules.Interop.OOAPI.Tests" />
+    <InternalsVisibleTo Include="Doctrina.Host.IntegrationTests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Doctrina.Core\Doctrina.Core.csproj" />
+    <ProjectReference Include="..\..\..\Doctrina.Infrastructure\Doctrina.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Academic\Doctrina.Modules.Academic.Contracts\Doctrina.Modules.Academic.Contracts.csproj" />
+  </ItemGroup>
+</Project>

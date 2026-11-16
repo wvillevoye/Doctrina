@@ -47,6 +47,7 @@ public sealed class AcademicModule : IModule
         services.AddScoped<AcademicQueries>();
         services.AddScoped<CurrentPerson>();
         services.AddScoped<Doctrina.Modules.Academic.Contracts.IAcademicDirectory, AcademicDirectory>();
+        services.AddScoped<Doctrina.Modules.Academic.Contracts.IAcademicExchangeReader, AcademicExchangeReader>();
         services.AddHealthChecks().AddCheck<AcademicHealthCheck>("academic", tags: [ModuleHealthChecks.TagFor(Name)]);
     }
 

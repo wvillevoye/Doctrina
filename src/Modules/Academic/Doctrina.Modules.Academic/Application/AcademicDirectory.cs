@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Doctrina.Core.Entities;
 using Doctrina.Core.Results;
 using Doctrina.Modules.Academic.Contracts;
@@ -79,6 +79,40 @@ internal sealed class AcademicDirectory(AcademicDbContext db, CurrentPerson curr
                 r.DisplayName ?? string.Join(' ', new[] { r.GivenName, r.SurnamePrefix, r.Surname }.Where(p => !string.IsNullOrEmpty(p))),
                 ToContract(r.Role)))
             .OrderBy(m => m.Name, StringComparer.CurrentCulture)];
+    }
+
+    public Task<OfferingMemberPage> MemberPageAsync(Guid offeringId, IReadOnlyCollection<OfferingRole>? roles, Guid? after, int take, CancellationToken cancellationToken) =>
+        SerializedAsync(() => MemberPageCoreAsync(offeringId, roles, after, take, cancellationToken), cancellationToken);
+
+    private async Task<OfferingMemberPage> MemberPageCoreAsync(Guid offeringId, IReadOnlyCollection<OfferingRole>? roles, Guid? after, int take, CancellationToken cancellationToken)
+    {
+        var active = db.Associations.AsNoTracking()
+            .Where(a => a.CourseOfferingId == offeringId && a.Status == EntityStatus.Active && a.Person.Status == EntityStatus.Active);
+        var matching = active;
+        if (roles is not null)
+        {
+            var wanted = roles.Select(r => (AssociationRole)(int)r).ToList();
+            matching = matching.Where(a => wanted.Contains(a.Role));
+        }
+
+        // The next take + 1 person ids (the extra one tells whether there is another page); the rows of those persons come
+        // from the same statement, so a person keeps all roles, also those the role filter did not ask for.
+        var ids = matching.Select(a => a.PersonId).Distinct().Where(id => after == null || id.CompareTo(after.Value) > 0).OrderBy(id => id).Take(take + 1);
+        // Ordered by SQL Server (uniqueidentifier order, which the paging key follows), not by .NET's Guid order.
+        var rows = await active.Where(a => ids.Contains(a.PersonId)).OrderBy(a => a.PersonId)
+            .Select(a => new { a.PersonId, a.Role, a.Person.DisplayName, a.Person.GivenName, a.Person.SurnamePrefix, a.Person.Surname, a.Person.Mail })
+            .ToListAsync(cancellationToken);
+        var people = rows.GroupBy(r => r.PersonId).ToList();
+        var more = people.Count > take;
+        var page = people.Take(take).Select(g =>
+        {
+            var p = g.First();
+            return new OfferingMemberDetail(
+                g.Key, [.. g.Select(r => ToContract(r.Role)).Distinct().Order()],
+                p.DisplayName ?? string.Join(' ', new[] { p.GivenName, p.SurnamePrefix, p.Surname }.Where(s => !string.IsNullOrEmpty(s))),
+                p.GivenName, string.Join(' ', new[] { p.SurnamePrefix, p.Surname }.Where(s => !string.IsNullOrEmpty(s))), p.Mail);
+        }).ToList();
+        return new OfferingMemberPage(page, more ? page[^1].PersonId : null);
     }
 
     public static OfferingRole ToContract(AssociationRole role) => role switch

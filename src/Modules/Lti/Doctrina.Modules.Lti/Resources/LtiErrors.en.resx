@@ -108,4 +108,13 @@
   <data name="Lti.Ags.ScoreOutdated" xml:space="preserve">
     <value>A newer score already exists</value>
   </data>
+  <data name="Lti.Nrps.ContextNotFound" xml:space="preserve">
+    <value>The course offering was not found for this tool</value>
+  </data>
+  <data name="Lti.Nrps.InvalidRequest" xml:space="preserve">
+    <value>The request is not valid</value>
+  </data>
+  <data name="Lti.Nrps.ResourceLinkNotFound" xml:space="preserve">
+    <value>The resource link was not found in this course offering</value>
+  </data>
 </root>

@@ -1,17 +1,17 @@
+# lti-memberships Specification
+
 ## Purpose
 
 Een LTI-tool kan via Names and Role Provisioning Services (NRPS) de deelnemers van een uitvoering met hun rollen
 ophalen, zonder dat Doctrina meer persoonsgegevens deelt dan de beheerder voor die tool heeft toegestaan.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: De deelnemers van een uitvoering ophalen
 Met de scope `https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly` SHALL een tool met
-ledenservices `GET /lti/nrps/{context}/memberships` kunnen aanroepen, waarin `{context}` het id van de uitvoering is.
-Het antwoord (mediatype `application/vnd.ims.lti-nrps.v2.membershipcontainer+json`) bevat `id` (de URL), `context`
-(`id`, `label`, `title`) en `members`: per actieve inschrijving van een actieve persoon `user_id`, `status` "Active" en
-`roles`. Een persoon met meer inschrijvingen komt één keer voor met al haar rollen. De volgorde is stabiel. Een tool
-SHALL alleen uitvoeringen opvragen waarin zij een tool link heeft; anders SHALL de status 404 zijn.
+ledenservices `GET /lti/nrps/{context}/memberships` kunnen aanroepen. Het antwoord (mediatype
+`application/vnd.ims.lti-nrps.v2.membershipcontainer+json`) bevat `id`, `context` en `members` met per persoon `user_id`,
+`status` "Active" en `roles`, in stabiele volgorde. Een uitvoering zonder tool link van de tool SHALL 404 geven.
 
 #### Scenario: Deelnemers van een uitvoering
 - **GIVEN** een uitvoering met student "S1" en docent "D1", en een tool met ledenservices met een tool link daarin

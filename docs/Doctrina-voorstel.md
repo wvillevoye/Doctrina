@@ -291,6 +291,7 @@ Modules/secties binnen een offering, pagina's, bestanden, links, LTI-items; publ
 - Eigen **JWKS-endpoint**, sleutelrotatie.
 - **Deep Linking 2.0** (docent kiest content in tool), **AGS** (cijfers terug naar LMS), **NRPS** (deelnemerslijst).
 - **AGS** (change `add-lti-ags`): per tool aan te zetten; tokenendpoint met `client_assertion` (JWT, RS256) → kortlevend access token met scopes `lineitem`, `lineitem.readonly`, `result.readonly`, `score`; line items, scores en results onder `/lti/ags/{offering}/lineitems`; een tool ziet alleen eigen line items in offerings waar hij een tool link heeft. Studenten zien hun eigen scores, docenten een overzicht per tool link.
+- **NRPS** (change `add-lti-nrps`): per tool aan te zetten ("Membership services"); met dezelfde token en de scope `contextmembership.readonly` haalt een tool onder `/lti/nrps/{offering}/memberships` de deelnemers op, één rij per persoon met `user_id` (gelijk aan `sub` en aan de `userId` van AGS), `status` en LIS-`roles`; filter op `role`, gepagineerd met een `Link`-header. Naam en e-mail alleen volgens "Send name"/"Send email" van de tool; alleen in offerings waar de tool een tool link heeft.
 - Claims per tool configureerbaar (AVG).
 - Implementatie met `Microsoft.IdentityModel.Tokens` (geen goede officiële .NET-platformlibrary).
 - Later: Doctrina ook als LTI-**tool**.

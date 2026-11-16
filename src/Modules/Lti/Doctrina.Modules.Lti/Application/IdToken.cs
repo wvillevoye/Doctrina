@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Doctrina.Modules.Academic.Contracts;
 using Doctrina.Modules.Content.Contracts;
 using Doctrina.Modules.Lti.Domain;
@@ -27,6 +27,16 @@ internal static class IdToken
             claims["https://purl.imsglobal.org/spec/lti-ags/claim/endpoint"] = lineItemId is { } id
                 ? new { scope = LtiScopes.AllowedFor(tool), lineitems = lineItems, lineitem = $"{lineItems}/{id:D}" }
                 : (object)new { scope = LtiScopes.AllowedFor(tool), lineitems = lineItems };
+        }
+
+        if (tool.MembershipServices)
+        {
+            // Names and Role Provisioning Services claim (design D8 of add-lti-nrps).
+            claims["https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice"] = new
+            {
+                context_memberships_url = $"{issuer.TrimEnd('/')}/lti/nrps/{offering.Id:D}/memberships",
+                service_versions = new[] { "2.0" },
+            };
         }
 
         return JsonSerializer.Serialize(claims);
@@ -91,12 +101,19 @@ internal static class IdToken
     /// <summary>LIS roles; someone without an enrolment (an administrator) is an institution administrator.</summary>
     private static string[] Roles(IReadOnlyList<OfferingRole> roles) => roles.Count == 0
         ? ["http://purl.imsglobal.org/vocab/lis/v2/institution/person#Administrator"]
-        : [.. roles.Select(r => r switch
-            {
-                OfferingRole.Student => Membership + "#Learner",
-                OfferingRole.TeachingAssistant => Membership + "/Instructor#TeachingAssistant",
-                _ => Membership + "#Instructor",
-            }).Distinct()];
+        : [.. roles.Select(RoleUri).Distinct()];
+
+    /// <summary>The LIS role of an offering role; shared with the NRPS membership list so a launch and a list agree.</summary>
+    public static string RoleUri(OfferingRole role) => role switch
+    {
+        OfferingRole.Student => Learner,
+        OfferingRole.TeachingAssistant => TeachingAssistant,
+        _ => Instructor,
+    };
+
+    public const string Learner = Membership + "#Learner";
+    public const string Instructor = Membership + "#Instructor";
+    public const string TeachingAssistant = Membership + "/Instructor#TeachingAssistant";
 
     private static void Add(Dictionary<string, object> claims, string key, string? value)
     {

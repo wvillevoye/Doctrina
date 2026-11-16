@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using Doctrina.Modules.Lti.Application;
 using Doctrina.Modules.Lti.Components.Pages;
 using Microsoft.AspNetCore.Components;
@@ -139,6 +139,20 @@ public sealed class BeheerdersRegistrerenLtiToolsOpDePagina : IAsyncDisposable
 
         Assert.Equal("Enabled", page.Find("[data-testid=grade-services]").TextContent.Trim());
         Assert.Contains("https://tool.example.org/jwks", page.Find("[data-testid=tool]").TextContent, StringComparison.Ordinal);
+    }
+
+    // Spec lti-tool-registration of change add-lti-nrps; task 1.1.
+    [Fact]
+    public async Task ToolMetLedenservicesToontDeInstellingViaDePagina()
+    {
+        _f = await PageFixture.CreateAsync();
+        var input = ToolTestData.Quiz() with { MembershipServices = true, PublicKeysUrl = "https://tool.example.org/jwks" };
+        await new ToolService(_f.Db.CreateContext()).CreateAsync(input, Ct);
+        var page = Render();
+
+        page.WaitForElement("[data-testid=tool]", PageFixture.Wait);
+
+        Assert.Equal("Enabled", page.Find("[data-testid=membership-services]").TextContent.Trim());
     }
 
     [Fact]

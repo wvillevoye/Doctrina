@@ -45,6 +45,7 @@ internal static class LtiEndpoints
             (await content.FindSectionForManagingAsync(http.User, section, ct)).ToHttpResult(info => Results.Redirect($"/courses/{info.OfferingId:D}/content")));
 
         AgsEndpoints.Map(app);
+        NrpsEndpoints.Map(app);
 
         // Token request of a tool (change add-lti-ags): OAuth 2.0 client credentials with a signed client_assertion. The tool has
         // no session, so anonymous and without antiforgery; the signature is the protection. Errors follow RFC 6749 section 5.2.

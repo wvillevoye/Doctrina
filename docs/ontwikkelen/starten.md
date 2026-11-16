@@ -165,7 +165,7 @@ register tools you trust.
 **Grade services** (LTI Assignment and Grade Services) let a tool keep line items and post scores for students. Tick
 **Grade services** on the tool (this also needs a **Public keys URL**) and enter the **token endpoint** the page shows
 (`/lti/token`) in the tool. The tool signs a JWT with its own key (`client_assertion`, audience = the token endpoint) and
-exchanges it for an access token that lives 5 minutes. Scopes: `lineitem`, `lineitem.readonly`, `result.readonly` and
+exchanges it for an access token that lives 1 hour. Scopes: `lineitem`, `lineitem.readonly`, `result.readonly` and
 `score`; the token only gets the ones the tool asks for. With the token the tool calls, under
 `/lti/ags/{offeringId}/lineitems`: create, list (`resource_link_id`, `resource_id`, `tag`, `limit`, `Link` header for the
 next page), read, update and delete line items; `POST …/{lineItemId}/scores`; and `GET …/{lineItemId}/results`
@@ -175,6 +175,18 @@ input with 422. The launch `id_token` carries the endpoint claim (`lineitems`, a
 tool link). Students see their own scores in a **Scores** section on the course page; teachers open **Scores** next to a
 tool link in **Manage content** for a table of all students. Nothing personal (user ids, scores, comments, names) or
 secret (assertions, tokens) is logged.
+
+**Membership services** (LTI Names and Role Provisioning Services) let a tool read who is in a course. Tick
+**Membership services** on the tool (this also needs a **Public keys URL**; the token endpoint is the same as for grade
+services). The tool asks for the scope `https://purl.imsglobal.org/spec/lti-nrps/scope/contextmembership.readonly` and
+calls `GET /lti/nrps/{offeringId}/memberships`. It gets one entry per person with `user_id` (the `sub` of the launch, so it
+matches the `userId` of grade services), `status` and `roles` (the LIS roles of the launch: Learner, Instructor,
+Instructor#TeachingAssistant). Parameters: `role` (`Learner`, `Instructor` or a full LIS role URI), `limit` (default 50,
+at most 500) and `rlid` (a tool link of the tool in the offering; the list is the same, an unknown one is a 404); the next
+page is in the `Link` header. A tool only reaches offerings where it has a tool link. `name`, `given_name`, `family_name`
+and `email` are only included when **Send name** and **Send email** are on for the tool, so a tool never gets more than in a
+launch. The launch `id_token` carries the `namesroleservice` claim with the URL of the list. Nothing personal (user ids,
+names, e-mail addresses) is logged. Change notices and groups are not supported.
 
 `Lti:Issuer` sets the issuer; by default it is the address the request came in on (`https://localhost:5001` locally).
 Set it in production, because tools remember it.

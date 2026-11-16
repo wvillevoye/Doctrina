@@ -25,12 +25,12 @@ internal sealed class LaunchScenario : IAsyncDisposable
 
     public ContentSection Section { get; private set; } = null!;
 
-    public static async Task<LaunchScenario> CreateAsync(DoctrinaHostFactory factory, CancellationToken ct, bool published = true, bool sendName = false, bool sendEmail = false, bool deepLinking = false)
+    public static async Task<LaunchScenario> CreateAsync(DoctrinaHostFactory factory, CancellationToken ct, bool published = true, bool sendName = false, bool sendEmail = false, bool deepLinking = false, bool gradeServices = false)
     {
         var scenario = new LaunchScenario(await LtiSeed.HostAsync(factory, ct));
         var academic = scenario.Academic;
         scenario.Offering = await academic.OfferingWithPeopleAsync();
-        scenario.Tool = await academic.ToolAsync(sendName: sendName, sendEmail: sendEmail, deepLinking: deepLinking);
+        scenario.Tool = await academic.ToolAsync(sendName: sendName, sendEmail: sendEmail, deepLinking: deepLinking, gradeServices: gradeServices);
         scenario.Section = await academic.PublishedSectionAsync(scenario.Offering, "Week 1");
         var link = await academic.ContentAsync(s => s.AddToolLinkAsync(scenario.Section.Id, "Weekly quiz", scenario.Tool.Id, CancellationToken.None));
         if (published)

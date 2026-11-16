@@ -76,6 +76,10 @@
                   {
                     <DcButton Variant="DcButtonVariant.Ghost" Icon="pencil" Href="@($"{ContentLabels.ItemUrl(OfferingId, item.Id)}/edit")" aria-label="@($"Edit: {item.Title}")">Edit</DcButton>
                   }
+                  @if (item.Kind == ContentItemKind.ToolLink && _tools?.Any(t => t.Id == item.ToolId && t.SupportsGradeServices) == true)
+                  {
+                    <DcButton Variant="DcButtonVariant.Ghost" Href="@($"/lti/ags/results/{item.Id:D}")" aria-label="@($"Scores: {item.Title}")" data-testid="item-scores">Scores</DcButton>
+                  }
                   <DcButton Variant="DcButtonVariant.Ghost" OnClick="() => PublishAsync(item.Id, item.Title, !item.Published, isSection: false)" aria-label="@($"{PublishLabel(item.Published)}: {item.Title}")" data-testid="publish-item">@PublishLabel(item.Published)</DcButton>
                   <DcButton Variant="DcButtonVariant.Ghost" OnClick="() => MoveAsync(item.Id, -1, isSection: false)" aria-label="@($"Move up: {item.Title}")" data-testid="item-up">Move up</DcButton>
                   <DcButton Variant="DcButtonVariant.Ghost" OnClick="() => MoveAsync(item.Id, 1, isSection: false)" aria-label="@($"Move down: {item.Title}")" data-testid="item-down">Move down</DcButton>

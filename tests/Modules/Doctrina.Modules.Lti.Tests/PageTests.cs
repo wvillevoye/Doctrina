@@ -20,13 +20,18 @@ internal sealed class PageFixture : IAsyncDisposable
 
     private PageFixture(LtiDatabase db) => Db = db;
 
+    private bool _ownsDb = true;
+
     public LtiDatabase Db { get; }
 
     public BunitContext Context { get; } = new();
 
-    public static async Task<PageFixture> CreateAsync()
+    public static async Task<PageFixture> CreateAsync() => For(await LtiDatabase.CreateAsync(Xunit.TestContext.Current.CancellationToken));
+
+    /// <summary>A fixture on an existing database; disposing it leaves the database to its owner.</summary>
+    public static PageFixture For(LtiDatabase db)
     {
-        var f = new PageFixture(await LtiDatabase.CreateAsync(Xunit.TestContext.Current.CancellationToken));
+        var f = new PageFixture(db) { _ownsDb = false };
         f.Context.JSInterop.Mode = JSRuntimeMode.Loose;
         f.Context.AddAuthorization().SetAuthorized("Lotte Beheer");
         f.Context.Services.AddScoped(_ => f.Db.CreateContext());
@@ -41,7 +46,10 @@ internal sealed class PageFixture : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await Context.DisposeAsync();
-        await Db.DisposeAsync();
+        if (_ownsDb)
+        {
+            await Db.DisposeAsync();
+        }
     }
 }
 
@@ -116,6 +124,32 @@ public sealed class BeheerdersRegistrerenLtiToolsOpDePagina : IAsyncDisposable
         Assert.Contains("https://tool.example.org/dl", page.Find("[data-testid=tool]").TextContent, StringComparison.Ordinal);
         Assert.Contains("https://tool.example.org/jwks", page.Find("[data-testid=tool]").TextContent, StringComparison.Ordinal);
         Assert.Equal(4, page.FindAll("[data-testid=tool-form] input[type=url]").Count); // login, launch, deep linking, public keys
+    }
+
+    // Spec lti-tool-registration of change add-lti-ags; task 1.1.
+    [Fact]
+    public async Task ToolMetCijferservicesToontDeInstellingViaDePagina()
+    {
+        _f = await PageFixture.CreateAsync();
+        var input = ToolTestData.Quiz() with { GradeServices = true, PublicKeysUrl = "https://tool.example.org/jwks" };
+        await new ToolService(_f.Db.CreateContext()).CreateAsync(input, Ct);
+        var page = Render();
+
+        page.WaitForElement("[data-testid=tool]", PageFixture.Wait);
+
+        Assert.Equal("Enabled", page.Find("[data-testid=grade-services]").TextContent.Trim());
+        Assert.Contains("https://tool.example.org/jwks", page.Find("[data-testid=tool]").TextContent, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task PlatformgegevensTonenDeTokenUrl()
+    {
+        _f = await PageFixture.CreateAsync();
+        var page = Render();
+
+        page.WaitForElement("[data-testid=token-url]", PageFixture.Wait);
+
+        Assert.EndsWith("/lti/token", page.Find("[data-testid=token-url]").TextContent.Trim(), StringComparison.Ordinal);
     }
 
     [Fact]

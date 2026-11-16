@@ -162,6 +162,20 @@ tool chose. Only `ltiResourceLink` items on the same origin as the launch URL ar
 keys server-side from the registered address (https, 5 s timeout, no redirects, at most 64 kB, cached 5 minutes), so only
 register tools you trust.
 
+**Grade services** (LTI Assignment and Grade Services) let a tool keep line items and post scores for students. Tick
+**Grade services** on the tool (this also needs a **Public keys URL**) and enter the **token endpoint** the page shows
+(`/lti/token`) in the tool. The tool signs a JWT with its own key (`client_assertion`, audience = the token endpoint) and
+exchanges it for an access token that lives 5 minutes. Scopes: `lineitem`, `lineitem.readonly`, `result.readonly` and
+`score`; the token only gets the ones the tool asks for. With the token the tool calls, under
+`/lti/ags/{offeringId}/lineitems`: create, list (`resource_link_id`, `resource_id`, `tag`, `limit`, `Link` header for the
+next page), read, update and delete line items; `POST …/{lineItemId}/scores`; and `GET …/{lineItemId}/results`
+(`user_id` filter). The `userId` is the `sub` of the launch. A tool only reaches offerings where it has a tool link,
+and only its own line items; a newer score replaces an older one, an older `timestamp` is refused with 409, invalid
+input with 422. The launch `id_token` carries the endpoint claim (`lineitems`, and `lineitem` once one is bound to the
+tool link). Students see their own scores in a **Scores** section on the course page; teachers open **Scores** next to a
+tool link in **Manage content** for a table of all students. Nothing personal (user ids, scores, comments, names) or
+secret (assertions, tokens) is logged.
+
 `Lti:Issuer` sets the issuer; by default it is the address the request came in on (`https://localhost:5001` locally).
 Set it in production, because tools remember it.
 

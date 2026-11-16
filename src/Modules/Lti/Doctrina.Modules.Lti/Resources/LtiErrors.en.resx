@@ -72,4 +72,40 @@
   <data name="Lti.Launch.Forbidden" xml:space="preserve">
     <value>No access to this tool link</value>
   </data>
+  <data name="Lti.ServiceAuth.InvalidRequest" xml:space="preserve">
+    <value>The token request is not valid</value>
+  </data>
+  <data name="Lti.ServiceAuth.UnsupportedGrantType" xml:space="preserve">
+    <value>This grant type is not supported</value>
+  </data>
+  <data name="Lti.ServiceAuth.InvalidClient" xml:space="preserve">
+    <value>The tool could not be authenticated</value>
+  </data>
+  <data name="Lti.ServiceAuth.InvalidScope" xml:space="preserve">
+    <value>None of the requested scopes is allowed</value>
+  </data>
+  <data name="Lti.ServiceAuth.Unauthorized" xml:space="preserve">
+    <value>The access token is missing or not valid</value>
+  </data>
+  <data name="Lti.ServiceAuth.Forbidden" xml:space="preserve">
+    <value>The access token does not allow this</value>
+  </data>
+  <data name="Lti.Ags.ContextNotFound" xml:space="preserve">
+    <value>The course offering was not found for this tool</value>
+  </data>
+  <data name="Lti.Ags.LineItemNotFound" xml:space="preserve">
+    <value>The line item was not found</value>
+  </data>
+  <data name="Lti.Ags.InvalidLineItem" xml:space="preserve">
+    <value>The line item is not valid</value>
+  </data>
+  <data name="Lti.Ags.InvalidScore" xml:space="preserve">
+    <value>The score is not valid</value>
+  </data>
+  <data name="Lti.Ags.UserNotMember" xml:space="preserve">
+    <value>The user is not a member of the course offering</value>
+  </data>
+  <data name="Lti.Ags.ScoreOutdated" xml:space="preserve">
+    <value>A newer score already exists</value>
+  </data>
 </root>

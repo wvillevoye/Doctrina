@@ -23,33 +23,6 @@ namespace Doctrina.Modules.Lti.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Doctrina.Modules.Lti.Domain.DeepLinkNonce", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("Expires")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Nonce")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<Guid>("ToolId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Expires");
-
-                    b.HasIndex("ToolId", "Nonce")
-                        .IsUnique();
-
-                    b.ToTable("DeepLinkNonces", "lti");
-                });
-
             modelBuilder.Entity("Doctrina.Modules.Lti.Domain.DeepLinkSelection", b =>
                 {
                     b.Property<Guid>("Id")
@@ -79,6 +52,104 @@ namespace Doctrina.Modules.Lti.Infrastructure.Migrations
                     b.HasIndex("Expires");
 
                     b.ToTable("DeepLinkSelections", "lti");
+                });
+
+            modelBuilder.Entity("Doctrina.Modules.Lti.Domain.JwtNonce", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("Expires")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Nonce")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("ToolId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Expires");
+
+                    b.HasIndex("ToolId", "Purpose", "Nonce")
+                        .IsUnique();
+
+                    b.ToTable("JwtNonces", "lti");
+                });
+
+            modelBuilder.Entity("Doctrina.Modules.Lti.Domain.LineItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("DateLastModified")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("EndDateTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ExternalId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("OfferingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ResourceId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid?>("ResourceLinkId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ScoreMaximum")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTimeOffset?>("StartDateTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<string>("Tag")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("ToolId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Source", "ExternalId")
+                        .IsUnique();
+
+                    b.HasIndex("ToolId", "OfferingId");
+
+                    b.ToTable("LineItems", "lti");
                 });
 
             modelBuilder.Entity("Doctrina.Modules.Lti.Domain.LtiKey", b =>
@@ -167,6 +238,9 @@ namespace Doctrina.Modules.Lti.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<bool>("GradeServices")
+                        .HasColumnType("bit");
+
                     b.Property<string>("LaunchUrl")
                         .IsRequired()
                         .HasMaxLength(2048)
@@ -216,6 +290,60 @@ namespace Doctrina.Modules.Lti.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Tools", "lti");
+                });
+
+            modelBuilder.Entity("Doctrina.Modules.Lti.Domain.Score", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ActivityProgress")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("GradingProgress")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("LineItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PersonId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("ScoreGiven")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<decimal>("ScoreMaximum")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<DateTimeOffset>("Timestamp")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LineItemId", "PersonId")
+                        .IsUnique();
+
+                    b.ToTable("Scores", "lti");
+                });
+
+            modelBuilder.Entity("Doctrina.Modules.Lti.Domain.Score", b =>
+                {
+                    b.HasOne("Doctrina.Modules.Lti.Domain.LineItem", null)
+                        .WithMany()
+                        .HasForeignKey("LineItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

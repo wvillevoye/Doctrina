@@ -16,10 +16,19 @@ internal static class IdToken
     public static string Payload(
         string issuer, LtiTool tool, string subject, string nonce, DateTimeOffset now, TimeSpan lifetime,
         ToolLinkInfo link, OfferingInfo offering, IReadOnlyList<OfferingRole> roles,
-        string? name, string? givenName, string? familyName, string? email)
+        string? name, string? givenName, string? familyName, string? email, Guid? lineItemId = null)
     {
         var claims = Common(issuer, tool, subject, nonce, now, lifetime, "LtiResourceLinkRequest", link.LaunchUrl ?? tool.LaunchUrl, offering, roles, name, givenName, familyName, email);
         claims[Claim + "resource_link"] = new { id = link.ItemId.ToString("D"), title = link.Title };
+        if (tool.GradeServices)
+        {
+            // Assignment and Grade Services endpoint claim (design D8 of add-lti-ags).
+            var lineItems = $"{issuer.TrimEnd('/')}/lti/ags/{offering.Id:D}/lineitems";
+            claims["https://purl.imsglobal.org/spec/lti-ags/claim/endpoint"] = lineItemId is { } id
+                ? new { scope = LtiScopes.AllowedFor(tool), lineitems = lineItems, lineitem = $"{lineItems}/{id:D}" }
+                : (object)new { scope = LtiScopes.AllowedFor(tool), lineitems = lineItems };
+        }
+
         return JsonSerializer.Serialize(claims);
     }
 

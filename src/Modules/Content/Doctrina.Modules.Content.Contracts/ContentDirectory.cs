@@ -39,4 +39,13 @@ public interface IContentDirectory
     /// <see cref="FindSectionForManagingAsync"/>; nothing is added if one of them is invalid.
     /// </summary>
     Task<Result> AddToolLinksAsync(ClaimsPrincipal user, Guid sectionId, Guid toolId, IReadOnlyList<NewToolLink> links, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// The active tool links of <paramref name="toolId"/> in the offering, drafts included, ordered by title; empty if the
+    /// tool has none there. For a tool that calls Doctrina itself (change add-lti-ags), so there is no user to check.
+    /// </summary>
+    Task<IReadOnlyList<ToolLinkInfo>> ToolLinksOfToolAsync(Guid offeringId, Guid toolId, CancellationToken cancellationToken);
+
+    /// <summary>Whether the user may manage the content of the offering (for pages of other modules that follow the same rule).</summary>
+    Task<bool> CanManageAsync(ClaimsPrincipal user, Guid offeringId, CancellationToken cancellationToken);
 }

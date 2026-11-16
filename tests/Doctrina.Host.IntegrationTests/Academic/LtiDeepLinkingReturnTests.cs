@@ -80,6 +80,18 @@ internal sealed class DeepLinkingTool : IDisposable
         return new JsonWebTokenHandler().CreateToken(JsonSerializer.Serialize(claims), new SigningCredentials(new RsaSecurityKey(signer ?? _key) { KeyId = "tool-key" }, SecurityAlgorithms.RsaSha256));
     }
 
+    /// <summary>The <c>client_assertion</c> this tool sends to the token endpoint of the host (change add-lti-ags).</summary>
+    public string ClientAssertion()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var claims = new Dictionary<string, object>
+        {
+            ["iss"] = Scenario.Tool.ClientId, ["sub"] = Scenario.Tool.ClientId, ["aud"] = ServiceAuthService.TokenEndpoint("https://localhost"),
+            ["iat"] = now.ToUnixTimeSeconds(), ["exp"] = now.AddMinutes(5).ToUnixTimeSeconds(), ["jti"] = Guid.NewGuid().ToString("N"),
+        };
+        return new JsonWebTokenHandler().CreateToken(JsonSerializer.Serialize(claims), new SigningCredentials(new RsaSecurityKey(_key) { KeyId = "tool-key" }, SecurityAlgorithms.RsaSha256));
+    }
+
     /// <summary>
     /// The whole flow of a teacher: starts the request, answers the authentication request, lets the tool choose two items and
     /// follows the redirect of the tool's response. Returns the teacher's browser and the address of the confirmation page.

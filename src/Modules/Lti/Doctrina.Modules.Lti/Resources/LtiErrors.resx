@@ -72,4 +72,40 @@
   <data name="Lti.Launch.Forbidden" xml:space="preserve">
     <value>Geen toegang tot deze tool link</value>
   </data>
+  <data name="Lti.ServiceAuth.InvalidRequest" xml:space="preserve">
+    <value>Ongeldig tokenverzoek</value>
+  </data>
+  <data name="Lti.ServiceAuth.UnsupportedGrantType" xml:space="preserve">
+    <value>Dit grant type wordt niet ondersteund</value>
+  </data>
+  <data name="Lti.ServiceAuth.InvalidClient" xml:space="preserve">
+    <value>De tool kon niet worden geauthenticeerd</value>
+  </data>
+  <data name="Lti.ServiceAuth.InvalidScope" xml:space="preserve">
+    <value>Geen van de gevraagde scopes is toegestaan</value>
+  </data>
+  <data name="Lti.ServiceAuth.Unauthorized" xml:space="preserve">
+    <value>Het toegangstoken ontbreekt of is niet geldig</value>
+  </data>
+  <data name="Lti.ServiceAuth.Forbidden" xml:space="preserve">
+    <value>Het toegangstoken geeft hiervoor geen toegang</value>
+  </data>
+  <data name="Lti.Ags.ContextNotFound" xml:space="preserve">
+    <value>De uitvoering is niet gevonden voor deze tool</value>
+  </data>
+  <data name="Lti.Ags.LineItemNotFound" xml:space="preserve">
+    <value>Het line item is niet gevonden</value>
+  </data>
+  <data name="Lti.Ags.InvalidLineItem" xml:space="preserve">
+    <value>Het line item is niet geldig</value>
+  </data>
+  <data name="Lti.Ags.InvalidScore" xml:space="preserve">
+    <value>De score is niet geldig</value>
+  </data>
+  <data name="Lti.Ags.UserNotMember" xml:space="preserve">
+    <value>De gebruiker is geen lid van de uitvoering</value>
+  </data>
+  <data name="Lti.Ags.ScoreOutdated" xml:space="preserve">
+    <value>Er is al een nieuwere score</value>
+  </data>
 </root>

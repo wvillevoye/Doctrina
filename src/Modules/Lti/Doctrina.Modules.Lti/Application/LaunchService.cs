@@ -8,6 +8,7 @@ using Doctrina.Modules.Content.Contracts;
 using Doctrina.Modules.Lti.Domain;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
@@ -30,6 +31,7 @@ internal sealed class LaunchService(
     IContentDirectory content,
     ToolService tools,
     IAcademicDirectory directory,
+    Infrastructure.LtiDbContext db,
     KeyService keys,
     IDataProtectionProvider dataProtection,
     TimeProvider time)
@@ -181,9 +183,12 @@ internal sealed class LaunchService(
             : null;
         var now = time.GetUtcNow();
         var (name, given, family, mail) = (tool.SendName ? person?.Name : null, tool.SendName ? person?.GivenName : null, tool.SendName ? person?.FamilyName : null, tool.SendEmail ? person?.Mail : null);
+        var lineItemId = link is not null && tool.GradeServices
+            ? await db.LineItems.Where(l => l.ToolId == tool.Id && l.ResourceLinkId == link.ItemId).OrderBy(l => l.Id).Select(l => (Guid?)l.Id).FirstOrDefaultAsync(ct)
+            : null;
         var payload = link is null
             ? IdToken.DeepLinkingPayload(issuer, tool, subject, request.Nonce, now, TokenLifetime, new DeepLinkData(dataProtection, time).Protect(target, tool.Id, subject), offering.Value!, roles, name, given, family, mail)
-            : IdToken.Payload(issuer, tool, subject, request.Nonce, now, TokenLifetime, link, offering.Value!, roles, name, given, family, mail);
+            : IdToken.Payload(issuer, tool, subject, request.Nonce, now, TokenLifetime, link, offering.Value!, roles, name, given, family, mail, lineItemId);
         var key = await keys.ActiveAsync(ct);
         var token = new JsonWebTokenHandler().CreateToken(payload, new SigningCredentials(key, SecurityAlgorithms.RsaSha256));
         return new LaunchForm(request.RedirectUri, token, request.State);

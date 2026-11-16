@@ -32,12 +32,26 @@ internal static class LtiErrors
     public const string LaunchUserMismatch = "Lti.Launch.UserMismatch";
     public const string LaunchInvalidRequest = "Lti.Launch.InvalidRequest";
     public const string LaunchForbidden = "Lti.Launch.Forbidden";
+    public const string AgsContextNotFound = "Lti.Ags.ContextNotFound";
+    public const string AgsLineItemNotFound = "Lti.Ags.LineItemNotFound";
+    public const string AgsInvalidLineItem = "Lti.Ags.InvalidLineItem";
+    public const string AgsInvalidScore = "Lti.Ags.InvalidScore";
+    public const string AgsUserNotMember = "Lti.Ags.UserNotMember";
+    public const string AgsScoreOutdated = "Lti.Ags.ScoreOutdated";
+    public const string ServiceInvalidRequest = "Lti.ServiceAuth.InvalidRequest";
+    public const string ServiceUnsupportedGrant = "Lti.ServiceAuth.UnsupportedGrantType";
+    public const string ServiceInvalidClient = "Lti.ServiceAuth.InvalidClient";
+    public const string ServiceInvalidScope = "Lti.ServiceAuth.InvalidScope";
+    public const string ServiceUnauthorized = "Lti.ServiceAuth.Unauthorized";
+    public const string ServiceForbidden = "Lti.ServiceAuth.Forbidden";
 
     public static readonly string[] All =
     [
         ToolInvalid, ToolNameRequired, ToolInvalidUrl, ToolRedirectUriRequired, ToolNotFound, ToolDeepLinkingUrlRequired, ToolPublicKeysUrlRequired,
         DeepLinkNotSupported, DeepLinkInvalidToken, DeepLinkInvalidData, DeepLinkInvalidItem, DeepLinkReplayed, DeepLinkSelectionNotFound, DeepLinkUserMismatch,
         LaunchUnknownClient, LaunchInvalidRedirectUri, LaunchInvalidHint, LaunchUserMismatch, LaunchInvalidRequest, LaunchForbidden,
+        AgsContextNotFound, AgsLineItemNotFound, AgsInvalidLineItem, AgsInvalidScore, AgsUserNotMember, AgsScoreOutdated,
+        ServiceInvalidRequest, ServiceUnsupportedGrant, ServiceInvalidClient, ServiceInvalidScope, ServiceUnauthorized, ServiceForbidden,
     ];
 
     public static Error Invalid(string code, string field, string message) =>
@@ -56,7 +70,7 @@ internal static class LtiUrl
 }
 
 /// <summary>What a beheerder fills in for a tool; the redirect URIs are one address per line.</summary>
-internal sealed record ToolInput(string? Name, string? LoginUrl, string? LaunchUrl, string? RedirectUris, bool SendName = false, bool SendEmail = false, string? DeepLinkingUrl = null, string? PublicKeysUrl = null)
+internal sealed record ToolInput(string? Name, string? LoginUrl, string? LaunchUrl, string? RedirectUris, bool SendName = false, bool SendEmail = false, string? DeepLinkingUrl = null, string? PublicKeysUrl = null, bool GradeServices = false)
 {
     /// <summary>The redirect URIs, trimmed, without empty lines and duplicates.</summary>
     public IReadOnlyList<string> RedirectUriList() =>
@@ -81,7 +95,7 @@ internal sealed class ToolService(LtiDbContext db) : ILtiToolCatalog
         db.Tools.AsNoTracking().FirstOrDefaultAsync(t => t.ClientId == clientId && t.Status == EntityStatus.Active, ct);
 
     async Task<IReadOnlyList<LtiToolSummary>> ILtiToolCatalog.ListAsync(CancellationToken cancellationToken) =>
-        [.. (await ToolsAsync(cancellationToken)).Select(t => new LtiToolSummary(t.Id, t.Name, t.DeepLinkingUrl is not null))];
+        [.. (await ToolsAsync(cancellationToken)).Select(t => new LtiToolSummary(t.Id, t.Name, t.DeepLinkingUrl is not null, t.GradeServices))];
 
     public Task<bool> ExistsAsync(Guid toolId, CancellationToken cancellationToken) =>
         db.Tools.AnyAsync(t => t.Id == toolId && t.Status == EntityStatus.Active, cancellationToken);
@@ -107,6 +121,7 @@ internal sealed class ToolService(LtiDbContext db) : ILtiToolCatalog
             SendEmail = input.SendEmail,
             DeepLinkingUrl = Blank(input.DeepLinkingUrl),
             PublicKeysUrl = Blank(input.PublicKeysUrl),
+            GradeServices = input.GradeServices,
         };
         db.Add(tool);
         // EF Core generates the sequential Id on Add; the Doctrina-owned ExternalId is that Id (huisregel 6).
@@ -137,6 +152,7 @@ internal sealed class ToolService(LtiDbContext db) : ILtiToolCatalog
         tool.SendEmail = input.SendEmail;
         tool.DeepLinkingUrl = Blank(input.DeepLinkingUrl);
         tool.PublicKeysUrl = Blank(input.PublicKeysUrl);
+        tool.GradeServices = input.GradeServices;
         await db.SaveChangesAsync(ct);
         return Result.Success();
     }
@@ -186,11 +202,16 @@ internal sealed class ToolService(LtiDbContext db) : ILtiToolCatalog
         }
 
         var (deepLinking, keys) = (Blank(input.DeepLinkingUrl), Blank(input.PublicKeysUrl));
-        if (deepLinking is null != keys is null)
+        // A deep linking URL needs the public keys URL; the public keys URL alone is fine for a tool with grade services,
+        // which needs it too (the tool signs the token request with its key).
+        if (keys is null && (deepLinking is not null || input.GradeServices))
         {
-            return deepLinking is null
-                ? LtiErrors.Invalid(LtiErrors.ToolDeepLinkingUrlRequired, "deepLinkingUrl", "Enter the deep linking URL as well, or clear the public keys URL.")
-                : LtiErrors.Invalid(LtiErrors.ToolPublicKeysUrlRequired, "publicKeysUrl", "Enter the public keys URL as well, or clear the deep linking URL.");
+            return LtiErrors.Invalid(LtiErrors.ToolPublicKeysUrlRequired, "publicKeysUrl", "Enter the public keys URL (the tool's JWKS).");
+        }
+
+        if (keys is not null && deepLinking is null && !input.GradeServices)
+        {
+            return LtiErrors.Invalid(LtiErrors.ToolDeepLinkingUrlRequired, "deepLinkingUrl", "Enter the deep linking URL as well, switch on grade services, or clear the public keys URL.");
         }
 
         if (deepLinking is not null && !LtiUrl.IsValid(deepLinking))

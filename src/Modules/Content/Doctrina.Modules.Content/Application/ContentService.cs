@@ -575,6 +575,17 @@ internal sealed class ContentDirectory(ContentDbContext db, ContentAccess access
         return section.Error is { } denied ? denied : await content.AddToolLinksAsync(sectionId, toolId, links, cancellationToken);
     }
 
+    public Task<bool> CanManageAsync(ClaimsPrincipal user, Guid offeringId, CancellationToken cancellationToken) =>
+        access.CanManageAsync(user, offeringId, cancellationToken);
+
+    public async Task<IReadOnlyList<ToolLinkInfo>> ToolLinksOfToolAsync(Guid offeringId, Guid toolId, CancellationToken cancellationToken) =>
+        [.. (await db.Items.AsNoTracking()
+            .Where(i => i.Kind == ContentItemKind.ToolLink && i.ToolId == toolId && i.Status == EntityStatus.Active
+                && i.Section.OfferingId == offeringId && i.Section.Status == EntityStatus.Active)
+            .OrderBy(i => i.Title).ThenBy(i => i.Id)
+            .ToListAsync(cancellationToken))
+            .Select(i => new ToolLinkInfo(i.Id, offeringId, i.Title, toolId, i.Url))];
+
     public async Task<Result<ToolLinkInfo>> FindToolLinkAsync(ClaimsPrincipal user, Guid itemId, CancellationToken cancellationToken)
     {
         var item = await db.Items.AsNoTracking().Include(i => i.Section)

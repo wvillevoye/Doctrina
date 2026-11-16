@@ -29,6 +29,9 @@ public sealed class LtiTool : ExchangeableEntity
     /// <summary>The tool's JWKS, to check its deep linking response; set together with <see cref="DeepLinkingUrl"/>.</summary>
     public string? PublicKeysUrl { get; set; }
 
+    /// <summary>The tool may use Assignment and Grade Services (line items, scores, results); needs <see cref="PublicKeysUrl"/>.</summary>
+    public bool GradeServices { get; set; }
+
     /// <summary>Share name, given name and family name with this tool.</summary>
     public bool SendName { get; set; }
 
@@ -73,12 +76,76 @@ public sealed class DeepLinkSelection : Entity
     public DateTimeOffset Expires { get; set; }
 }
 
-/// <summary>A nonce a tool used in a deep linking response, to refuse a replay (design D3).</summary>
-public sealed class DeepLinkNonce : Entity
+/// <summary>
+/// A <c>nonce</c> or <c>jti</c> a tool used in a signed message (a deep linking response, a client assertion), to refuse a
+/// replay (design D3 of add-lti-deep-linking, D1 of add-lti-ags). One row per tool, purpose and value.
+/// </summary>
+public sealed class JwtNonce : Entity
 {
     public Guid ToolId { get; set; }
+
+    /// <summary>What the value was used for, see <see cref="NoncePurpose"/>.</summary>
+    public required string Purpose { get; set; }
 
     public required string Nonce { get; set; }
 
     public DateTimeOffset Expires { get; set; }
 }
+
+/// <summary>The kinds of message a <see cref="JwtNonce"/> belongs to.</summary>
+public static class NoncePurpose
+{
+    public const string DeepLinking = "deeplink";
+    public const string ClientAssertion = "assertion";
+}
+
+/// <summary>An Assignment and Grade Services line item: a gradable column a tool keeps in an offering (design D5 of add-lti-ags).</summary>
+public sealed class LineItem : ExchangeableEntity
+{
+    public Guid ToolId { get; set; }
+
+    public Guid OfferingId { get; set; }
+
+    /// <summary>The tool link (content item) this line item belongs to, if any.</summary>
+    public Guid? ResourceLinkId { get; set; }
+
+    public required string Label { get; set; }
+
+    public decimal ScoreMaximum { get; set; }
+
+    public string? ResourceId { get; set; }
+
+    public string? Tag { get; set; }
+
+    public DateTimeOffset? StartDateTime { get; set; }
+
+    public DateTimeOffset? EndDateTime { get; set; }
+}
+
+/// <summary>The score of one person on a line item; a newer timestamp replaces it. Internal: shown to the person and the teacher only.</summary>
+public sealed class Score : Entity
+{
+    public Guid LineItemId { get; set; }
+
+    /// <summary>The person (the <c>userId</c> of the tool is the person id).</summary>
+    public Guid PersonId { get; set; }
+
+    public decimal? ScoreGiven { get; set; }
+
+    public decimal ScoreMaximum { get; set; }
+
+    public string? Comment { get; set; }
+
+    public ActivityProgress ActivityProgress { get; set; }
+
+    public GradingProgress GradingProgress { get; set; }
+
+    /// <summary>When the tool says the score was given; decides which of two scores is newer.</summary>
+    public DateTimeOffset Timestamp { get; set; }
+}
+
+/// <summary>How far the student is in the activity (AGS <c>activityProgress</c>).</summary>
+public enum ActivityProgress { Initialized, Started, InProgress, Submitted, Completed }
+
+/// <summary>How far grading is (AGS <c>gradingProgress</c>).</summary>
+public enum GradingProgress { FullyGraded, Pending, PendingManual, Failed, NotReady }

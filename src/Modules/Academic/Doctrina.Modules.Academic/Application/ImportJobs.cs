@@ -110,7 +110,6 @@ internal sealed class ImportJobs(AcademicDbContext db, IBackgroundJobClient jobs
 internal sealed partial class ImportRunner(AcademicDbContext db, TimeProvider time, IOptions<AcademicImportOptions> options, ILogger<ImportRunner> logger)
 {
     private const int ClearEvery = 500;
-    private const int SaveRowsPer = 1000;
 
     [AutomaticRetry(Attempts = 0)]
     public async Task RunAsync(Guid jobId, CancellationToken cancellationToken)
@@ -197,19 +196,9 @@ internal sealed partial class ImportRunner(AcademicDbContext db, TimeProvider ti
                 warnings.AddRange(csv.Warnings.Select(w => $"{file.Name}: {w}"));
                 foreach (var row in csv.Rows)
                 {
-                    var key = row.Fields.TryGetValue(file.Type.KeyField, out var k) ? k?.Trim() : null;
-                    var result = await file.Type.UpsertAsync(db, source, row.Fields, ct);
-                    rows.Add(new ImportJobRow
-                    {
-                        ImportJobId = jobId,
-                        File = file.Name,
-                        Line = row.Line,
-                        Key = key,
-                        Outcome = result.IsSuccess ? Outcome(result.Value) : ImportRowOutcome.Failed,
-                        Code = result.Error?.Code,
-                        Message = Message(result.Error),
-                    });
-                    if (result.IsFailure || rows.Count % ClearEvery == 0)
+                    var report = await ImportReport.RowAsync(db, source, file.Type, jobId, file.Name, row.Line, row.Fields, ct);
+                    rows.Add(report);
+                    if (report.Outcome == ImportRowOutcome.Failed || rows.Count % ClearEvery == 0)
                     {
                         db.ChangeTracker.Clear();
                     }
@@ -230,7 +219,40 @@ internal sealed partial class ImportRunner(AcademicDbContext db, TimeProvider ti
         return (rows, warnings);
     }
 
-    private async Task FinishAsync(Guid jobId, ImportJobStatus status, string? message, List<ImportJobRow> rows, List<string> warnings, CancellationToken ct)
+    private Task FinishAsync(Guid jobId, ImportJobStatus status, string? message, List<ImportJobRow> rows, List<string> warnings, CancellationToken ct) =>
+        ImportReport.FinishAsync(db, time, jobId, status, message, rows, warnings, ct);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Import {JobId} failed unexpectedly (trace {Trace}).")]
+    private static partial void LogFailed(ILogger logger, Exception exception, Guid jobId, string trace);
+}
+
+/// <summary>The part of an import that CSV uploads and record streams share: one row through the upsert, and closing the job (design D2 of add-ooapi-consumer).</summary>
+internal static class ImportReport
+{
+    private const int SaveRowsPer = 1000;
+
+    /// <summary>Runs one record through the upsert of its type and describes the result; a failed record is a failed row, not an exception.</summary>
+    public static async Task<ImportJobRow> RowAsync(
+        AcademicDbContext db, string source, AcademicType type, Guid jobId, string file, int line, IReadOnlyDictionary<string, string?> fields, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(fields);
+        var key = fields.TryGetValue(type.KeyField, out var k) ? k?.Trim() : null;
+        var result = await type.UpsertAsync(db, source, fields, ct);
+        return new ImportJobRow
+        {
+            ImportJobId = jobId,
+            File = file,
+            Line = line,
+            Key = key,
+            Outcome = result.IsSuccess ? Outcome(result.Value) : ImportRowOutcome.Failed,
+            Code = result.Error?.Code,
+            Message = Message(result.Error),
+        };
+    }
+
+    public static async Task FinishAsync(
+        AcademicDbContext db, TimeProvider time, Guid jobId, ImportJobStatus status, string? message, List<ImportJobRow> rows, List<string> warnings, CancellationToken ct)
     {
         var job = await db.ImportJobs.SingleAsync(j => j.Id == jobId, ct);
         job.Status = status;
@@ -264,9 +286,6 @@ internal sealed partial class ImportRunner(AcademicDbContext db, TimeProvider ti
         : Limit(string.Join(' ', [error.Message, .. (error.Details ?? new Dictionary<string, string[]>()).Select(d => $"{d.Key}: {string.Join(' ', d.Value)}")]), ImportJobRow.MessageMaxLength);
 
     private static string? Limit(string? value, int max) => value is null || value.Length <= max ? value : value[..max];
-
-    [LoggerMessage(Level = LogLevel.Error, Message = "Import {JobId} failed unexpectedly (trace {Trace}).")]
-    private static partial void LogFailed(ILogger logger, Exception exception, Guid jobId, string trace);
 }
 
 /// <summary>Removes uploads after the retention period; jobs and reports stay (design D9).</summary>

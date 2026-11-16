@@ -11,8 +11,11 @@ bevragen zonder maatwerk. Dit is rij 6 van de fasering (§8 van `docs/Doctrina-v
 ## What Changes
 
 - Nieuwe module `Ooapi` (`Doctrina.Modules.Interop.OOAPI`, zoals in het voorstel §3) die **alleen-lezen OOAPI v5-endpoints
-  aanbiedt** onder `/ooapi/v5` voor `organizations`, `academic-sessions`, `courses`, `offerings`, `persons` en
-  `associations`, met de paginering, filters en antwoordvorm van de standaard.
+  aanbiedt** onder `/ooapi/v5` voor `organizations`, `academic-sessions`, `courses`, `persons`, `offerings` en
+  `associations`, met de paden, paginering, filters en antwoordvorm van de standaard (release 5.0). Offerings en
+  associations hebben, net als in de standaard, geen top-level lijst maar een record op id en geneste lijsten
+  (`/courses/{id}/offerings`, `/offerings/{id}/associations`, …); `GET /` geeft de servicegegevens.
+- Velden die OOAPI verplicht en Doctrina niet bewaart worden afgeleid of komen uit instellingen onder `Ooapi:` (design D5).
 - De module leest via een nieuw leescontract in `Doctrina.Modules.Academic.Contracts`, niet via de implementatie van Academic.
 - Beveiliging: dezelfde bearer-tokens (client credentials) als `/api/v1`, met een nieuwe permissie `Ooapi.Read`.
 - De host krijgt een tweede routegroep `/ooapi/v5` (bearer-only, zoals `/api/v1`); `IModule` krijgt daarvoor een optioneel

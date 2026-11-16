@@ -63,35 +63,67 @@ omzeilen, precies wat het huidige ontwerp van `MapEndpoints` voorkomt.
 
 ### D4: Leescontract in `Academic.Contracts`
 
-Nieuw: `IAcademicExchangeReader` met per type een gepagineerde lijst en een opvraag op id, die platte, door Ooapi
-te mappen records teruggeeft (`Result<T>`/pagina's, status "actief" alleen). Academic implementeert het met zijn
-bestaande queries. Zo blijft Ooapi onafhankelijk van `AcademicDbContext` en de entiteiten (huisregel 2). De mapping naar
+Nieuw: `IAcademicExchangeReader` met per resource een gepagineerde lijst en een opvraag op id, die platte, door Ooapi te
+mappen records teruggeeft (alleen actieve, stabiele volgorde, filter op `ExternalId`). De lijsten die de standaard
+kent: organisaties, perioden, cursussen, personen, uitvoeringen (van een cursus, een periode of een organisatie) en
+inschrijvingen (van een uitvoering, met rolfilter, of van een persoon). Een persoon komt met zijn rollen mee, zodat
+`affiliations` en `activeEnrollment` zonder extra query te bepalen zijn. Academic implementeert het met zijn bestaande
+queries. Zo blijft Ooapi onafhankelijk van `AcademicDbContext` en de entiteiten (huisregel 2). De mapping naar
 OOAPI-JSON (namen, `primaryCode`, rollen) staat in Ooapi, niet in Academic.
 
 ### D5: Veldmapping
 
+Uitgangspunt is de officiële OpenAPI van OOAPI v5 (release 5.0, `v5/ooapi.yaml`), gelezen bij taak 1.1.
+
 | Doctrina | OOAPI v5 |
 |---|---|
-| `Id` (Guid, met streepjes) | resource-id (`courseId`, `personId`, `offeringId`, …) |
+| `Id` (Guid, met streepjes) | resource-id (`courseId`, `personId`, `offeringId`, `associationId`, …) |
 | `ExternalId` | `primaryCode` `{ codeType: "identifier", code }` |
+| `Name` | `name`: `[{ language: Ooapi:Language, value }]` |
 | `CourseOffering` | `offering` met `offeringType` "course", `course`, `academicSession`, `startDate`, `endDate` |
-| `Association` | `association` met `role`, `person`, `offering` |
-| `AssociationRole` `Student` / `Lecturer` / `TeachingAssistant` / `Coordinator` | `student` / `teacher` / `assistant` / `other` |
-| `Person` | `givenName`, `surnamePrefix` (als `surnamePrefix`), `surname`, `displayName`, `mail` |
+| `Association` | `association` met `associationType` "courseOfferingAssociation", `role`, `state` "associated", `person`, `offering` |
+| `AssociationRole` `Student` / `Lecturer` / `TeachingAssistant` / `Coordinator` | `student` / `lecturer` / `teaching assistant` / `coordinator` |
+| `OrganizationType` `Root` / `Institution` / `Faculty` / `Department` / `Branch` / `Academy` / `School` | `root` / `institute` / `faculty` / `department` / `branch` / `academy` / `school` |
+| `AcademicSessionType` | `academic year` / `semester` / `trimester` / `quarter` / `testing period` / `period` |
+| `Person` | `givenName`, `surnamePrefix`, `surname`, `displayName`, `mail` |
 | `Source`, `Status`, `DateLastModified` | niet getoond (intern); alleen actieve records |
 
+**Verplichte velden zonder bron.** OOAPI verplicht een aantal velden die Doctrina niet bewaart. Besluit (2026-11-16):
+afleiden waar het kan, anders een instelling met een vaste standaardwaarde, en niets verzinnen waar geen van beide kan.
+
+| Veld | Waarde |
+|---|---|
+| association `state` | altijd "associated" (alleen actieve records worden getoond) |
+| person `affiliations` | uit de rollen: `student` voor een studentinschrijving, `employee` voor docent, teaching assistant of coördinator; `guest` zonder inschrijving |
+| person `activeEnrollment` | waar bij een actieve inschrijving als student |
+| person `mail` | alleen als Doctrina een adres heeft (anders weggelaten) |
+| course `abbreviation` / `description` | `Abbreviation` of anders de code; `Description` of anders de naam |
+| course en offering `teachingLanguage` | instelling `Ooapi:TeachingLanguage` (standaard `nld`) |
+| course `level` | instelling `Ooapi:Level` (standaard `undefined`, een geldige waarde) |
+| offering `description` | de naam van de uitvoering |
+| offering `resultExpected` | instelling `Ooapi:ResultExpected` (standaard onwaar) |
+| offering `startDate` / `endDate` | die van de uitvoering, anders van de periode |
+| organization `shortName` | `ShortName` of anders de naam |
+
+De waarden uit de instellingen gelden voor de hele installatie; ze zijn een keuze van de beheerder en geen bewaarde data.
+
 Namen zijn in OOAPI taalgetypeerd (`[{ language, value }]`); Doctrina kent geen taal per veld. De module gebruikt één
-instelling `Ooapi:Language` (standaard `nl`) voor alle teksten. De exacte veldnamen en enum-waarden (o.a. de
-rolwaarden) worden bij taak 1.1 vastgesteld aan de officiële OpenAPI van v5; deze tabel is het uitgangspunt.
+instelling `Ooapi:Language` (standaard `nl`) voor alle teksten.
 
 ### D6: Paginering en filters
 
-`pageNumber` (vanaf 1) en `pageSize`; standaard 20, hoogstens 100 (aanname, bij taak 1.1 te controleren aan de
-standaard en eventueel aan te passen). Antwoord met `pageSize`, `pageNumber`, `hasPreviousPage`, `hasNextPage`,
-`totalPages`, `items`. Volgorde: stabiel op naam/code en daarna id. Ondersteunde filters: `primaryCode` op alle
-lijsten, daarnaast alleen wat de standaard voor die resource voorschrijft en Academic al kan filteren
-(bv. `offerings?course=…`); onbekende parameters worden genegeerd. Fouten (400/401/403/404) als ProblemDetails
-(`application/problem+json`) zoals `/api/v1`; als de standaard een ander foutformaat voorschrijft, volgt taak 1.1 dat.
+`pageNumber` (vanaf 1) en `pageSize`, met de waarden van de standaard: 10, 20, 50, 100 of 250, standaard 10. Antwoord met
+`pageSize`, `pageNumber`, `hasPreviousPage`, `hasNextPage`, `totalPages`, `items`. Volgorde: stabiel op code/naam en
+daarna id. Filters: `primaryCode` op de lijsten van organisaties, perioden, cursussen en personen, en `role` op de
+inschrijvingen van een uitvoering; `search`, `sort`, `expand` en andere parameters worden genegeerd. Fouten
+(400/401/403/404) zijn `application/problem+json` met `status` en `title`, zoals de standaard voorschrijft.
+
+**Paden.** De standaard kent geen top-level `/offerings` of `/associations`. We bieden precies de paden van de standaard:
+`/`, `/organizations`, `/organizations/{id}`, `/organizations/{id}/offerings`, `/academic-sessions`,
+`/academic-sessions/{id}`, `/academic-sessions/{id}/offerings`, `/courses`, `/courses/{id}`, `/courses/{id}/offerings`,
+`/persons`, `/persons/{id}`, `/persons/{id}/associations`, `/offerings/{id}`, `/offerings/{id}/associations` en
+`/associations/{id}`. Niet gebouwd: de paden voor resources die Doctrina niet heeft en `/persons/me`,
+`/associations/external/me` (schrijven/eigen gegevens).
 
 ### D7: Autorisatie
 
@@ -104,11 +136,18 @@ Eén permissie `Ooapi.Read`, gekoppeld via `Authorization:RolePermissions`; in D
 De module logt niets uit antwoorden of queryparameters (ook niet `primaryCode`, dat een persoonsnummer kan zijn),
 alleen resource, status en duur. Dit wordt getest met `CapturingLoggerProvider` op `Trace`.
 
+### D9: Servicegegevens op `GET /`
+
+OOAPI verplicht een servicebeschrijving op de basis: `contactEmail`, `specification` en `documentation`. Ze komen uit de
+instellingen `Ooapi:ContactEmail`, `Ooapi:Specification` (standaard de OOAPI-specificatie) en `Ooapi:Documentation`; het
+contactadres is in productie een keuze van de beheerder (de standaardwaarde in `appsettings.json` is een voorbeeld).
+
 ## Risks / Trade-offs
 
-- **Onbekende details van de standaard**: paden, veldnamen en enum-waarden zijn hier uit de kennis van v5 afgeleid en
-  niet aan het officiële OpenAPI-bestand getoetst. Taak 1.1 doet dat vóór de bouw; afwijkingen verwerken we in de
-  specs (`openspec-update-change`) voordat er code is.
+- **Details van de standaard**: paden, veldnamen en enum-waarden zijn gelezen uit de officiële OpenAPI van release 5.0 (taak 1.1);
+  een latere release van de standaard kan afwijken.
+- **Afgeleide en ingestelde velden**: een deel van de verplichte velden (D5) is geen bewaarde data. Een consument die
+  `level` of `teachingLanguage` per cursus wil, krijgt de waarde van de installatie.
 - **Taal**: één vaste taal per installatie kan voor meertalige cursusnamen te weinig zijn. Acceptabel nu; Doctrina bewaart
   geen vertalingen.
 - **Geen delta's** in OOAPI: consumenten die incrementeel willen synchroniseren moeten `/api/v1?modifiedSince=` gebruiken.

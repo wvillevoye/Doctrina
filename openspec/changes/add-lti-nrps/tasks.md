@@ -1,11 +1,12 @@
 # Taken
 
-Voorwaarde: `add-lti-ags` is gebouwd en gearchiveerd (D1); voer daarna `/opsx:update add-lti-nrps` uit om de regel
-"Public keys URL zonder deep linking URL" in `lti-tool-registration` ook `MembershipServices` te laten toestaan.
+`add-lti-ags` is gebouwd en gearchiveerd; de aanpassing van "Deep linking per tool" (D1) staat als MODIFIED in de delta.
+De testhulpen `LaunchScenario.CreateAsync`, `LtiTools.ToolAsync`, `ToolInput` en `GradeScenario` uit 8b krijgen een optie
+`membershipServices` waar nodig.
 
 ## 1. Toolinstelling (lti-tool-registration)
 
-- [ ] 1.1 Voeg `LtiTool.MembershipServices` toe met migratie `AddMembershipServices`, de validatie (public keys URL verplicht), `LtiToolSummary.SupportsMembershipServices` en het veld "Membership services" in `ManageTools.razor`; controleer met tests `LedenservicesPerTool.ToolMetLedenservicesOpslaan`, `…LedenservicesZonderPublicKeysUrlWordtGeweigerd` en `…BestaandeToolHeeftGeenLedenservices` en een bUnit-test
+- [ ] 1.1 Voeg `LtiTool.MembershipServices` toe met migratie `AddMembershipServices`, de validatie in `ToolService.Check` (public keys URL verplicht bij ledenservices; de regel "public keys URL zonder deep linking URL" geldt alleen als ook `GradeServices` en `MembershipServices` uit staan), `LtiToolSummary.SupportsMembershipServices` en het veld "Membership services" in `ManageTools.razor`; controleer met tests `LedenservicesPerTool.ToolMetLedenservicesOpslaan`, `…LedenservicesZonderPublicKeysUrlWordtGeweigerd` en `…BestaandeToolHeeftGeenLedenservices`, de aangepaste `DeepLinkingPerTool.PublicKeysUrlZonderDeepLinkingUrlWordtGeweigerd` en een bUnit-test
 
 ## 2. Leescontract in Academic
 
@@ -13,9 +14,9 @@ Voorwaarde: `add-lti-ags` is gebouwd en gearchiveerd (D1); voer daarna `/opsx:up
 
 ## 3. Endpoint
 
-- [ ] 3.1 Maak de rolafbeelding van `IdToken` een gedeelde methode en voeg `MembershipService` en `GET /lti/nrps/{context}/memberships` toe met de tokencontrole en toegangscontrole van 8b, de `membershipcontainer`-vorm, `role`, `limit`, `rlid`, de `Link`-header en de privacyregels (D2–D6), plus foutcodes `Lti.Nrps.*` met titels in de `.resx`-bestanden; controleer met tests `DeDeelnemersVanEenUitvoeringOphalen.DeelnemersVanEenUitvoering`, `…UserIdIsHetzelfdeAlsSubInDeLaunch`, `…PersoonMetMeerRollenKomtEenmaalVoor`, `…UitvoeringZonderToolLinkVanDezeTool`, `…VerwijderdeInschrijvingOfPersoon`, `RollenVolgenDeLisRollenVanDeLaunch.RollenVanEenStudentEnEenDocent` en `…FilterenOpRol`
+- [ ] 3.1 Maak de rolafbeelding van `IdToken` een gedeelde methode, verplaats de hulpen van `AgsEndpoints` (D2) naar een gedeelde plek en voeg `MembershipService` en `GET /lti/nrps/{context}/memberships` toe met de tokencontrole en toegangscontrole van 8b, de `membershipcontainer`-vorm, `role`, `limit`, `rlid`, de `Link`-header en de privacyregels (D2–D6), plus foutcodes `Lti.Nrps.*` met titels in de `.resx`-bestanden; controleer met tests `DeDeelnemersVanEenUitvoeringOphalen.DeelnemersVanEenUitvoering`, `…UserIdIsHetzelfdeAlsSubInDeLaunch`, `…PersoonMetMeerRollenKomtEenmaalVoor`, `…UitvoeringZonderToolLinkVanDezeTool`, `…VerwijderdeInschrijvingOfPersoon`, `RollenVolgenDeLisRollenVanDeLaunch.RollenVanEenStudentEnEenDocent` en `…FilterenOpRol`
 - [ ] 3.2 Test de privacy- en paginatieregels; controleer met tests `NaamEnEmailAlleenAlsDeToolDaarvoorIsIngesteld.ZonderInstellingGeenNamen` en `…MetInstellingNaamEnEmail`, `DeLijstIsGepagineerdEnTeBeperkenTotEenResourceLink.Paginering`, `…TeGroteLimit` en `…OnbekendeResourceLink`
-- [ ] 3.3 Laat het tokenendpoint de NRPS-scope toekennen aan tools met `MembershipServices` en weigeren bij andere tools; controleer met tests `AlleenMetDeScopeEnMetLedenservices.ZonderToken`, `…TokenZonderNrpsScope` en `…ToolZonderLedenservices`
+- [ ] 3.3 Voeg de NRPS-scope toe aan `LtiScopes` en laat `LtiScopes.AllowedFor` hem alleen geven aan tools met `MembershipServices`; controleer met tests `AlleenMetDeScopeEnMetLedenservices.ZonderToken`, `…TokenZonderNrpsScope` en `…ToolZonderLedenservices`
 
 ## 4. Launch
 

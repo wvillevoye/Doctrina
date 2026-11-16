@@ -19,8 +19,8 @@ alleen-lezen weergave; de beveiligde aanroep van de tool komt uit `add-lti-ags` 
   niet per persoon een query kost.
 - Documentatie (Engels) en de testtool uitbreiden voor de handmatige controle.
 
-**Afhankelijk van `add-lti-ags`** (8b): het tokenendpoint, de toegangstokens en de validatie van service-endpoints worden daar
-gebouwd en hier hergebruikt. Deze change begint pas na het afronden en archiveren van 8b; zie design D1.
+**Bouwt voort op `add-lti-ags`** (8b, gebouwd en gearchiveerd): het tokenendpoint, de toegangstokens en de validatie van
+service-endpoints bestaan en worden hier hergebruikt; zie design D1.
 
 **Buiten de scope:**
 - De optionele melding bij ledenwijzigingen (Context Memberships Changed), het `differences`-adres en de `message`-lijst
@@ -45,7 +45,7 @@ gebouwd en hier hergebruikt. Deze change begint pas na het afronden en archivere
 - Code: module `Lti` (`MembershipService`, endpoint `/lti/nrps/{context}/memberships`, uitbreiding van de scopes in het
   tokenendpoint, `IdToken`), `Doctrina.Modules.Academic.Contracts` + implementatie (gepagineerde deelnemers met
   personen), `Doctrina.Modules.Content.Contracts` voor de controle dat de tool in de uitvoering een tool link heeft
-  (komt uit 8b).
+  (`ToolLinksOfToolAsync`, bestaat sinds 8b).
 - Data: alleen een kolom `MembershipServices` op `LtiTool` (migratie `AddMembershipServices`); geen nieuwe tabellen.
 - Geen nieuwe packages.
 - Documentatie: `docs/ontwikkelen/starten.md` (Engels), `docs/Doctrina-voorstel.md` §6.5/§8.

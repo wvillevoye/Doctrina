@@ -10,10 +10,12 @@ Zie `proposal.md` voor aanleiding en scope. Waar deze change op voortbouwt:
 - **Launch**: `LaunchService.SubjectAsync` maakt het `sub`: de `PersonId` ("N") van de ingelogde persoon. De rollen
   worden in `IdToken` afgebeeld op LIS-URI's (`Learner`, `Instructor`, `Instructor#TeachingAssistant`); naam en e-mail gaan
   alleen mee als `LtiTool.SendName`/`SendEmail` aan staan.
-- **`add-lti-ags` (8b, nog niet gebouwd)** levert het tokenendpoint `POST /lti/token` (`client_assertion`), access tokens
+- **`add-lti-ags` (8b, gebouwd en gearchiveerd; hoofdspecs `lti-service-auth` en `lti-grade-services`)** levert het tokenendpoint `POST /lti/token` (`client_assertion`), access tokens
   als JWT met scopes, de validatiehulp voor service-endpoints en de aanpak "endpoints onder `/lti/…` op de root met eigen
   tokencontrole" (D1–D3 daar), én `IContentDirectory.ToolLinksOfToolAsync` (welke tool links een tool in een uitvoering
-  heeft). Deze change gebruikt alles daarvan en bouwt het niet opnieuw.
+  heeft). Deze change gebruikt alles daarvan en bouwt het niet opnieuw. Gebouwd als: `LtiScopes.AllowedFor(tool)` bepaalt de
+  scopes die een tool mag krijgen, `ServiceTokenValidator.AuthorizeAsync(authorization, issuer, acceptedScopes, ct)` levert
+  de aanroepende tool, `AgsEndpoints` bevat de (nu nog private) hulpen voor foutvertaling, queryparameters en paginering.
 
 ## Goals / Non-Goals
 
@@ -26,22 +28,25 @@ Zie `proposal.md` voor aanleiding en scope. Waar deze change op voortbouwt:
 
 ## Decisions
 
-### D1: Volgorde en afhankelijkheid van 8b
+### D1: Afhankelijkheid van 8b
 
-Deze change bouwt voort op `lti-service-auth` en `lti-grade-services` uit `add-lti-ags`, die pas na het archiveren van 8b
-als hoofdspec bestaan. Daarom bevatten de delta-specs hier alleen ADDED-requirements in nieuwe of bestaande
-capabilities; niets wijzigt een requirement van 8b. Twee aanpassingen aan 8b-gedrag vallen daarmee in de taken, niet in de
-specs: (a) het tokenendpoint kent de NRPS-scope toe aan tools met `MembershipServices` (de requirement "Scopes worden
-beperkt tot wat de tool mag" van 8b noemt alleen AGS-scopes; de nieuwe scenarios staan hier in `lti-memberships`), en
-(b) de regel "Public keys URL zonder deep linking URL" uit `lti-tool-registration` laat nu `GradeServices` toe en moet ook
-`MembershipServices` toelaten; die tekstwijziging doen we met `/opsx:update` zodra 8b is gearchiveerd, vóór het bouwen
-van taak 1.1.
+8b is gebouwd en gearchiveerd; deze change gebruikt `lti-service-auth` en `lti-grade-services` zoals ze er nu staan. Twee
+aanpassingen aan 8b-gedrag zitten in deze change: (a) het tokenendpoint kent de NRPS-scope toe aan tools met
+`MembershipServices` (`LtiScopes.AllowedFor`; de requirement "Scopes worden beperkt tot wat de tool mag" blijft gelden,
+de scenario's voor NRPS staan in `lti-memberships`), en (b) de regel "Public keys URL zonder deep linking URL" in
+`lti-tool-registration` laat nu ook `MembershipServices` toe; dat is een MODIFIED van "Deep linking per tool" in de
+delta van deze change (tekst en scenario noemen cijferservices én ledenservices).
 
 ### D2: Endpoint `GET /lti/nrps/{context}/memberships`
 
 Op de root (`MapBrowserEndpoints`), anoniem voor de host, met de tokencontrole van 8b (scope
 `…/lti-nrps/scope/contextmembership.readonly`). Toegang volgt D4 van 8b: alleen een uitvoering waarin de tool een tool link
 heeft; anders 404 (geen lek van het bestaan).
+
+De hulpen die `AgsEndpoints` nu privé heeft (tokencontrole met `Cache-Control: no-store` en `WWW-Authenticate`, de
+vertaling van een `Error` naar ProblemDetails, queryparameters, `Link`-header) worden gedeeld in plaats van gekopieerd. De
+foutvertaling kent daarbij één verschil: AGS geeft voor een validatiefout 422, NRPS geeft 400 (ongeldige `limit` of `role`);
+de gedeelde hulp krijgt daarvoor een parameter.
 
 ### D3: Eén rij per persoon
 
@@ -68,7 +73,8 @@ wordt niets van de inhoud gelogd (D7).
 ### D6: Paginering
 
 `limit` standaard 50, hoogstens 500; de volgende pagina via een `Link`-header met `rel="next"` (een ondoorzichtige
-paginasleutel op de laatste persoon-id, geen offset, zodat wijzigingen tijdens het doorlopen geen dubbelen geven). `rlid`
+paginasleutel op de laatste persoon-id, geen offset, zodat wijzigingen tijdens het doorlopen geen dubbelen geven). Dit is
+de aanpak van AGS: de sleutel is de queryparameter `after` en de volgorde die van `uniqueidentifier` in SQL Server. `rlid`
 wordt gecontroleerd (D2) maar verandert de lijst niet: Doctrina kent geen per-item-zichtbaarheid per deelnemer die een
 tool zou moeten volgen (een studentenlijst is voor alle items van de uitvoering gelijk).
 

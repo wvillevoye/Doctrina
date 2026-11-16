@@ -355,7 +355,7 @@ Zelfde patroon voor `courses`, `course-offerings`, `components`, `associations` 
 Beheerder uploadt CSV/zip → ziet dry-run-resultaat → bevestigt → volgt voortgang → downloadt rapport. Sjablonen zijn op hetzelfde scherm te downloaden.
 
 ### 6.7 Interop.OOAPI
-- Biedt OOAPI v5-endpoints aan (lezen; associations ook schrijven).
+- Biedt OOAPI v5-endpoints aan onder `/ooapi/v5`, **alleen-lezen** (change `add-ooapi-interop`); schrijven blijft op `/api/v1`. Alleen de paden van de standaard (geen top-level `/offerings` of `/associations`); verplichte velden die Doctrina niet bewaart worden afgeleid of staan onder `Ooapi:` in de instellingen.
 - Kan OOAPI-bronnen consumeren om het LMS te vullen (via bulk-pipeline).
 - Implementeer de **profielen/consumers** die de instelling en koppelpartners echt gebruiken, niet de hele spec.
 
@@ -417,7 +417,7 @@ Wat Bootstrap herkenbaar maakt en wij aanpassen: font, knoppen (vorm, kleur, gew
 | 3 | `add-academic-core` | OOAPI-gebaseerd kernmodel + beheerschermen + "mijn cursussen" | 1, 2 |
 | 4 | `add-groups` | GroupSets en groepen | 3 |
 | 5 | `add-api-and-import` | REST per resource (incl. upsert op ExternalId, batch) + CSV/zip-import, dry-run, jobs, rapportage | 3 |
-| 6 | `add-ooapi-interop` | OOAPI v5-endpoints aanbieden/consumeren | 3, 5 |
+| 6 | `add-ooapi-interop` | OOAPI v5-endpoints aanbieden (alleen-lezen; consumeren later) | 3, 5 |
 | 7 | `add-content` | Content-structuur binnen offerings | 3 |
 | 8 | `add-lti-platform` | LTI 1.3 core (tools registreren, sleutels/JWKS, resource link launch) | 3, 7 |
 | 8a | `add-lti-deep-linking` | LTI Deep Linking 2.0 (tool links kiezen in de tool) | 8 |

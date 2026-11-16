@@ -1,4 +1,4 @@
-using Doctrina.Host;
+﻿using Doctrina.Host;
 using Doctrina.Host.Api;
 using Doctrina.Host.Authentication;
 using Doctrina.Host.Components;
@@ -69,6 +69,7 @@ app.MapDoctrinaHealth();
 app.MapDoctrinaJobsDashboard();
 app.MapDoctrinaApiDocumentation(app.Configuration, app.Environment);
 app.MapApiV1().MapDoctrinaModules();
+app.MapOoapiV5().MapDoctrinaOoapiModules();
 app.MapDoctrinaBrowserEndpoints();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()

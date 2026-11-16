@@ -1,4 +1,4 @@
-using Doctrina.Core.Modules;
+﻿using Doctrina.Core.Modules;
 using Doctrina.Core.Results;
 using Doctrina.Infrastructure.Api;
 using Doctrina.Infrastructure.Authorization;
@@ -48,6 +48,9 @@ public sealed class SampleModule : TestModule
     public static Error Untranslated { get; } = Error.NotFound("Sample.Item.Untranslated", "Item not found");
 
     public const string ManagePageTitle = "Voorbeeldbeheer";
+
+    // A standard API under its own prefix (change add-ooapi-interop): same bearer-only protection as /api/v1.
+    public override void MapOoapiEndpoints(IEndpointRouteBuilder ooapi) => ooapi.MapGet("samples", () => Samples);
 
     public override void MapEndpoints(IEndpointRouteBuilder api)
     {

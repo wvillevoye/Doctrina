@@ -70,6 +70,37 @@ otherwise `SIS`; a `source` in the body is ignored. A system can only change or 
 (otherwise 403, `Academic.Record.OtherSource`). Upserts match on the key of the source system plus that source. Batches
 are limited per client (`Api:BatchesPerMinute`, default 60; above it 429).
 
+## API: OOAPI v5 (read-only)
+
+Systems that speak OOAPI v5 read the core model under `/ooapi/v5` (change `add-ooapi-interop`, module `Ooapi`, switched
+on with `Ooapi` in `Modules:Enabled`). It is read-only; writing stays on `/api/v1`. The same bearer-only rules apply as
+for `/api/v1`: a client-credentials token, never the session cookie. The permission is `Ooapi.Read`; in Development the
+scopes `doctrina.persons.read` and `doctrina.courses.read` carry it, because the persons and associations hold personal
+data (names, e-mail addresses). Without a token the answer is 401, without the permission 403.
+
+| Path | |
+|---|---|
+| `GET /ooapi/v5` | service data: `contactEmail`, `specification`, `documentation` |
+| `GET /ooapi/v5/organizations`, `/academic-sessions`, `/courses`, `/persons` (+ `/{id}`) | lists and one record; list filter `primaryCode` |
+| `GET /ooapi/v5/offerings/{id}` and `…/courses/{id}/offerings`, `…/academic-sessions/{id}/offerings`, `…/organizations/{id}/offerings` | a course offering is an offering of type `course` |
+| `GET /ooapi/v5/associations/{id}`, `…/offerings/{id}/associations` (filter `role`), `…/persons/{id}/associations` | an enrolment; roles `student`, `lecturer`, `teaching assistant`, `coordinator` |
+
+As in the standard there is no top-level `/offerings` or `/associations`. Lists are paged with `pageNumber` (from 1) and
+`pageSize` (10, 20, 50, 100 or 250; default 10), and answer with `pageSize`, `pageNumber`, `hasPreviousPage`,
+`hasNextPage`, `totalPages` and `items`. Errors are `application/problem+json` with `status` and `title`. A record's
+`ExternalId` is its `primaryCode` (`codeType` `identifier`); the Doctrina id is the OOAPI id. Only active records show.
+
+OOAPI requires some fields Doctrina does not store. They are derived (`state` is `associated`; a person's
+`affiliations` come from the roles, `guest` without any; `activeEnrollment` is true for a student; a missing
+description is the name) or set per installation under `Ooapi:`: `Language` (language tag of all texts, default `nl`),
+`TeachingLanguage` (default `nld`), `Level` (default `undefined`), `ResultExpected` (default `false`) and
+`ContactEmail`, `Specification`, `Documentation` for `GET /ooapi/v5`. A person without an e-mail address has no `mail`.
+
+```bash
+# token of a system with scope doctrina.persons.read, then:
+curl -H "Authorization: Bearer $TOKEN" "https://localhost:5001/ooapi/v5/courses?pageSize=20&pageNumber=2"
+```
+
 ## API: import
 
 Larger deliveries go through an import job (change `add-bulk-import`), with scope `doctrina.import` (→ `Academic.Import`):

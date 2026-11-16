@@ -1,4 +1,4 @@
-using Doctrina.Core.Modules;
+﻿using Doctrina.Core.Modules;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,6 +29,9 @@ public class TestModule(string name, params string[] dependsOn) : IModule
     /// <summary>Extra endpoints onder <c>/api/v1</c>; alleen gekoppeld als de module is ingeschakeld.</summary>
     public Action<IEndpointRouteBuilder>? Endpoints { get; init; }
 
+    /// <summary>Extra endpoints onder <c>/ooapi/v5</c>; alleen gekoppeld als de module is ingeschakeld.</summary>
+    public Action<IEndpointRouteBuilder>? OoapiEndpoints { get; init; }
+
     /// <summary>Extra browser-endpoints onder <c>/{naam}</c>; alleen gekoppeld als de module is ingeschakeld.</summary>
     public Action<IEndpointRouteBuilder>? BrowserEndpoints { get; init; }
 
@@ -52,6 +55,8 @@ public class TestModule(string name, params string[] dependsOn) : IModule
     public virtual void MapEndpoints(IEndpointRouteBuilder api) => Endpoints?.Invoke(api);
 
     public virtual void MapBrowserEndpoints(IEndpointRouteBuilder app) => BrowserEndpoints?.Invoke(app);
+
+    public virtual void MapOoapiEndpoints(IEndpointRouteBuilder ooapi) => OoapiEndpoints?.Invoke(ooapi);
 }
 
 /// <summary>De testmodules <c>A</c> en <c>B</c> uit de specs.</summary>

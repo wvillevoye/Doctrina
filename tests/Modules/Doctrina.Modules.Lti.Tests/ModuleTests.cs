@@ -15,7 +15,7 @@ public sealed class DeModuleMigreertNaarEenEigenSchema
         var tables = await db.Database.QueryAsync(
             "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'lti' ORDER BY TABLE_NAME", Ct);
 
-        Assert.Equal(["__EFMigrationsHistory", "Keys", "Tools"], tables.Select(r => r[0]));
+        Assert.Equal(["__EFMigrationsHistory", "DeepLinkNonces", "DeepLinkSelections", "Keys", "Tools"], tables.Select(r => r[0]));
     }
 
     [Fact]

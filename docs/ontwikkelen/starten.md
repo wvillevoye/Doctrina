@@ -154,6 +154,14 @@ a course and students arrive in it without signing in again.
 2. Sign in as `docent`, open **Cell biology** → **Manage content** and use **Add tool link** in a section, then publish
    the item. Students see a **Launch** button that opens the tool in a new tab.
 
+**Deep linking** lets a teacher choose content in the tool instead of typing a title. Give the tool a **Deep linking URL**
+(where Doctrina sends the request) and a **Public keys URL** (its JWKS, to check its response); both or neither. Then, in
+**Manage content**, use **Add from a tool**: the tool opens in the same tab, the teacher picks one or more items, and
+Doctrina shows them on a confirmation page. **Add to section** adds them as draft tool links that launch the address the
+tool chose. Only `ltiResourceLink` items on the same origin as the launch URL are accepted. Doctrina fetches the public
+keys server-side from the registered address (https, 5 s timeout, no redirects, at most 64 kB, cached 5 minutes), so only
+register tools you trust.
+
 `Lti:Issuer` sets the issuer; by default it is the address the request came in on (`https://localhost:5001` locally).
 Set it in production, because tools remember it.
 

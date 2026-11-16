@@ -102,6 +102,22 @@ public sealed class BeheerdersRegistrerenLtiToolsOpDePagina : IAsyncDisposable
         Assert.Equal("Tool “Renamed” deleted.", page.Find("[data-testid=lti-message] p").TextContent.Trim());
     }
 
+    // Spec lti-tool-registration of change add-lti-deep-linking; task 1.2.
+    [Fact]
+    public async Task ToolMetDeepLinkingOpslaanViaDePagina()
+    {
+        _f = await PageFixture.CreateAsync();
+        var input = ToolTestData.Quiz() with { DeepLinkingUrl = "https://tool.example.org/dl", PublicKeysUrl = "https://tool.example.org/jwks" };
+        await new ToolService(_f.Db.CreateContext()).CreateAsync(input, Ct);
+        var page = Render();
+
+        page.WaitForElement("[data-testid=tool]", PageFixture.Wait);
+
+        Assert.Contains("https://tool.example.org/dl", page.Find("[data-testid=tool]").TextContent, StringComparison.Ordinal);
+        Assert.Contains("https://tool.example.org/jwks", page.Find("[data-testid=tool]").TextContent, StringComparison.Ordinal);
+        Assert.Equal(4, page.FindAll("[data-testid=tool-form] input[type=url]").Count); // login, launch, deep linking, public keys
+    }
+
     [Fact]
     public async Task SleutelRoterenViaDePagina()
     {

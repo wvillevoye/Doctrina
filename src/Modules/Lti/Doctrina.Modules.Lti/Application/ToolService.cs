@@ -17,6 +17,15 @@ internal static class LtiErrors
     public const string ToolInvalidUrl = "Lti.Tool.InvalidUrl";
     public const string ToolRedirectUriRequired = "Lti.Tool.RedirectUriRequired";
     public const string ToolNotFound = "Lti.Tool.NotFound";
+    public const string DeepLinkNotSupported = "Lti.DeepLinking.NotSupported";
+    public const string DeepLinkInvalidToken = "Lti.DeepLinking.InvalidToken";
+    public const string DeepLinkInvalidData = "Lti.DeepLinking.InvalidData";
+    public const string DeepLinkInvalidItem = "Lti.DeepLinking.InvalidItem";
+    public const string DeepLinkReplayed = "Lti.DeepLinking.Replayed";
+    public const string DeepLinkSelectionNotFound = "Lti.DeepLinking.SelectionNotFound";
+    public const string DeepLinkUserMismatch = "Lti.DeepLinking.UserMismatch";
+    public const string ToolDeepLinkingUrlRequired = "Lti.Tool.DeepLinkingUrlRequired";
+    public const string ToolPublicKeysUrlRequired = "Lti.Tool.PublicKeysUrlRequired";
     public const string LaunchUnknownClient = "Lti.Launch.UnknownClient";
     public const string LaunchInvalidRedirectUri = "Lti.Launch.InvalidRedirectUri";
     public const string LaunchInvalidHint = "Lti.Launch.InvalidHint";
@@ -26,7 +35,8 @@ internal static class LtiErrors
 
     public static readonly string[] All =
     [
-        ToolInvalid, ToolNameRequired, ToolInvalidUrl, ToolRedirectUriRequired, ToolNotFound,
+        ToolInvalid, ToolNameRequired, ToolInvalidUrl, ToolRedirectUriRequired, ToolNotFound, ToolDeepLinkingUrlRequired, ToolPublicKeysUrlRequired,
+        DeepLinkNotSupported, DeepLinkInvalidToken, DeepLinkInvalidData, DeepLinkInvalidItem, DeepLinkReplayed, DeepLinkSelectionNotFound, DeepLinkUserMismatch,
         LaunchUnknownClient, LaunchInvalidRedirectUri, LaunchInvalidHint, LaunchUserMismatch, LaunchInvalidRequest, LaunchForbidden,
     ];
 
@@ -46,7 +56,7 @@ internal static class LtiUrl
 }
 
 /// <summary>What a beheerder fills in for a tool; the redirect URIs are one address per line.</summary>
-internal sealed record ToolInput(string? Name, string? LoginUrl, string? LaunchUrl, string? RedirectUris, bool SendName = false, bool SendEmail = false)
+internal sealed record ToolInput(string? Name, string? LoginUrl, string? LaunchUrl, string? RedirectUris, bool SendName = false, bool SendEmail = false, string? DeepLinkingUrl = null, string? PublicKeysUrl = null)
 {
     /// <summary>The redirect URIs, trimmed, without empty lines and duplicates.</summary>
     public IReadOnlyList<string> RedirectUriList() =>
@@ -71,7 +81,7 @@ internal sealed class ToolService(LtiDbContext db) : ILtiToolCatalog
         db.Tools.AsNoTracking().FirstOrDefaultAsync(t => t.ClientId == clientId && t.Status == EntityStatus.Active, ct);
 
     async Task<IReadOnlyList<LtiToolSummary>> ILtiToolCatalog.ListAsync(CancellationToken cancellationToken) =>
-        [.. (await ToolsAsync(cancellationToken)).Select(t => new LtiToolSummary(t.Id, t.Name))];
+        [.. (await ToolsAsync(cancellationToken)).Select(t => new LtiToolSummary(t.Id, t.Name, t.DeepLinkingUrl is not null))];
 
     public Task<bool> ExistsAsync(Guid toolId, CancellationToken cancellationToken) =>
         db.Tools.AnyAsync(t => t.Id == toolId && t.Status == EntityStatus.Active, cancellationToken);
@@ -95,6 +105,8 @@ internal sealed class ToolService(LtiDbContext db) : ILtiToolCatalog
             RedirectUris = string.Join('\n', input.RedirectUriList()),
             SendName = input.SendName,
             SendEmail = input.SendEmail,
+            DeepLinkingUrl = Blank(input.DeepLinkingUrl),
+            PublicKeysUrl = Blank(input.PublicKeysUrl),
         };
         db.Add(tool);
         // EF Core generates the sequential Id on Add; the Doctrina-owned ExternalId is that Id (huisregel 6).
@@ -123,6 +135,8 @@ internal sealed class ToolService(LtiDbContext db) : ILtiToolCatalog
         tool.RedirectUris = string.Join('\n', input.RedirectUriList());
         tool.SendName = input.SendName;
         tool.SendEmail = input.SendEmail;
+        tool.DeepLinkingUrl = Blank(input.DeepLinkingUrl);
+        tool.PublicKeysUrl = Blank(input.PublicKeysUrl);
         await db.SaveChangesAsync(ct);
         return Result.Success();
     }
@@ -171,8 +185,28 @@ internal sealed class ToolService(LtiDbContext db) : ILtiToolCatalog
             return LtiErrors.Invalid(LtiErrors.ToolInvalidUrl, "redirectUris", message);
         }
 
+        var (deepLinking, keys) = (Blank(input.DeepLinkingUrl), Blank(input.PublicKeysUrl));
+        if (deepLinking is null != keys is null)
+        {
+            return deepLinking is null
+                ? LtiErrors.Invalid(LtiErrors.ToolDeepLinkingUrlRequired, "deepLinkingUrl", "Enter the deep linking URL as well, or clear the public keys URL.")
+                : LtiErrors.Invalid(LtiErrors.ToolPublicKeysUrlRequired, "publicKeysUrl", "Enter the public keys URL as well, or clear the deep linking URL.");
+        }
+
+        if (deepLinking is not null && !LtiUrl.IsValid(deepLinking))
+        {
+            return LtiErrors.Invalid(LtiErrors.ToolInvalidUrl, "deepLinkingUrl", message);
+        }
+
+        if (keys is not null && !LtiUrl.IsValid(keys))
+        {
+            return LtiErrors.Invalid(LtiErrors.ToolInvalidUrl, "publicKeysUrl", message);
+        }
+
         return null;
     }
+
+    private static string? Blank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     /// <summary>An opaque identifier: 24 random bytes, base64url (32 characters).</summary>
     private static string NewIdentifier() => WebEncoders.Base64UrlEncode(RandomNumberGenerator.GetBytes(24));

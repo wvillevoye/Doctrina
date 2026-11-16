@@ -23,6 +23,12 @@ public sealed class LtiTool : ExchangeableEntity
     /// <summary>The addresses the tool may be sent to, one per line.</summary>
     public required string RedirectUris { get; set; }
 
+    /// <summary>Where the deep linking request is sent (null: the tool has no deep linking).</summary>
+    public string? DeepLinkingUrl { get; set; }
+
+    /// <summary>The tool's JWKS, to check its deep linking response; set together with <see cref="DeepLinkingUrl"/>.</summary>
+    public string? PublicKeysUrl { get; set; }
+
     /// <summary>Share name, given name and family name with this tool.</summary>
     public bool SendName { get; set; }
 
@@ -46,4 +52,33 @@ public sealed class LtiKey : ExchangeableEntity
 
     /// <summary>When the key stopped being active (it stays in the JWKS for a while).</summary>
     public DateTimeOffset? RetiredAt { get; set; }
+}
+
+/// <summary>
+/// The items a tool chose in a deep linking response, kept until the teacher confirms them (design D4 of
+/// add-lti-deep-linking). Internal and short-lived: never exchanged with other systems.
+/// </summary>
+public sealed class DeepLinkSelection : Entity
+{
+    public Guid ToolId { get; set; }
+
+    public Guid SectionId { get; set; }
+
+    /// <summary>The opaque user id from the deep linking data; only that user may confirm.</summary>
+    public required string Subject { get; set; }
+
+    /// <summary>The chosen items (title and address) as JSON.</summary>
+    public required string ItemsJson { get; set; }
+
+    public DateTimeOffset Expires { get; set; }
+}
+
+/// <summary>A nonce a tool used in a deep linking response, to refuse a replay (design D3).</summary>
+public sealed class DeepLinkNonce : Entity
+{
+    public Guid ToolId { get; set; }
+
+    public required string Nonce { get; set; }
+
+    public DateTimeOffset Expires { get; set; }
 }

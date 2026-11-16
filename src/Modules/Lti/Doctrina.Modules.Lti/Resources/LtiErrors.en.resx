@@ -27,6 +27,33 @@
   <data name="Lti.Tool.NotFound" xml:space="preserve">
     <value>Tool not found</value>
   </data>
+  <data name="Lti.Tool.DeepLinkingUrlRequired" xml:space="preserve">
+    <value>Deep linking URL is required</value>
+  </data>
+  <data name="Lti.Tool.PublicKeysUrlRequired" xml:space="preserve">
+    <value>Public keys URL is required</value>
+  </data>
+  <data name="Lti.DeepLinking.NotSupported" xml:space="preserve">
+    <value>Tool does not support deep linking</value>
+  </data>
+  <data name="Lti.DeepLinking.InvalidToken" xml:space="preserve">
+    <value>Invalid response from the tool</value>
+  </data>
+  <data name="Lti.DeepLinking.InvalidData" xml:space="preserve">
+    <value>Invalid or expired deep linking data</value>
+  </data>
+  <data name="Lti.DeepLinking.InvalidItem" xml:space="preserve">
+    <value>Invalid item in the response of the tool</value>
+  </data>
+  <data name="Lti.DeepLinking.Replayed" xml:space="preserve">
+    <value>The response of the tool was already processed</value>
+  </data>
+  <data name="Lti.DeepLinking.SelectionNotFound" xml:space="preserve">
+    <value>Selection not found or expired</value>
+  </data>
+  <data name="Lti.DeepLinking.UserMismatch" xml:space="preserve">
+    <value>The selection belongs to another user</value>
+  </data>
   <data name="Lti.Launch.UnknownClient" xml:space="preserve">
     <value>Unknown client_id</value>
   </data>

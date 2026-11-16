@@ -1,4 +1,5 @@
 using Doctrina.Infrastructure.Api;
+using Doctrina.Modules.Content.Contracts;
 using Doctrina.Modules.Lti.Application;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -19,6 +20,29 @@ internal static class LtiEndpoints
         app.MapGet("launch/{item:guid}", async (Guid item, HttpContext http, LaunchService launch, IOptions<LtiOptions> options, CancellationToken ct) =>
             (await launch.StartAsync(http.User, item, Issuer(options.Value, http.Request), ct))
                 .ToHttpResult(login => Results.Redirect(login.AbsoluteUri)));
+
+        // Login initiation of a deep linking request: the teacher picks content in the tool (change add-lti-deep-linking).
+        app.MapGet("deep-linking/{section:guid}/{tool:guid}", async (Guid section, Guid tool, HttpContext http, LaunchService launch, IOptions<LtiOptions> options, CancellationToken ct) =>
+            (await launch.StartDeepLinkingAsync(http.User, section, tool, Issuer(options.Value, http.Request), ct))
+                .ToHttpResult(login => Results.Redirect(login.AbsoluteUri)));
+
+        // The tool posts its signed response without a session (cross-site POST): the signature is the protection, so no
+        // antiforgery token. The items are kept as a selection; the teacher confirms them on the page it redirects to (design D3 and D4).
+        app.MapPost("deep-linking/return", async Task<IResult> (HttpContext http, DeepLinkingService deepLinking, IOptions<LtiOptions> options, CancellationToken ct) =>
+        {
+            var jwt = http.Request.HasFormContentType ? (await http.Request.ReadFormAsync(ct))["JWT"].ToString() : null;
+            var result = await deepLinking.ReturnAsync(jwt, Issuer(options.Value, http.Request), ct);
+            http.Response.Headers.CacheControl = "no-store";
+            return result.ToHttpResult(r =>
+            {
+                http.Response.Headers.Location = r.SelectionId is { } id ? $"/lti/deep-linking/selection/{id:D}" : $"/lti/deep-linking/back/{r.SectionId:D}";
+                return Results.StatusCode(StatusCodes.Status303SeeOther);
+            });
+        }).AllowAnonymous().DisableAntiforgery();
+
+        // Back to the content page of the section (after an empty response or a confirmed selection).
+        app.MapGet("deep-linking/back/{section:guid}", async (Guid section, HttpContext http, IContentDirectory content, CancellationToken ct) =>
+            (await content.FindSectionForManagingAsync(http.User, section, ct)).ToHttpResult(info => Results.Redirect($"/courses/{info.OfferingId:D}/content")));
 
         // Authentication request of the tool: answered with a page that posts the signed id_token to the tool.
         app.MapGet("authorize", async Task<IResult> (HttpContext http, LaunchService launch, IOptions<LtiOptions> options, CancellationToken ct) =>

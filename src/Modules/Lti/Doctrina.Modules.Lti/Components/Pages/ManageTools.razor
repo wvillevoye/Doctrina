@@ -51,6 +51,11 @@
           <dt>Deployment ID</dt><dd><code data-testid="deployment-id">@tool.DeploymentId</code></dd>
           <dt>Login URL</dt><dd>@tool.LoginUrl</dd>
           <dt>Launch URL</dt><dd>@tool.LaunchUrl</dd>
+          @if (tool.DeepLinkingUrl is not null)
+          {
+            <dt>Deep linking URL</dt><dd>@tool.DeepLinkingUrl</dd>
+            <dt>Public keys URL</dt><dd>@tool.PublicKeysUrl</dd>
+          }
           <dt>Redirect URIs</dt><dd>@tool.RedirectUris.Replace("\n", ", ")</dd>
           <dt>Shared with the tool</dt><dd>@Shared(tool)</dd>
         </dl>
@@ -68,6 +73,8 @@
       <DcTextField Label="Login URL" Type="url" Required Hint="The tool's OpenID Connect login initiation URL." @bind-Value="_form.LoginUrl" />
       <DcTextField Label="Launch URL" Type="url" Required Hint="The address of the tool that is started (target link URI)." @bind-Value="_form.LaunchUrl" />
       <DcTextField Label="Redirect URIs" Required Rows="3" Hint="One address per line. Only these addresses receive a launch." @bind-Value="_form.RedirectUris" />
+      <DcTextField Label="Deep linking URL" Type="url" Hint="Optional. Where Doctrina sends the request when a teacher picks content in the tool." @bind-Value="_form.DeepLinkingUrl" />
+      <DcTextField Label="Public keys URL" Type="url" Hint="The tool's JWKS URL; required with a deep linking URL, to check the tool's response." @bind-Value="_form.PublicKeysUrl" />
       <DcCheckbox Label="Send name" Hint="Share the name of the user with this tool." @bind-Value="_form.SendName" />
       <DcCheckbox Label="Send email" Hint="Share the email address of the user with this tool." @bind-Value="_form.SendEmail" />
       <div class="dc-form__actions">
@@ -142,7 +149,7 @@
         return _error is null;
     }
 
-    private ToolInput Input() => new(_form.Name, _form.LoginUrl, _form.LaunchUrl, _form.RedirectUris, _form.SendName, _form.SendEmail);
+    private ToolInput Input() => new(_form.Name, _form.LoginUrl, _form.LaunchUrl, _form.RedirectUris, _form.SendName, _form.SendEmail, _form.DeepLinkingUrl, _form.PublicKeysUrl);
 
     private async Task SaveAsync()
     {
@@ -167,6 +174,8 @@
             RedirectUris = tool.RedirectUris,
             SendName = tool.SendName,
             SendEmail = tool.SendEmail,
+            DeepLinkingUrl = tool.DeepLinkingUrl,
+            PublicKeysUrl = tool.PublicKeysUrl,
         };
         _error = null;
         _message = null;
@@ -216,6 +225,10 @@
 
         [Required(ErrorMessage = "Enter at least one redirect URI.")]
         public string? RedirectUris { get; set; }
+
+        public string? DeepLinkingUrl { get; set; }
+
+        public string? PublicKeysUrl { get; set; }
 
         public bool SendName { get; set; }
 

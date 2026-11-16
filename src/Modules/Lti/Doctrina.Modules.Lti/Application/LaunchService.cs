@@ -5,6 +5,7 @@ using System.Text;
 using Doctrina.Core.Results;
 using Doctrina.Modules.Academic.Contracts;
 using Doctrina.Modules.Content.Contracts;
+using Doctrina.Modules.Lti.Domain;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.IdentityModel.JsonWebTokens;
@@ -41,6 +42,9 @@ internal sealed class LaunchService(
     /// <summary>How long an <c>id_token</c> is valid (spec: at most 5 minutes).</summary>
     public static readonly TimeSpan TokenLifetime = TimeSpan.FromMinutes(5);
 
+    private const char ResourceHint = 'r';
+    private const char DeepLinkingHint = 'd';
+
     private IDataProtector HintProtector => dataProtection.CreateProtector(HintPurpose);
 
     /// <summary>
@@ -62,19 +66,44 @@ internal sealed class LaunchService(
             return ToolService.NotFound(link.Value.ToolId);
         }
 
-        var subject = await SubjectAsync(user, ct);
+        return LoginUrl(tool, link.Value.LaunchUrl ?? tool.LaunchUrl, issuer, ResourceHint, itemId, await SubjectAsync(user, ct));
+    }
+
+    /// <summary>
+    /// Login initiation for a deep linking request (design D2 of add-lti-deep-linking): the user must be allowed to manage
+    /// the content of the section; the tool must support deep linking.
+    /// </summary>
+    public async Task<Result<Uri>> StartDeepLinkingAsync(ClaimsPrincipal user, Guid sectionId, Guid toolId, string issuer, CancellationToken ct)
+    {
+        var section = await content.FindSectionForManagingAsync(user, sectionId, ct);
+        if (section.Error is { } denied)
+        {
+            return denied;
+        }
+
+        if (await tools.FindAsync(toolId, ct) is not { } tool)
+        {
+            return ToolService.NotFound(toolId);
+        }
+
+        return tool.DeepLinkingUrl is null
+            ? Error.NotFound(LtiErrors.DeepLinkNotSupported, $"Tool {toolId:D} does not support deep linking.")
+            : LoginUrl(tool, tool.DeepLinkingUrl, issuer, DeepLinkingHint, sectionId, await SubjectAsync(user, ct));
+    }
+
+    private Uri LoginUrl(LtiTool tool, string targetLinkUri, string issuer, char kind, Guid target, string subject)
+    {
         var expires = time.GetUtcNow().Add(HintLifetime).ToUnixTimeSeconds();
-        var hint = HintProtector.Protect(string.Create(CultureInfo.InvariantCulture, $"{itemId:N}.{subject}.{expires}"));
-        var url = QueryHelpers.AddQueryString(tool.LoginUrl, new Dictionary<string, string?>
+        var hint = HintProtector.Protect(string.Create(CultureInfo.InvariantCulture, $"{kind}.{target:N}.{tool.Id:N}.{subject}.{expires}"));
+        return new Uri(QueryHelpers.AddQueryString(tool.LoginUrl, new Dictionary<string, string?>
         {
             ["iss"] = issuer,
             ["login_hint"] = subject,
-            ["target_link_uri"] = tool.LaunchUrl,
+            ["target_link_uri"] = targetLinkUri,
             ["lti_message_hint"] = hint,
             ["client_id"] = tool.ClientId,
             ["lti_deployment_id"] = tool.DeploymentId,
-        });
-        return new Uri(url);
+        }));
     }
 
     /// <summary>
@@ -104,7 +133,7 @@ internal sealed class LaunchService(
             return Bad(LtiErrors.LaunchInvalidRequest, "request", "The nonce, state, login_hint and lti_message_hint are required.");
         }
 
-        if (OpenHint(request.MessageHint) is not var (itemId, subject))
+        if (OpenHint(request.MessageHint) is not var (kind, target, hintTool, subject))
         {
             return Bad(LtiErrors.LaunchInvalidHint, "lti_message_hint", "The lti_message_hint is not valid or has expired.");
         }
@@ -114,27 +143,47 @@ internal sealed class LaunchService(
             return Error.Forbidden(LtiErrors.LaunchUserMismatch, "The request belongs to another user.");
         }
 
-        // The item may have been hidden or deleted since the login initiation.
-        var link = await content.FindToolLinkAsync(user, itemId, ct);
-        if (link.IsFailure || link.Value!.ToolId != tool.Id)
+        Guid offeringId;
+        ToolLinkInfo? link = null;
+        if (kind == DeepLinkingHint)
         {
-            return Error.Forbidden(LtiErrors.LaunchForbidden, "The tool link isn't available to you.");
+            // The user may have lost the right to manage the section since the login initiation.
+            var section = await content.FindSectionForManagingAsync(user, target, ct);
+            if (section.IsFailure || hintTool != tool.Id || tool.DeepLinkingUrl is null)
+            {
+                return Error.Forbidden(LtiErrors.LaunchForbidden, "The section isn't available to you.");
+            }
+
+            offeringId = section.Value!.OfferingId;
+        }
+        else
+        {
+            // The item may have been hidden or deleted since the login initiation.
+            var found = await content.FindToolLinkAsync(user, target, ct);
+            if (found.IsFailure || found.Value!.ToolId != tool.Id)
+            {
+                return Error.Forbidden(LtiErrors.LaunchForbidden, "The tool link isn't available to you.");
+            }
+
+            link = found.Value;
+            offeringId = link.OfferingId;
         }
 
-        var offering = await directory.FindOfferingAsync(link.Value.OfferingId, ct);
+        var offering = await directory.FindOfferingAsync(offeringId, ct);
         if (offering.Error is { } missing)
         {
             return missing;
         }
 
-        var roles = await directory.CurrentRolesAsync(user, link.Value.OfferingId, ct);
+        var roles = await directory.CurrentRolesAsync(user, offeringId, ct);
         var person = tool.SendName || tool.SendEmail
             ? await FindPersonAsync(user, ct)
             : null;
         var now = time.GetUtcNow();
-        var payload = IdToken.Payload(
-            issuer, tool, subject, request.Nonce, now, TokenLifetime, link.Value, offering.Value!, roles,
-            tool.SendName ? person?.Name : null, tool.SendName ? person?.GivenName : null, tool.SendName ? person?.FamilyName : null, tool.SendEmail ? person?.Mail : null);
+        var (name, given, family, mail) = (tool.SendName ? person?.Name : null, tool.SendName ? person?.GivenName : null, tool.SendName ? person?.FamilyName : null, tool.SendEmail ? person?.Mail : null);
+        var payload = link is null
+            ? IdToken.DeepLinkingPayload(issuer, tool, subject, request.Nonce, now, TokenLifetime, new DeepLinkData(dataProtection, time).Protect(target, tool.Id, subject), offering.Value!, roles, name, given, family, mail)
+            : IdToken.Payload(issuer, tool, subject, request.Nonce, now, TokenLifetime, link, offering.Value!, roles, name, given, family, mail);
         var key = await keys.ActiveAsync(ct);
         var token = new JsonWebTokenHandler().CreateToken(payload, new SigningCredentials(key, SecurityAlgorithms.RsaSha256));
         return new LaunchForm(request.RedirectUri, token, request.State);
@@ -166,17 +215,22 @@ internal sealed class LaunchService(
         return new SharedPerson(user.FindFirst("name")?.Value, user.FindFirst("given_name")?.Value, user.FindFirst("family_name")?.Value, user.FindFirst("email")?.Value);
     }
 
-    /// <summary>The item and user of a valid, unexpired <c>lti_message_hint</c>; <see langword="null"/> if it isn't one of ours or has expired.</summary>
-    private (Guid ItemId, string Subject)? OpenHint(string hint)
+    /// <summary>
+    /// The kind (resource link or deep linking), target (item or section), tool and user of a valid, unexpired
+    /// <c>lti_message_hint</c>; <see langword="null"/> if it is not one of ours or has expired.
+    /// </summary>
+    private (char Kind, Guid Target, Guid ToolId, string Subject)? OpenHint(string hint)
     {
         try
         {
             var parts = HintProtector.Unprotect(hint).Split('.');
-            return parts.Length == 3
-                && Guid.TryParseExact(parts[0], "N", out var itemId)
-                && long.TryParse(parts[2], NumberStyles.None, CultureInfo.InvariantCulture, out var expires)
+            return parts.Length == 5
+                && parts[0] is [ResourceHint or DeepLinkingHint]
+                && Guid.TryParseExact(parts[1], "N", out var target)
+                && Guid.TryParseExact(parts[2], "N", out var toolId)
+                && long.TryParse(parts[4], NumberStyles.None, CultureInfo.InvariantCulture, out var expires)
                 && time.GetUtcNow().ToUnixTimeSeconds() < expires
-                    ? (itemId, parts[1])
+                    ? (parts[0][0], target, toolId, parts[3])
                     : null;
         }
         catch (CryptographicException)

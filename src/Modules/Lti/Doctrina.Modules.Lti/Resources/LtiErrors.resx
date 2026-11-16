@@ -27,6 +27,33 @@
   <data name="Lti.Tool.NotFound" xml:space="preserve">
     <value>Tool niet gevonden</value>
   </data>
+  <data name="Lti.Tool.DeepLinkingUrlRequired" xml:space="preserve">
+    <value>Deep linking URL ontbreekt</value>
+  </data>
+  <data name="Lti.Tool.PublicKeysUrlRequired" xml:space="preserve">
+    <value>Public keys URL ontbreekt</value>
+  </data>
+  <data name="Lti.DeepLinking.NotSupported" xml:space="preserve">
+    <value>Tool ondersteunt geen deep linking</value>
+  </data>
+  <data name="Lti.DeepLinking.InvalidToken" xml:space="preserve">
+    <value>Ongeldig antwoord van de tool</value>
+  </data>
+  <data name="Lti.DeepLinking.InvalidData" xml:space="preserve">
+    <value>Ongeldige of verlopen deep linking-gegevens</value>
+  </data>
+  <data name="Lti.DeepLinking.InvalidItem" xml:space="preserve">
+    <value>Ongeldig item in het antwoord van de tool</value>
+  </data>
+  <data name="Lti.DeepLinking.Replayed" xml:space="preserve">
+    <value>Antwoord van de tool is al verwerkt</value>
+  </data>
+  <data name="Lti.DeepLinking.SelectionNotFound" xml:space="preserve">
+    <value>Selectie niet gevonden of verlopen</value>
+  </data>
+  <data name="Lti.DeepLinking.UserMismatch" xml:space="preserve">
+    <value>Selectie hoort bij een andere gebruiker</value>
+  </data>
   <data name="Lti.Launch.UnknownClient" xml:space="preserve">
     <value>Onbekende client_id</value>
   </data>

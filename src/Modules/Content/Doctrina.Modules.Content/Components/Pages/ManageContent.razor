@@ -138,6 +138,23 @@
             }
           </DcForm>
         </DcCard>
+
+        @if (_tools.Any(t => t.SupportsDeepLinking))
+        {
+          <DcCard Title="Add from a tool">
+            <DcForm Model="_fromTool" OnValidSubmit="AddFromTool" FormName="add-from-tool" data-testid="add-from-tool">
+              <DcSelect TValue="string" Label="Section" Required @bind-Value="_fromTool.SectionId">@SectionOptions</DcSelect>
+              <DcSelect TValue="string" Label="Tool" Required @bind-Value="_fromTool.ToolId">
+                <option value="">Choose a tool…</option>
+                @foreach (var tool in _tools.Where(t => t.SupportsDeepLinking))
+                {
+                  <option value="@tool.Id.ToString("D")">@tool.Name</option>
+                }
+              </DcSelect>
+              <div class="dc-form__actions"><DcButton Type="submit" Icon="external-link">Choose in tool</DcButton></div>
+            </DcForm>
+          </DcCard>
+        }
       }
 
       <DcCard Title="Add a file">
@@ -198,6 +215,7 @@
     private readonly NewLinkForm _newLink = new();
     private readonly NewFileForm _newFile = new();
     private readonly NewToolLinkForm _newTool = new();
+    private readonly FromToolForm _fromTool = new();
     private IReadOnlyList<LtiToolSummary>? _tools; // null: the Lti module is off
     private readonly RenameForm _rename = new();
     private (Guid Id, string Title, bool IsSection) _delete;
@@ -330,6 +348,9 @@
         }
     }
 
+    /// <summary>Starts a deep linking request: the teacher chooses in the tool and confirms on a page of the Lti module (change add-lti-deep-linking).</summary>
+    private void AddFromTool() => Navigation.NavigateTo($"/lti/deep-linking/{_fromTool.SectionId}/{_fromTool.ToolId}", forceLoad: true);
+
     private async Task AddToolLinkAsync()
     {
         if (await RunAsync(async s => await s.AddToolLinkAsync(Guid.Parse(_newTool.SectionId!), _newTool.Title, Guid.Parse(_newTool.ToolId!), CancellationToken.None), $"Tool link “{_newTool.Title}” added as a draft."))
@@ -437,6 +458,15 @@
     {
         [Required(ErrorMessage = "Choose an offering.")]
         public string? SourceId { get; set; }
+    }
+
+    private sealed class FromToolForm
+    {
+        [Required(ErrorMessage = "Choose a section.")]
+        public string? SectionId { get; set; }
+
+        [Required(ErrorMessage = "Choose a tool.")]
+        public string? ToolId { get; set; }
     }
 
     private sealed class NewToolLinkForm : NewItemForm

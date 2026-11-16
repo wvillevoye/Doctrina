@@ -1,7 +1,7 @@
 namespace Doctrina.Modules.Lti.Contracts;
 
 /// <summary>A registered LTI tool, as other modules see it.</summary>
-public sealed record LtiToolSummary(Guid Id, string Name);
+public sealed record LtiToolSummary(Guid Id, string Name, bool SupportsDeepLinking = false);
 
 /// <summary>Public contract of the Lti module (design D1 of add-lti-platform).</summary>
 public interface ILtiToolCatalog

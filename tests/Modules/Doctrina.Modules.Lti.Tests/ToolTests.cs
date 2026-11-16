@@ -35,7 +35,7 @@ public sealed class BeheerdersRegistrerenLtiTools
         Assert.Equal("Doctrina", tool.Source);
         Assert.Equal("https://tool.example.org/launch", tool.RedirectUris);
         var catalog = (ILtiToolCatalog)db.Service();
-        Assert.Equal([new LtiToolSummary(tool.Id, "Quiz tool")], await catalog.ListAsync(Ct));
+        Assert.Equal([new LtiToolSummary(tool.Id, "Quiz tool", false)], await catalog.ListAsync(Ct));
         Assert.True(await catalog.ExistsAsync(tool.Id, Ct));
     }
 

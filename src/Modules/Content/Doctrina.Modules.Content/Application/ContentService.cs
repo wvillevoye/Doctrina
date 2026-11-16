@@ -191,6 +191,43 @@ internal sealed class ContentService(ContentDbContext db, IAcademicDirectory dir
     }
 
     /// <summary>
+    /// Adds draft tool links with the launch address the tool chose, at the end of the section, in one save
+    /// (design D5 of add-lti-deep-linking). Nothing is added if a title or address is invalid.
+    /// </summary>
+    public async Task<Result> AddToolLinksAsync(Guid sectionId, Guid toolId, IReadOnlyList<NewToolLink> links, CancellationToken ct)
+    {
+        if (tools is null || !await tools.ExistsAsync(toolId, ct))
+        {
+            return ContentErrors.Invalid(ContentErrors.UnknownTool, "tool", "Choose a tool.");
+        }
+
+        var section = await ActiveSectionAsync(sectionId, ct);
+        if (section is null)
+        {
+            return SectionNotFound(sectionId);
+        }
+
+        foreach (var link in links)
+        {
+            if ((CheckTitle(ContentErrors.ItemInvalid, link.Title) ?? CheckUrl(link.LaunchUrl)) is { } invalid)
+            {
+                return invalid;
+            }
+        }
+
+        var position = 0;
+        foreach (var link in links)
+        {
+            var item = NewItem(section, ContentItemKind.ToolLink, link.Title.Trim());
+            (item.ToolId, item.Url) = (toolId, link.LaunchUrl.Trim());
+            position = item.Position = Math.Max(item.Position, position + 1); // NewItem reads the last position from the database, not from the unsaved items
+        }
+
+        await db.SaveChangesAsync(ct);
+        return Result.Success();
+    }
+
+    /// <summary>
     /// Adds a file: first the bytes to disk, then the item; a failed save removes the file again (design D5). The
     /// title is the file name unless one is given.
     /// </summary>
@@ -517,8 +554,27 @@ internal sealed class ContentAccess(IAcademicDirectory directory)
 }
 
 /// <summary>The public contract of the Content module (design D1 of add-lti-platform).</summary>
-internal sealed class ContentDirectory(ContentDbContext db, ContentAccess access) : IContentDirectory
+internal sealed class ContentDirectory(ContentDbContext db, ContentAccess access, ContentService content) : IContentDirectory
 {
+    public async Task<Result<SectionInfo>> FindSectionForManagingAsync(ClaimsPrincipal user, Guid sectionId, CancellationToken cancellationToken)
+    {
+        var section = await db.Sections.AsNoTracking().FirstOrDefaultAsync(s => s.Id == sectionId && s.Status == EntityStatus.Active, cancellationToken);
+        if (section is null)
+        {
+            return Error.NotFound(ContentErrors.SectionNotFound, $"Section {sectionId:D} was not found.");
+        }
+
+        return await access.CanManageAsync(user, section.OfferingId, cancellationToken)
+            ? new SectionInfo(section.Id, section.OfferingId)
+            : Error.Forbidden(IContentDirectory.AccessForbiddenCode, "You may not manage the content of this course offering.");
+    }
+
+    public async Task<Result> AddToolLinksAsync(ClaimsPrincipal user, Guid sectionId, Guid toolId, IReadOnlyList<NewToolLink> links, CancellationToken cancellationToken)
+    {
+        var section = await FindSectionForManagingAsync(user, sectionId, cancellationToken);
+        return section.Error is { } denied ? denied : await content.AddToolLinksAsync(sectionId, toolId, links, cancellationToken);
+    }
+
     public async Task<Result<ToolLinkInfo>> FindToolLinkAsync(ClaimsPrincipal user, Guid itemId, CancellationToken cancellationToken)
     {
         var item = await db.Items.AsNoTracking().Include(i => i.Section)
@@ -535,7 +591,7 @@ internal sealed class ContentDirectory(ContentDbContext db, ContentAccess access
         }
 
         return item.IsVisible || await access.CanManageAsync(user, offeringId, cancellationToken)
-            ? new ToolLinkInfo(item.Id, offeringId, item.Title, toolId)
+            ? new ToolLinkInfo(item.Id, offeringId, item.Title, toolId, item.Url)
             : Error.NotFound(IContentDirectory.ItemNotFoundCode, $"Item {itemId:D} was not found.");
     }
 }

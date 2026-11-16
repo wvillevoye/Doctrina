@@ -23,6 +23,64 @@ namespace Doctrina.Modules.Lti.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Doctrina.Modules.Lti.Domain.DeepLinkNonce", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("Expires")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Nonce")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("ToolId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Expires");
+
+                    b.HasIndex("ToolId", "Nonce")
+                        .IsUnique();
+
+                    b.ToTable("DeepLinkNonces", "lti");
+                });
+
+            modelBuilder.Entity("Doctrina.Modules.Lti.Domain.DeepLinkSelection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("Expires")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ItemsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("SectionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("ToolId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Expires");
+
+                    b.ToTable("DeepLinkSelections", "lti");
+                });
+
             modelBuilder.Entity("Doctrina.Modules.Lti.Domain.LtiKey", b =>
                 {
                     b.Property<Guid>("Id")
@@ -95,6 +153,10 @@ namespace Doctrina.Modules.Lti.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("DateLastModified")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<string>("DeepLinkingUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
+
                     b.Property<string>("DeploymentId")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -119,6 +181,10 @@ namespace Doctrina.Modules.Lti.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PublicKeysUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
 
                     b.Property<string>("RedirectUris")
                         .IsRequired()

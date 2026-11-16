@@ -46,6 +46,15 @@ internal sealed class ToolSession : IDisposable
         return this;
     }
 
+    /// <summary>Starts a deep linking request for the section and keeps the login initiation parameters (change add-lti-deep-linking).</summary>
+    public async Task<ToolSession> StartDeepLinkingAsync(CancellationToken ct)
+    {
+        using var start = await _browser.GetAsync(new Uri($"/lti/deep-linking/{_scenario.Section.Id:D}/{_scenario.Tool.Id:D}", UriKind.Relative), ct);
+        Assert.Equal(HttpStatusCode.Redirect, start.StatusCode);
+        Login = QueryHelpers.ParseQuery(start.Headers.Location!.Query).ToDictionary(p => p.Key, p => p.Value.ToString());
+        return this;
+    }
+
     /// <summary>The authentication request a well-behaved tool sends back; <paramref name="tweak"/> may change or remove (null) parameters.</summary>
     public Task<HttpResponseMessage> AuthorizeAsync(CancellationToken ct, Action<Dictionary<string, string?>>? tweak = null)
     {

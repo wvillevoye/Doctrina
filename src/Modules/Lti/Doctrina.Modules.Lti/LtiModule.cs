@@ -37,6 +37,10 @@ public sealed class LtiModule : IModule
         services.AddScoped<KeyService>();
         services.AddScoped<ToolService>();
         services.AddScoped<LaunchService>();
+        services.AddScoped<DeepLinkingService>();
+        services.AddMemoryCache();
+        services.AddHttpClient<JwksClient>(client => client.Timeout = TimeSpan.FromSeconds(5))
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
         services.AddScoped<Contracts.ILtiToolCatalog>(sp => sp.GetRequiredService<ToolService>());
         services.AddErrorTitles("Doctrina.Modules.Lti.Resources.LtiErrors", typeof(LtiModule).Assembly);
         services.AddHealthChecks().AddCheck<LtiHealthCheck>("lti", tags: [ModuleHealthChecks.TagFor(Name)]);

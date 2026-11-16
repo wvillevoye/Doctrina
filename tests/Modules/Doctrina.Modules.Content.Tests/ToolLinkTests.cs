@@ -112,7 +112,7 @@ public sealed class DeContentDirectoryGeeftToolLinksAanAndereModules
             await service.SetItemPublishedAsync(item.Id, true, Ct);
         }
 
-        return (db, directory, new ContentDirectory(db.CreateContext(), new ContentAccess(directory)), item, student, lecturer);
+        return (db, directory, new ContentDirectory(db.CreateContext(), new ContentAccess(directory), service), item, student, lecturer);
     }
 
     [Fact]

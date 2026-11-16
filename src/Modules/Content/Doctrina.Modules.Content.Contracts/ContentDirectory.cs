@@ -4,7 +4,13 @@ using Doctrina.Core.Results;
 namespace Doctrina.Modules.Content.Contracts;
 
 /// <summary>A tool link in a section: which offering it is in and which tool it starts.</summary>
-public sealed record ToolLinkInfo(Guid ItemId, Guid OfferingId, string Title, Guid ToolId);
+public sealed record ToolLinkInfo(Guid ItemId, Guid OfferingId, string Title, Guid ToolId, string? LaunchUrl = null);
+
+/// <summary>A section the user may manage (design D2 of add-lti-deep-linking).</summary>
+public sealed record SectionInfo(Guid SectionId, Guid OfferingId);
+
+/// <summary>A tool link to add: its title and the launch address the tool chose.</summary>
+public sealed record NewToolLink(string Title, string LaunchUrl);
 
 /// <summary>Public contract of the Content module for other modules (design D1 of add-lti-platform).</summary>
 public interface IContentDirectory
@@ -21,4 +27,16 @@ public interface IContentDirectory
     /// or an item that isn't a tool link. Users who manage the content also see drafts.
     /// </summary>
     Task<Result<ToolLinkInfo>> FindToolLinkAsync(ClaimsPrincipal user, Guid itemId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// The section, if <paramref name="user"/> may manage the content of its offering: <c>Content.Section.NotFound</c> for an
+    /// unknown or deleted section, <c>Content.Access.Forbidden</c> without manage rights.
+    /// </summary>
+    Task<Result<SectionInfo>> FindSectionForManagingAsync(ClaimsPrincipal user, Guid sectionId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Adds the links as draft tool links of <paramref name="toolId"/> at the end of the section, with the same checks as
+    /// <see cref="FindSectionForManagingAsync"/>; nothing is added if one of them is invalid.
+    /// </summary>
+    Task<Result> AddToolLinksAsync(ClaimsPrincipal user, Guid sectionId, Guid toolId, IReadOnlyList<NewToolLink> links, CancellationToken cancellationToken);
 }

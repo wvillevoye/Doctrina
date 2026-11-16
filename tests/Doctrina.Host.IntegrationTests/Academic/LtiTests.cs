@@ -41,11 +41,12 @@ public sealed class DoctrinaPubliceertEigenOndertekeningssleutelsOpHetWeb(Doctri
 
 internal static class LtiTools
 {
-    public static async Task<Doctrina.Modules.Lti.Domain.LtiTool> ToolAsync(this AcademicHost academic, string name = "Quiz tool", bool sendName = false, bool sendEmail = false)
+    public static async Task<Doctrina.Modules.Lti.Domain.LtiTool> ToolAsync(this AcademicHost academic, string name = "Quiz tool", bool sendName = false, bool sendEmail = false, bool deepLinking = false)
     {
         using var scope = academic.Host.Services.CreateScope();
         var result = await scope.ServiceProvider.GetRequiredService<ToolService>().CreateAsync(
-            new ToolInput(name, "https://tool.example.org/login", "https://tool.example.org/launch", "https://tool.example.org/launch", sendName, sendEmail), CancellationToken.None);
+            new ToolInput(name, "https://tool.example.org/login", "https://tool.example.org/launch", "https://tool.example.org/launch", sendName, sendEmail,
+                deepLinking ? "https://tool.example.org/deep-linking" : null, deepLinking ? "https://tool.example.org/jwks" : null), CancellationToken.None);
         Assert.True(result.IsSuccess, result.Error?.ToString());
         return result.Value!;
     }

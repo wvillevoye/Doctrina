@@ -11,10 +11,13 @@ public sealed class LtiDbContext(DbContextOptions<LtiDbContext> options) : Modul
     public const int NameMaxLength = 200;
     public const int IdMaxLength = 100;
     public const int UrlMaxLength = 2048;
+    public const int NonceMaxLength = 200;
     public const int RedirectUrisMaxLength = 8000;
 
     public DbSet<LtiTool> Tools => Set<LtiTool>();
     public DbSet<LtiKey> Keys => Set<LtiKey>();
+    public DbSet<DeepLinkSelection> Selections => Set<DeepLinkSelection>();
+    public DbSet<DeepLinkNonce> Nonces => Set<DeepLinkNonce>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -27,6 +30,8 @@ public sealed class LtiDbContext(DbContextOptions<LtiDbContext> options) : Modul
             b.Property(t => t.DeploymentId).HasMaxLength(IdMaxLength);
             b.Property(t => t.LoginUrl).HasMaxLength(UrlMaxLength);
             b.Property(t => t.LaunchUrl).HasMaxLength(UrlMaxLength);
+            b.Property(t => t.DeepLinkingUrl).HasMaxLength(UrlMaxLength);
+            b.Property(t => t.PublicKeysUrl).HasMaxLength(UrlMaxLength);
             b.Property(t => t.RedirectUris).HasMaxLength(RedirectUrisMaxLength);
             b.HasIndex(t => t.ClientId).IsUnique();
         });
@@ -37,6 +42,19 @@ public sealed class LtiDbContext(DbContextOptions<LtiDbContext> options) : Modul
             b.HasIndex(k => k.Kid).IsUnique();
             // At most one active key, also with simultaneous first requests (design D7).
             b.HasIndex(k => k.Active).IsUnique().HasFilter("[Active] = 1");
+        });
+        modelBuilder.Entity<DeepLinkSelection>(b =>
+        {
+            b.ToTable("DeepLinkSelections");
+            b.Property(x => x.Subject).HasMaxLength(IdMaxLength);
+            b.HasIndex(x => x.Expires);
+        });
+        modelBuilder.Entity<DeepLinkNonce>(b =>
+        {
+            b.ToTable("DeepLinkNonces");
+            b.Property(x => x.Nonce).HasMaxLength(NonceMaxLength);
+            b.HasIndex(x => new { x.ToolId, x.Nonce }).IsUnique();
+            b.HasIndex(x => x.Expires);
         });
         base.OnModelCreating(modelBuilder);
     }

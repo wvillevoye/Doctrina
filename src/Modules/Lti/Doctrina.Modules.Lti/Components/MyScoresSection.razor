@@ -1,0 +1,40 @@
+@using Doctrina.Modules.Academic.Contracts
+@using Doctrina.Modules.Lti.Application
+@using Microsoft.Extensions.DependencyInjection
+@inject IServiceScopeFactory Scopes
+
+@* Section "Scores" on the page of a course offering (spec lti-grade-services, design D7 of add-lti-ags): the signed-in
+   person's own scores from tools, nobody else's. Shown only if there are any. The sections of a page render at the same
+   time, so this one works in its own scope: the DbContexts of the other sections must not be shared. *@
+@if (_scores.Count > 0)
+{
+  <DcCard Title="Scores" data-testid="my-scores">
+    <ul>
+      @foreach (var s in _scores)
+      {
+        <li data-testid="my-score">@(s.LinkTitle is null ? null : $"{s.LinkTitle} – ")@s.Label: @s.Given.ToString("0.##") / @s.Maximum.ToString("0.##")</li>
+      }
+    </ul>
+  </DcCard>
+}
+
+@code {
+    private IReadOnlyList<MyScore> _scores = [];
+
+    [Parameter]
+    public Guid OfferingId { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var ct = CancellationToken.None;
+        var user = AuthenticationState is null ? new ClaimsPrincipal() : (await AuthenticationState).User;
+        using var scope = Scopes.CreateScope();
+        var directory = scope.ServiceProvider.GetRequiredService<IAcademicDirectory>();
+        _scores = await directory.CurrentPersonIdAsync(user, ct) is { } person
+            ? await scope.ServiceProvider.GetRequiredService<GradeService>().MyScoresAsync(OfferingId, person, ct)
+            : [];
+    }
+}

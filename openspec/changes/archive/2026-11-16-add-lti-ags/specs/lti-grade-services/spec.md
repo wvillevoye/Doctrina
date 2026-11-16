@@ -6,12 +6,10 @@ sturen. Doctrina bewaart ze en toont ze aan de student en de docent bij de tool 
 ## ADDED Requirements
 
 ### Requirement: Line items van een tool beheren
-Met de scope `https://purl.imsglobal.org/spec/lti-ags/scope/lineitem` SHALL een tool onder
-`/lti/ags/{context}/lineitems` line items kunnen aanmaken, opvragen, wijzigen en verwijderen; met `…/lineitem.readonly`
-alleen lezen. `{context}` is het id van de uitvoering. Een line item heeft `label`, `scoreMaximum` (groter dan 0),
-optioneel `resourceId`, `tag`, `resourceLinkId` en data, en als `id` zijn URL. De lijst SHALL filteren op
-`resource_link_id`, `resource_id` en `tag` en pagineren met `limit` en `Link rel="next"`. Een tool SHALL alleen haar
-eigen line items zien, in uitvoeringen waarin ze een tool link heeft.
+Met `…/scope/lineitem` SHALL een tool onder `/lti/ags/{context}/lineitems` (`{context}` = id van de uitvoering) line
+items kunnen aanmaken, opvragen, wijzigen en verwijderen; met `…/lineitem.readonly` alleen lezen. Een line item heeft
+`label` en `scoreMaximum` (groter dan 0). De lijst SHALL filteren (`resource_link_id`, `resource_id`, `tag`) en
+pagineren (`limit`, `Link`). Een tool SHALL alleen haar eigen line items zien, in uitvoeringen met een tool link van haar.
 
 #### Scenario: Line item aanmaken
 - **GIVEN** een tool met cijferservices en een tool link in de uitvoering "Cell biology"

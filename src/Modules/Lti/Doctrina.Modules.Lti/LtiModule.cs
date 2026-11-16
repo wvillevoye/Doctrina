@@ -1,6 +1,7 @@
 using Doctrina.Core.Modules;
 using Doctrina.Infrastructure.Api;
 using Doctrina.Infrastructure.Persistence;
+using Doctrina.Modules.Academic.Contracts;
 using Doctrina.Modules.Lti.Application;
 using Doctrina.Modules.Lti.Infrastructure;
 using Microsoft.AspNetCore.Builder;
@@ -38,6 +39,10 @@ public sealed class LtiModule : IModule
         services.AddScoped<ToolService>();
         services.AddScoped<LaunchService>();
         services.AddScoped<DeepLinkingService>();
+        services.AddScoped<ServiceAuthService>();
+        services.AddScoped<ServiceTokenValidator>();
+        services.AddScoped<GradeService>();
+        services.AddOfferingPageSection<Components.MyScoresSection>(order: 30);
         services.AddMemoryCache();
         services.AddHttpClient<JwksClient>(client => client.Timeout = TimeSpan.FromSeconds(5))
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });

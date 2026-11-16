@@ -44,6 +44,22 @@ internal static class LtiEndpoints
         app.MapGet("deep-linking/back/{section:guid}", async (Guid section, HttpContext http, IContentDirectory content, CancellationToken ct) =>
             (await content.FindSectionForManagingAsync(http.User, section, ct)).ToHttpResult(info => Results.Redirect($"/courses/{info.OfferingId:D}/content")));
 
+        AgsEndpoints.Map(app);
+
+        // Token request of a tool (change add-lti-ags): OAuth 2.0 client credentials with a signed client_assertion. The tool has
+        // no session, so anonymous and without antiforgery; the signature is the protection. Errors follow RFC 6749 section 5.2.
+        app.MapPost("token", async Task<IResult> (HttpContext http, ServiceAuthService auth, IOptions<LtiOptions> options, CancellationToken ct) =>
+        {
+            http.Response.Headers.CacheControl = "no-store";
+            var form = http.Request.HasFormContentType ? await http.Request.ReadFormAsync(ct) : null;
+            var result = await auth.IssueAsync(
+                new TokenRequest(form?["grant_type"].ToString(), form?["client_assertion_type"].ToString(), form?["client_assertion"].ToString(), form?["scope"].ToString()),
+                Issuer(options.Value, http.Request), ct);
+            return result.IsSuccess
+                ? Results.Json(new { access_token = result.Value!.AccessToken, token_type = "Bearer", expires_in = result.Value.ExpiresIn, scope = result.Value.Scope })
+                : Results.Json(new { error = OAuthError(result.Error!.Code) }, statusCode: StatusCodes.Status400BadRequest);
+        }).AllowAnonymous().DisableAntiforgery();
+
         // Authentication request of the tool: answered with a page that posts the signed id_token to the tool.
         app.MapGet("authorize", async Task<IResult> (HttpContext http, LaunchService launch, IOptions<LtiOptions> options, CancellationToken ct) =>
         {
@@ -55,6 +71,14 @@ internal static class LtiEndpoints
             return result.ToHttpResult(form => Results.Content(AutoPost(form), "text/html"));
         });
     }
+
+    private static string OAuthError(string code) => code switch
+    {
+        LtiErrors.ServiceInvalidClient => "invalid_client",
+        LtiErrors.ServiceInvalidScope => "invalid_scope",
+        LtiErrors.ServiceUnsupportedGrant => "unsupported_grant_type",
+        _ => "invalid_request",
+    };
 
     private static string AutoPost(LaunchForm form)
     {

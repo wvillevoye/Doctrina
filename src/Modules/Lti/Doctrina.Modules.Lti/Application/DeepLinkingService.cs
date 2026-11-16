@@ -77,7 +77,7 @@ internal sealed class DeepLinkingService(
         }
 
         var now = time.GetUtcNow();
-        if (!await UseNonceAsync(tool.Id, token.GetPayloadValue<string>("nonce"), token.ValidTo, now, ct))
+        if (!await NonceStore.UseAsync(db, NoncePurpose.DeepLinking, tool.Id, token.GetPayloadValue<string>("nonce"), token.ValidTo, now, ct))
         {
             return Refused(LtiErrors.DeepLinkReplayed, "The response of the tool was already processed.");
         }
@@ -115,52 +115,8 @@ internal sealed class DeepLinkingService(
     public async Task DiscardSelectionAsync(Guid id, CancellationToken ct) =>
         await db.Selections.Where(s => s.Id == id).ExecuteDeleteAsync(ct);
 
-    /// <summary>
-    /// Checks signature (RS256 against the JWKS of the tool), issuer (the client id), audience (our issuer) and lifetime.
-    /// An unknown <c>kid</c> triggers one refresh of the keys.
-    /// </summary>
-    private async Task<JsonWebToken?> ValidateAsync(JsonWebTokenHandler handler, string jwt, string? kid, LtiTool tool, string issuer, CancellationToken ct)
-    {
-        var keys = await jwks.GetAsync(tool, refresh: false, ct);
-        if (keys is not null && (kid is null || !keys.Keys.Any(k => k.Kid == kid)))
-        {
-            keys = await jwks.GetAsync(tool, refresh: true, ct) ?? keys;
-        }
-
-        if (keys is null)
-        {
-            return null;
-        }
-
-        var result = await handler.ValidateTokenAsync(jwt, new TokenValidationParameters
-        {
-            ValidIssuer = tool.ClientId,
-            ValidAudience = issuer,
-            IssuerSigningKeys = keys.GetSigningKeys(),
-            ValidAlgorithms = [SecurityAlgorithms.RsaSha256],
-            RequireExpirationTime = true,
-            LifetimeValidator = (notBefore, expires, _, _) =>
-                expires is { } end && time.GetUtcNow().UtcDateTime <= end.AddSeconds(60) && (notBefore is not { } start || time.GetUtcNow().UtcDateTime >= start.AddSeconds(-60)),
-        });
-        return result.IsValid ? (JsonWebToken)result.SecurityToken : null;
-    }
-
-    /// <summary>Records the nonce; <see langword="false"/> if the tool used it before (the unique index decides).</summary>
-    private async Task<bool> UseNonceAsync(Guid toolId, string nonce, DateTime validTo, DateTimeOffset now, CancellationToken ct)
-    {
-        await db.Nonces.Where(n => n.Expires < now).ExecuteDeleteAsync(ct);
-        db.Add(new DeepLinkNonce { ToolId = toolId, Nonce = nonce, Expires = new DateTimeOffset(validTo, TimeSpan.Zero).AddMinutes(5) });
-        try
-        {
-            await db.SaveChangesAsync(ct);
-            return true;
-        }
-        catch (DbUpdateException)
-        {
-            db.ChangeTracker.Clear();
-            return false;
-        }
-    }
+    private Task<JsonWebToken?> ValidateAsync(JsonWebTokenHandler handler, string jwt, string? kid, LtiTool tool, string issuer, CancellationToken ct) =>
+        ToolJwt.ValidateAsync(jwks, time, handler, jwt, kid, tool, issuer, ct);
 
     /// <summary>The <c>ltiResourceLink</c> items of the response, with the address on the origin of the launch URL (design D3, step 6).</summary>
     private static Result<List<DeepLinkItem>> Items(JsonWebToken token, LtiTool tool)

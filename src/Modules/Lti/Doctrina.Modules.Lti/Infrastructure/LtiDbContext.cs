@@ -12,12 +12,15 @@ public sealed class LtiDbContext(DbContextOptions<LtiDbContext> options) : Modul
     public const int IdMaxLength = 100;
     public const int UrlMaxLength = 2048;
     public const int NonceMaxLength = 200;
+    public const int CommentMaxLength = 1000;
     public const int RedirectUrisMaxLength = 8000;
 
     public DbSet<LtiTool> Tools => Set<LtiTool>();
     public DbSet<LtiKey> Keys => Set<LtiKey>();
     public DbSet<DeepLinkSelection> Selections => Set<DeepLinkSelection>();
-    public DbSet<DeepLinkNonce> Nonces => Set<DeepLinkNonce>();
+    public DbSet<JwtNonce> Nonces => Set<JwtNonce>();
+    public DbSet<LineItem> LineItems => Set<LineItem>();
+    public DbSet<Score> Scores => Set<Score>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -49,12 +52,33 @@ public sealed class LtiDbContext(DbContextOptions<LtiDbContext> options) : Modul
             b.Property(x => x.Subject).HasMaxLength(IdMaxLength);
             b.HasIndex(x => x.Expires);
         });
-        modelBuilder.Entity<DeepLinkNonce>(b =>
+        modelBuilder.Entity<JwtNonce>(b =>
         {
-            b.ToTable("DeepLinkNonces");
+            b.ToTable("JwtNonces");
+            b.Property(x => x.Purpose).HasMaxLength(20);
             b.Property(x => x.Nonce).HasMaxLength(NonceMaxLength);
-            b.HasIndex(x => new { x.ToolId, x.Nonce }).IsUnique();
+            b.HasIndex(x => new { x.ToolId, x.Purpose, x.Nonce }).IsUnique();
             b.HasIndex(x => x.Expires);
+        });
+        modelBuilder.Entity<LineItem>(b =>
+        {
+            b.ToTable("LineItems");
+            b.Property(x => x.Label).HasMaxLength(NameMaxLength);
+            b.Property(x => x.ScoreMaximum).HasPrecision(18, 4);
+            b.Property(x => x.ResourceId).HasMaxLength(IdMaxLength);
+            b.Property(x => x.Tag).HasMaxLength(IdMaxLength);
+            b.HasIndex(x => new { x.ToolId, x.OfferingId });
+        });
+        modelBuilder.Entity<Score>(b =>
+        {
+            b.ToTable("Scores");
+            b.Property(x => x.ScoreGiven).HasPrecision(18, 4);
+            b.Property(x => x.ScoreMaximum).HasPrecision(18, 4);
+            b.Property(x => x.Comment).HasMaxLength(CommentMaxLength);
+            b.Property(x => x.ActivityProgress).HasConversion<string>().HasMaxLength(20);
+            b.Property(x => x.GradingProgress).HasConversion<string>().HasMaxLength(20);
+            b.HasOne<LineItem>().WithMany().HasForeignKey(x => x.LineItemId).OnDelete(DeleteBehavior.Cascade);
+            b.HasIndex(x => new { x.LineItemId, x.PersonId }).IsUnique();
         });
         base.OnModelCreating(modelBuilder);
     }

@@ -290,6 +290,7 @@ Modules/secties binnen een offering, pagina's, bestanden, links, LTI-items; publ
 - OIDC third-party login initiation → `id_token` (JWT, RS256) → launch.
 - Eigen **JWKS-endpoint**, sleutelrotatie.
 - **Deep Linking 2.0** (docent kiest content in tool), **AGS** (cijfers terug naar LMS), **NRPS** (deelnemerslijst).
+- **AGS** (change `add-lti-ags`): per tool aan te zetten; tokenendpoint met `client_assertion` (JWT, RS256) → kortlevend access token met scopes `lineitem`, `lineitem.readonly`, `result.readonly`, `score`; line items, scores en results onder `/lti/ags/{offering}/lineitems`; een tool ziet alleen eigen line items in offerings waar hij een tool link heeft. Studenten zien hun eigen scores, docenten een overzicht per tool link.
 - Claims per tool configureerbaar (AVG).
 - Implementatie met `Microsoft.IdentityModel.Tokens` (geen goede officiële .NET-platformlibrary).
 - Later: Doctrina ook als LTI-**tool**.

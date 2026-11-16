@@ -108,6 +108,23 @@ internal sealed class KeyService(LtiDbContext db, IDataProtectionProvider dataPr
         });
     }
 
+    /// <summary>The public keys that may have signed a token: the active key and keys retired less than the retention time ago.</summary>
+    public async Task<IReadOnlyList<SecurityKey>> ValidationKeysAsync(CancellationToken ct)
+    {
+        var limit = time.GetUtcNow().AddDays(-Math.Max(0, options.Value.Keys.RetireAfterDays));
+        var rows = await db.Keys.AsNoTracking().Where(k => k.Status == EntityStatus.Active && (k.Active || k.RetiredAt > limit)).ToListAsync(ct);
+        return [.. rows.Select(k =>
+        {
+            using var pub = JsonDocument.Parse(k.PublicKey);
+            var parameters = new RSAParameters
+            {
+                Modulus = WebEncoders.Base64UrlDecode(pub.RootElement.GetProperty("n").GetString()!),
+                Exponent = WebEncoders.Base64UrlDecode(pub.RootElement.GetProperty("e").GetString()!),
+            };
+            return (SecurityKey)new RsaSecurityKey(parameters) { KeyId = k.Kid };
+        })];
+    }
+
     /// <summary>The Kid of the active key, for the admin page.</summary>
     public async Task<string?> ActiveKidAsync(CancellationToken ct) =>
         (await db.Keys.AsNoTracking().FirstOrDefaultAsync(k => k.Active && k.Status == EntityStatus.Active, ct))?.Kid;

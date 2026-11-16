@@ -28,6 +28,13 @@ internal sealed class RecordingContentDirectory : IContentDirectory
     public Task<Result<SectionInfo>> FindSectionForManagingAsync(ClaimsPrincipal user, Guid sectionId, CancellationToken cancellationToken) =>
         Task.FromResult(Result<SectionInfo>.Success(new SectionInfo(sectionId, new FakeDirectory().OfferingId)));
 
+    public bool CanManage { get; set; } = true;
+
+    public Task<bool> CanManageAsync(ClaimsPrincipal user, Guid offeringId, CancellationToken cancellationToken) => Task.FromResult(CanManage);
+
+    public Task<IReadOnlyList<ToolLinkInfo>> ToolLinksOfToolAsync(Guid offeringId, Guid toolId, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<ToolLinkInfo>>([]);
+
     public Task<Result> AddToolLinksAsync(ClaimsPrincipal user, Guid sectionId, Guid toolId, IReadOnlyList<NewToolLink> links, CancellationToken cancellationToken)
     {
         Added.Add((sectionId, toolId, links));

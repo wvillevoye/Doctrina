@@ -1,0 +1,76 @@
+@page "/lti/ags/results/{ItemId:guid}"
+@attribute [Authorize]
+@using Doctrina.Modules.Content.Contracts
+@using Doctrina.Modules.Lti.Application
+@inject IContentDirectory Content
+@inject GradeService Grades
+@inject NavigationManager Navigation
+
+@* The teacher's overview of the scores of one tool link (spec lti-grade-services, design D7 of add-lti-ags): per line
+   item every student of the offering with name and score. Only for those who may manage the content. *@
+@if (_link is not null)
+{
+  <DcPageHeader Title="@($"Scores: {_link.Title}")" DocumentTitle="Scores">
+    <Description>The scores the tool reported for this link.</Description>
+  </DcPageHeader>
+
+  <div class="dc-stack">
+    @if (_overview.Count == 0)
+    {
+      <DcCard><p data-testid="no-line-items">The tool has not reported any scores yet.</p></DcCard>
+    }
+    @foreach (var item in _overview)
+    {
+      <DcCard data-testid="line-item">
+        <DcTable TItem="StudentScore" Caption="@item.Label" Columns="Columns(item.Maximum)" Items="item.Students" EmptyText="No students." data-testid="student-scores" />
+      </DcCard>
+    }
+    <DcButton Variant="DcButtonVariant.Ghost" Href="@($"/courses/{_link.OfferingId:D}/content")">Back to content</DcButton>
+  </div>
+}
+
+@code {
+    private ToolLinkInfo? _link;
+    private IReadOnlyList<LineItemOverview> _overview = [];
+
+    private static DcTableColumn<StudentScore>[] Columns(decimal max) =>
+    [
+        new("Student", s => s.Name),
+        new("Score", s => s.Given is { } g ? $"{g:0.##} / {max:0.##}" : "–"),
+    ];
+
+    [Parameter]
+    public Guid ItemId { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var ct = CancellationToken.None;
+        var user = AuthenticationState is null ? new ClaimsPrincipal() : (await AuthenticationState).User;
+        var found = await Content.FindToolLinkAsync(user, ItemId, ct);
+        if (found.IsFailure)
+        {
+            if (found.Error!.Code == IContentDirectory.AccessForbiddenCode)
+            {
+                Navigation.NavigateTo("/access-denied");
+            }
+            else
+            {
+                Navigation.NotFound();
+            }
+
+            return;
+        }
+
+        if (!await Content.CanManageAsync(user, found.Value!.OfferingId, ct))
+        {
+            Navigation.NavigateTo("/access-denied");
+            return;
+        }
+
+        _overview = await Grades.OverviewAsync(found.Value, ct);
+        _link = found.Value;
+    }
+}

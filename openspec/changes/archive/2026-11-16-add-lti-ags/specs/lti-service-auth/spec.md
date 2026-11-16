@@ -6,11 +6,10 @@ kortlevend access token voor de LTI-services waarvoor ze is ingesteld. Dit is de
 ## ADDED Requirements
 
 ### Requirement: Een tool haalt een access token op met een client_assertion
-`POST /lti/token` SHALL een `application/x-www-form-urlencoded`-verzoek met `grant_type=client_credentials`,
-`client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer`, een `client_assertion` en een `scope`
-(spatiegescheiden) beantwoorden met `access_token`, `token_type` "Bearer", `expires_in` (hoogstens 3600) en `scope`. De
-`client_assertion` SHALL een RS256-JWT zijn van een actieve tool (`iss` = `sub` = `client_id`, `aud` = het
-tokenendpoint, `exp` hoogstens 5 minuten na `iat`, uniek `jti`), gecontroleerd met de JWKS van de tool.
+`POST /lti/token` SHALL een formulierverzoek met `grant_type=client_credentials`, een `client_assertion` en een `scope`
+beantwoorden met `access_token`, `token_type` "Bearer", `expires_in` (hoogstens 3600) en `scope`. De assertion SHALL een
+RS256-JWT zijn van een actieve tool (`iss` = `sub` = `client_id`, `aud` = het tokenendpoint, `exp` hoogstens 5 minuten
+na `iat`, uniek `jti`), gecontroleerd met de JWKS van de tool.
 
 #### Scenario: Geldige assertion geeft een token
 - **GIVEN** een tool met cijferservices en een `Public keys URL`

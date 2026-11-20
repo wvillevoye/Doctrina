@@ -1,7 +1,7 @@
 namespace Doctrina.Infrastructure.Modules;
 
 /// <summary>
-/// De moduleconfiguratie is ongeldig; bevat álle gevonden fouten tegelijk, zodat je ze in één keer kunt oplossen
+/// The module configuration is invalid; contains all errors found at once, so you can fix them in one go
 /// (design D2).
 /// </summary>
 public sealed class ModuleConfigurationException : Exception
@@ -20,7 +20,7 @@ public sealed class ModuleConfigurationException : Exception
     public ModuleConfigurationException(string message, Exception innerException)
         : base(message, innerException) => Errors = [message];
 
-    /// <summary>De afzonderlijke fouten.</summary>
+    /// <summary>The individual errors.</summary>
     public IReadOnlyList<string> Errors { get; }
 
     private static string FormatMessage(IReadOnlyList<string> errors) =>

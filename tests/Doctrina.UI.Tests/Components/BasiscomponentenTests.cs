@@ -3,7 +3,7 @@ using Doctrina.UI.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-// Taak 4.2 van add-design-system: opbouw, rollen en titel van DcCard, DcPageHeader, DcAlert en DcBadge (design D7).
+// Task 4.2 of add-design-system: structure, roles and title of DcCard, DcPageHeader, DcAlert and DcBadge (design D7).
 namespace Doctrina.UI.Tests.Components;
 
 public sealed class DcPageHeaderTests : IDisposable

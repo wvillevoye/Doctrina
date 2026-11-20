@@ -3,21 +3,21 @@ using Doctrina.Core.Events;
 namespace Doctrina.Core.Entities;
 
 /// <summary>
-/// Basistype voor entiteiten. <see cref="Id"/> is een <c>uniqueidentifier</c> die EF Core bij het invoegen
-/// sequentieel genereert (design D4) — vul hem nooit zelf met <see cref="Guid.NewGuid"/> of
+/// Base type for entities. <see cref="Id"/> is a <c>uniqueidentifier</c> that EF Core generates sequentially on insert
+/// (design D4) — never fill it yourself with <see cref="Guid.NewGuid"/> or
 /// <see cref="Guid.CreateVersion7()"/>.
 /// </summary>
 public abstract class Entity
 {
     private readonly List<IDomainEvent> _domainEvents = [];
 
-    /// <summary>Interne sleutel; <see cref="Guid.Empty"/> tot de entiteit is opgeslagen.</summary>
+    /// <summary>Internal key; <see cref="Guid.Empty"/> until the entity has been saved.</summary>
     public Guid Id { get; private set; }
 
-    /// <summary>Events die bij de huidige wijziging horen en nog niet zijn afgeleverd (geen kolom in de database).</summary>
+    /// <summary>Events belonging to the current change that have not been delivered yet (not a database column).</summary>
     public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents;
 
-    /// <summary>Haalt de openstaande events op en leegt de lijst; alleen voor de opslaglaag.</summary>
+    /// <summary>Returns the pending events and clears the list; for the persistence layer only.</summary>
     public IReadOnlyList<IDomainEvent> DequeueDomainEvents()
     {
         var events = _domainEvents.ToList();
@@ -26,10 +26,10 @@ public abstract class Entity
     }
 
     /// <summary>
-    /// Laat een event ontstaan dat pas wordt afgeleverd nadat de wijziging is opgeslagen; mislukt het opslaan, dan wordt
-    /// het niet afgeleverd (design D6).
+    /// Raises an event that is only delivered after the change has been saved; if saving fails, it is not delivered
+    /// (design D6).
     /// </summary>
-    /// <param name="domainEvent">Het event.</param>
+    /// <param name="domainEvent">The event.</param>
     protected void RaiseEvent(IDomainEvent domainEvent)
     {
         ArgumentNullException.ThrowIfNull(domainEvent);
@@ -37,42 +37,42 @@ public abstract class Entity
     }
 }
 
-/// <summary>Status van een uitwisselbaar record (OneRoster/OOAPI: <c>active</c> / <c>tobedeleted</c>).</summary>
+/// <summary>Status of an exchangeable record (OneRoster/OOAPI: <c>active</c> / <c>tobedeleted</c>).</summary>
 public enum EntityStatus
 {
-    /// <summary>Het record is actief.</summary>
+    /// <summary>The record is active.</summary>
     Active,
 
-    /// <summary>Het bronsysteem heeft het record verwijderd; het wordt nog uitgewisseld voor delta-sync.</summary>
+    /// <summary>The source system has deleted the record; it is still exchanged for delta sync.</summary>
     ToBeDeleted,
 }
 
 /// <summary>
-/// Basistype voor entiteiten die met andere systemen worden uitgewisseld (proposal §4.1, design D4).
-/// <see cref="ExternalId"/> is uniek per <see cref="Source"/>; <see cref="DateLastModified"/> wordt automatisch
-/// bijgehouden.
+/// Base type for entities that are exchanged with other systems (proposal §4.1, design D4).
+/// <see cref="ExternalId"/> is unique per <see cref="Source"/>; <see cref="DateLastModified"/> is maintained
+/// automatically.
 /// </summary>
 public abstract class ExchangeableEntity : Entity
 {
-    /// <summary>Maximale lengte van <see cref="ExternalId"/> (<c>nvarchar(255)</c>).</summary>
+    /// <summary>Maximum length of <see cref="ExternalId"/> (<c>nvarchar(255)</c>).</summary>
     public const int ExternalIdMaxLength = 255;
 
-    /// <summary>Maximale lengte van <see cref="Source"/> (<c>nvarchar(64)</c>).</summary>
+    /// <summary>Maximum length of <see cref="Source"/> (<c>nvarchar(64)</c>).</summary>
     public const int SourceMaxLength = 64;
 
-    /// <summary>Stabiele sleutel uit het bronsysteem; basis voor koppelen en upserts.</summary>
+    /// <summary>Stable key from the source system; the basis for linking and upserts.</summary>
     public required string ExternalId { get; set; }
 
-    /// <summary>Systeem dat eigenaar is van dit record, bv. <c>SIS</c> of <c>Manual</c>.</summary>
+    /// <summary>System that owns this record, e.g. <c>SIS</c> or <c>Manual</c>.</summary>
     public required string Source { get; set; }
 
-    /// <summary>Status van het record.</summary>
+    /// <summary>Status of the record.</summary>
     public EntityStatus Status { get; set; } = EntityStatus.Active;
 
-    /// <summary>Moment van de laatste wijziging (UTC); wordt bij opslaan automatisch gezet.</summary>
+    /// <summary>Moment of the last change (UTC); set automatically on save.</summary>
     public DateTimeOffset DateLastModified { get; private set; }
 
-    /// <summary>Zet <see cref="DateLastModified"/>; alleen voor de opslag-interceptor.</summary>
-    /// <param name="utcNow">Huidig moment in UTC.</param>
+    /// <summary>Sets <see cref="DateLastModified"/>; for the save interceptor only.</summary>
+    /// <param name="utcNow">The current moment in UTC.</param>
     public void MarkModified(DateTimeOffset utcNow) => DateLastModified = utcNow.ToUniversalTime();
 }

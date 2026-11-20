@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-// Spec app-shell (add-design-system, taak 6.2): de layout en pagina's van de host, opgebouwd uit Doctrina.UI.
+// Spec app-shell (add-design-system, task 6.2): the layout and pages of the host, built from Doctrina.UI.
 // Klasse = requirement, methode = scenario.
 namespace Doctrina.Host.IntegrationTests.HostUi;
 
@@ -20,7 +20,7 @@ internal static class Html
 
     public static IDocument Parse(string html) => Parser.ParseDocument(html);
 
-    /// <summary>Elementen die met Tab bereikbaar zijn, in documentvolgorde.</summary>
+    /// <summary>Elements reachable with Tab, in document order.</summary>
     public static IEnumerable<IElement> Focusable(this IDocument document) =>
         document.Body!.QuerySelectorAll("a[href], button, input:not([type=hidden]), select, textarea, [tabindex]")
             .Where(e => e.GetAttribute("tabindex") != "-1" && !e.HasAttribute("disabled"));
@@ -42,8 +42,9 @@ public sealed class ElkePaginaHeeftDezelfdeToegankelijkeOpbouw(DoctrinaHostFacto
         Assert.Equal("Skip to content", first.TextContent);
         Assert.Equal("#content", first.GetAttribute("href"));
         Assert.Single(page.QuerySelectorAll("body > header"));
-        Assert.NotNull(page.QuerySelector("header nav[aria-label='Main menu']"));
-        Assert.Equal("content", page.QuerySelector("body > main")?.Id);
+        Assert.NotNull(page.QuerySelector("aside nav[aria-label='Main menu']"));
+        Assert.Null(page.QuerySelector("header nav"));
+        Assert.Equal("content", page.QuerySelector("main")?.Id);
         Assert.Single(page.QuerySelectorAll("main h1"));
         Assert.Equal("Home · Doctrina", page.Title);
     }
@@ -127,8 +128,8 @@ public sealed class HetHoofdmenuWerktOpElkSchermformaat(DoctrinaHostFactory fact
         var page = Html.Parse(await browser.SignInAndGetAsync("/profile", factory.Idp, StubUser.Student, Ct));
         var current = page.QuerySelectorAll("nav[aria-label='Main menu'] a[aria-current=page]");
 
-        Assert.Equal("My profile", Assert.Single(current).TextContent);
-        Assert.Equal("Menu", page.QuerySelector("nav[aria-label='Main menu'] button[popovertarget]")?.TextContent.Trim());
+        Assert.Equal("My profile", Assert.Single(current).TextContent.Trim());
+        Assert.Equal("Menu", page.QuerySelector("header button[popovertarget]")?.TextContent.Trim());
     }
 }
 

@@ -28,7 +28,7 @@ public sealed class LtiModule : IModule
 
     public IReadOnlyCollection<NavItem> Navigation =>
     [
-        new("LTI tools", "/lti/tools", LtiPermissions.Manage, Order: 95),
+        new("LTI tools", "/lti/tools", LtiPermissions.Manage, Order: 95, Icon: "plug"),
     ];
 
     public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
@@ -43,7 +43,7 @@ public sealed class LtiModule : IModule
         services.AddScoped<ServiceTokenValidator>();
         services.AddScoped<GradeService>();
         services.AddScoped<MembershipService>();
-        services.AddOfferingPageSection<Components.MyScoresSection>(order: 30);
+        services.AddOfferingPageSection<Components.MyScoresSection>(order: 30, title: "Scores", icon: "circle-check");
         services.AddMemoryCache();
         services.AddHttpClient<JwksClient>(client => client.Timeout = TimeSpan.FromSeconds(5))
             .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });

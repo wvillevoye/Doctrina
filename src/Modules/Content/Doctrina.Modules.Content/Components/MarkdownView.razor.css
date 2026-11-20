@@ -1,0 +1,65 @@
+/* Colours of {name}text{/name} in Markdown (design D2-D3 of add-markdown-toolbar): a fixed set, only --dc-md-* tokens. */
+[data-testid="markdown"] ::deep .md-color--accent {
+  color: var(--dc-md-accent);
+}
+
+[data-testid="markdown"] ::deep .md-color--success {
+  color: var(--dc-md-success);
+}
+
+[data-testid="markdown"] ::deep .md-color--warning {
+  color: var(--dc-md-warning);
+}
+
+[data-testid="markdown"] ::deep .md-color--danger {
+  color: var(--dc-md-danger);
+}
+
+[data-testid="markdown"] ::deep .md-color--muted {
+  color: var(--dc-md-muted);
+}
+
+[data-testid="markdown"] ::deep .md-color--blue {
+  color: var(--dc-md-blue);
+}
+
+[data-testid="markdown"] ::deep .md-color--lightblue {
+  color: var(--dc-md-lightblue);
+}
+
+[data-testid="markdown"] ::deep .md-color--purple {
+  color: var(--dc-md-purple);
+}
+
+[data-testid="markdown"] ::deep .md-color--teal {
+  color: var(--dc-md-teal);
+}
+
+[data-testid="markdown"] ::deep .md-color--pink {
+  color: var(--dc-md-pink);
+}
+
+[data-testid="markdown"] ::deep .md-color--brown {
+  color: var(--dc-md-brown);
+}
+
+[data-testid="markdown"] ::deep .md-color--olive {
+  color: var(--dc-md-olive);
+}
+
+/* Alignment of {left}/{center}/{right}: a block span, so it takes the full width of its paragraph. */
+[data-testid="markdown"] ::deep .md-align {
+  display: block;
+}
+
+[data-testid="markdown"] ::deep .md-align--left {
+  text-align: left;
+}
+
+[data-testid="markdown"] ::deep .md-align--center {
+  text-align: center;
+}
+
+[data-testid="markdown"] ::deep .md-align--right {
+  text-align: right;
+}

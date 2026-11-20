@@ -15,10 +15,10 @@ using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Secrets uit het niet-gecommitte appsettings.Secrets.json, direct na appsettings.{omgeving}.json (design D13).
+// Secrets from the uncommitted appsettings.Secrets.json, right after appsettings.{environment}.json (design D13).
 builder.Configuration.AddDoctrinaSecrets(builder.Environment);
 
-// Modulesysteem: de catalogus wordt bij Build() gevalideerd; alleen ingeschakelde modules registreren services.
+// Module system: the catalog is validated at Build(); only enabled modules register services.
 builder.Host.UseDoctrinaModules();
 builder.Services.AddKnownModules();
 
@@ -30,7 +30,7 @@ builder.Services.AddDoctrinaAuthorization();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, SessionRevalidatingAuthenticationStateProvider>();
 builder.Services.AddSingleton(TimeProvider.System);
-// API-conventies (design D9): ProblemDetails met vertaalde titels, onverwachte fouten, OpenAPI, health checks.
+// API conventions (design D9): ProblemDetails with translated titles, unexpected errors, OpenAPI, health checks.
 builder.Services.AddDoctrinaApi();
 builder.Services.AddDoctrinaRateLimits();
 builder.Services.AddDoctrinaEvents();
@@ -38,7 +38,7 @@ builder.Services.AddHostedService<ModuleMigrationService>();
 // Background jobs (change add-bulk-import): the server starts after the migrations, so the database exists.
 builder.Services.AddDoctrinaJobs(builder.Configuration);
 builder.Services.AddDoctrinaJobServer();
-// Vormgeving: white-label-instellingen, bij het opstarten gecontroleerd (design D4).
+// Design: white-label settings, checked at start-up (design D4).
 builder.Services.AddOptions<ThemeSettings>().BindConfiguration(ThemeSettings.Section).ValidateOnStart();
 builder.Services.AddSingleton<Microsoft.Extensions.Options.IValidateOptions<ThemeSettings>, ThemeSettingsValidator>();
 
@@ -50,7 +50,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// /api → ProblemDetails (UnexpectedExceptionHandler); pagina's → /error (zonder details).
+// /api → ProblemDetails (UnexpectedExceptionHandler); pages → /error (without details).
 app.UseExceptionHandler(new ExceptionHandlerOptions { ExceptionHandlingPath = "/error", CreateScopeForErrors = true });
 app.UseHttpsRedirection();
 app.UseDoctrinaRequestLocalization();
@@ -77,5 +77,5 @@ app.MapRazorComponents<App>()
 
 await app.RunAsync();
 
-/// <summary>Toegangspunt; publiek voor <c>WebApplicationFactory</c> in integratietests.</summary>
+/// <summary>Entry point; public for <c>WebApplicationFactory</c> in integration tests.</summary>
 public partial class Program;

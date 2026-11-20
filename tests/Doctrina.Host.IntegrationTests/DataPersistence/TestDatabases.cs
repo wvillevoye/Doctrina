@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Doctrina.Host.IntegrationTests.DataPersistence;
 
-/// <summary>Testdatabases op LocalDB, met de basis-connection string uit <c>src/Doctrina.Host/appsettings.Test.json</c> (design D13).</summary>
+/// <summary>Test databases on LocalDB, with the base connection string from <c>src/Doctrina.Host/appsettings.Test.json</c> (design D13).</summary>
 internal static class TestDatabases
 {
     private static readonly Lazy<string> BaseConnectionString = new(() =>
@@ -23,8 +23,8 @@ internal static class TestDatabases
         LocalDbTestDatabase.CreateAsync(BaseConnectionString.Value, cancellationToken);
 
     /// <summary>
-    /// Host in omgeving <paramref name="environment"/> op <paramref name="database"/>. In Development en Production
-    /// gelden de testinstellingen van de nagebootste provider, zodat lokale bestanden (Keycloak, secrets) niet meetellen.
+    /// Host in environment <paramref name="environment"/> on <paramref name="database"/>. In Development and Production
+    /// the test settings of the stubbed provider apply, so local files (Keycloak, secrets) don't count.
     /// </summary>
     public static WebApplicationFactory<Program> InEnvironment(
         this WebApplicationFactory<Program> host,
@@ -37,9 +37,9 @@ internal static class TestDatabases
     }
 
     /// <summary>
-    /// Host in omgeving <paramref name="environment"/> zonder eigen testdatabase. Veiligheidshalve wijst de connection
-    /// string naar de (niet-bestaande) testdatabase uit <c>appsettings.Test.json</c> en staat migreren uit, zodat een test
-    /// in Development nooit de echte lokale database <c>Doctrina</c> aanraakt.
+    /// Host in environment <paramref name="environment"/> without its own test database. To be safe, the connection
+    /// string points to the (non-existent) test database from <c>appsettings.Test.json</c> and migrating is off, so a test
+    /// in Development never touches the real local database <c>Doctrina</c>.
     /// </summary>
     public static WebApplicationFactory<Program> InEnvironment(
         this WebApplicationFactory<Program> host,
@@ -72,7 +72,7 @@ internal static class TestDatabases
 
         foreach (var (key, setting) in settings)
         {
-            values[key] = setting; // laatste wint
+            values[key] = setting; // last one wins
         }
 
         return host.WithWebHostBuilder(builder =>

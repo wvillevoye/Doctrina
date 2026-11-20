@@ -10,13 +10,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-// Tests volgen spec openspec/specs/domain-events/spec.md:
+// Tests follow spec openspec/specs/domain-events/spec.md:
 // klasse = requirement, methode = scenario.
 namespace Doctrina.Host.IntegrationTests.DomainEvents;
 
 internal static class EventHosts
 {
-    /// <summary>Module A publiceert; module B handelt <see cref="SampleCreated"/> af.</summary>
+    /// <summary>Module A publishes; module B handles <see cref="SampleCreated"/>.</summary>
     public static TestModule ModuleB(params Action<IServiceCollection>[] handlers) =>
         new("B", "A") { Services = services => Array.ForEach(handlers, h => h(services)) };
 
@@ -26,7 +26,7 @@ internal static class EventHosts
     public static void Failing(IServiceCollection services) =>
         services.AddEventHandler<SampleCreated, FailingSampleCreatedHandler>();
 
-    /// <summary>Host met een <see cref="EventRecorder"/> en opgevangen logs.</summary>
+    /// <summary>Host with an <see cref="EventRecorder"/> and captured logs.</summary>
     public static WebApplicationFactory<Program> WithRecorder(
         this WebApplicationFactory<Program> host,
         EventRecorder recorder,
@@ -40,7 +40,7 @@ internal static class EventHosts
             }
         }));
 
-    /// <summary>Publiceert namens module A via de eventbus in een eigen scope.</summary>
+    /// <summary>Publishes on behalf of module A via the event bus in its own scope.</summary>
     public static async Task PublishAsync<TEvent>(this WebApplicationFactory<Program> host, TEvent domainEvent, CancellationToken cancellationToken)
         where TEvent : IDomainEvent
     {
@@ -111,7 +111,7 @@ public sealed class EenFalendeHandlerRaaktDePublicerendeModuleEnAndereHandlersNi
         var error = Assert.Single(logs.Logs, l => l.Level == LogLevel.Error && l.Category == typeof(InProcessEventBus).FullName);
         Assert.Contains(nameof(FailingSampleCreatedHandler), error.Message, StringComparison.Ordinal);
         Assert.Contains(nameof(SampleCreated), error.Message, StringComparison.Ordinal);
-        Assert.DoesNotContain("i6123456", error.Message, StringComparison.Ordinal); // geen inhoud van het event in de log
+        Assert.DoesNotContain("i6123456", error.Message, StringComparison.Ordinal); // no content of the event in the log
         Assert.IsType<InvalidOperationException>(error.Exception);
     }
 }
@@ -128,7 +128,7 @@ public sealed class EventsWordenPasNaHetOpslaanGepubliceerd(DoctrinaHostFactory 
             .InEnvironment(DoctrinaConfigurationExtensions.TestEnvironment, Database, (ModuleMigrationService.MigrateOnStartupKey, "true"));
         host.CreateClient().Dispose();
 
-        // Eerst een geslaagde opslag: het event komt pas ná SaveChanges.
+        // First a successful save: the event only comes after SaveChanges.
         await using (var scope = host.Services.CreateAsyncScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<SampleDbContext>();
@@ -139,7 +139,7 @@ public sealed class EventsWordenPasNaHetOpslaanGepubliceerd(DoctrinaHostFactory 
 
         Assert.Single(recorder.Received);
 
-        // Dan een opslag die mislukt (dubbele ExternalId binnen dezelfde bron): geen nieuw event.
+        // Then a save that fails (duplicate ExternalId within the same source): no new event.
         await using (var scope = host.Services.CreateAsyncScope())
         {
             var context = scope.ServiceProvider.GetRequiredService<SampleDbContext>();
@@ -149,7 +149,7 @@ public sealed class EventsWordenPasNaHetOpslaanGepubliceerd(DoctrinaHostFactory 
             var failure = await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync(Ct));
 
             Assert.True(failure.IsUniqueConstraintViolation());
-            Assert.Single(duplicate.DomainEvents); // blijft staan voor een volgende poging
+            Assert.Single(duplicate.DomainEvents); // stays for a next attempt
         }
 
         Assert.Single(recorder.Received);

@@ -1,6 +1,6 @@
-// Doctrina.AuthCheck — minimale app om de dev-stack (Keycloak -> Entra) te testen.
-// Gebruikt dezelfde configuratievorm als Doctrina.Host straks: "Authentication:Oidc" (gebruikers) en "Authentication:Api" (systemen).
-// Werkt ongewijzigd tegen Keycloak, Entra ID direct of SURFconext — alleen appsettings verschillen.
+// Doctrina.AuthCheck — minimal app to test the dev stack (Keycloak -> Entra).
+// Uses the same configuration shape as Doctrina.Host will: "Authentication:Oidc" (users) and "Authentication:Api" (systems).
+// Works unchanged against Keycloak, Entra ID directly or SURFconext — only appsettings differ.
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -42,7 +42,7 @@ builder.Services
         o.TokenValidationParameters.RoleClaimType = "roles";   // Keycloak (via mapper) en Entra gebruiken beide "roles"
         o.Events.OnRedirectToIdentityProvider = ctx =>
         {
-            // Keycloak-specifiek: direct doorsturen naar Entra, Keycloak-inlogscherm overslaan
+            // Keycloak-specific: forward straight to Entra, skip the Keycloak login screen
             var hint = oidc["IdpHint"];
             if (!string.IsNullOrEmpty(hint)) ctx.ProtocolMessage.SetParameter("kc_idp_hint", hint);
             return Task.CompletedTask;
@@ -89,7 +89,7 @@ app.MapGet("/logout", () => Results.SignOut(new AuthenticationProperties { Redir
 app.MapGet("/admin", (HttpContext ctx) => $"Welkom beheerder {ctx.User.Identity?.Name}").RequireAuthorization("Admin");
 app.MapGet("/token", async (HttpContext ctx) => await ctx.GetTokenAsync("access_token") ?? "").RequireAuthorization();
 
-// API (/api/v1) — Bearer-token van een systeem (client credentials) of namens een gebruiker
+// API (/api/v1) — Bearer token of a system (client credentials) or on behalf of a user
 app.MapGet("/api/v1/whoami", (HttpContext ctx) => new
 {
     sub = ctx.User.FindFirst("sub")?.Value,

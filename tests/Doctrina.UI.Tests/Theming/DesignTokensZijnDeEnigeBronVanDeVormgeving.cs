@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-// Spec theming, requirement "Design tokens zijn de enige bron van de vormgeving"; taken 2.2 en 2.3, design D2.
+// Spec theming, requirement "Design tokens zijn de enige bron van de vormgeving"; tasks 2.2 and 2.3, design D2.
 namespace Doctrina.UI.Tests.Theming;
 
 public sealed partial class DesignTokensZijnDeEnigeBronVanDeVormgeving
@@ -8,8 +8,8 @@ public sealed partial class DesignTokensZijnDeEnigeBronVanDeVormgeving
     [Fact]
     public void GewijzigdAccenttokenWerktDoorInKnoppen()
     {
-        // Een stylesheet die alleen --dc-accent wijzigt, verandert de knop als die zijn achtergrond (via Bootstrap's
-        // --bs-btn-bg) uit dat token haalt en geen letterlijke kleur heeft die het overschrijft.
+        // A stylesheet that only changes --dc-accent changes the button if it takes its background (via Bootstrap's
+        // --bs-btn-bg) from that token and has no literal colour that overrides it.
         var button = CompiledCss.Declarations(".btn");
         var primary = CompiledCss.Declarations(".btn-primary");
 
@@ -24,7 +24,7 @@ public sealed partial class DesignTokensZijnDeEnigeBronVanDeVormgeving
     [Fact]
     public void BootstrapVolgtDeTokensOokInGenesteThemas()
     {
-        // Brug op :root én op [data-dc-theme]: een container met een ander thema (stijlgids) krijgt de juiste waarden.
+        // Bridge on :root and on [data-dc-theme]: a container with a different theme (style guide) gets the right values.
         var bridge = CompiledCss.Declarations("[data-dc-theme]");
 
         Assert.Equal("var(--dc-bg)", bridge["--bs-body-bg"]);
@@ -35,7 +35,7 @@ public sealed partial class DesignTokensZijnDeEnigeBronVanDeVormgeving
     [Fact]
     public void GeenJavaScriptAfhankelijkeBootstrapOnderdelen()
     {
-        // Taak 1.2 / design D1, D9, D10: native <dialog> en Popover API in plaats van Bootstrap-JS.
+        // Task 1.2 / design D1, D9, D10: native <dialog> and Popover API instead of Bootstrap JS.
         foreach (var selector in new[] { ".modal", ".dropdown-menu", ".collapse:not(.show)", ".offcanvas", ".tooltip", ".popover" })
         {
             Assert.Empty(CompiledCss.Declarations(selector));
@@ -65,7 +65,7 @@ public sealed partial class DesignTokensZijnDeEnigeBronVanDeVormgeving
         Assert.Empty(violations);
     }
 
-    /// <summary>#rgb, #rrggbb(aa), rgb(a)(…), hsl(a)(…); <c>#{…}</c> (Sass-interpolatie) telt niet.</summary>
+    /// <summary>#rgb, #rrggbb(aa), rgb(a)(…), hsl(a)(…); <c>#{…}</c> (Sass interpolation) doesn't count.</summary>
     [GeneratedRegex(@"#[0-9a-fA-F]{3,8}\b|\brgba?\(|\bhsla?\(")]
     private static partial Regex LiteralColor();
 }

@@ -18,7 +18,7 @@
   gap: var(--dc-space-4);
 }
 
-/* De container krijgt via data-dc-theme zijn eigen tokens; deze kleuren volgen dus het thema van het voorbeeld. */
+/* The container gets its own tokens via data-dc-theme; these colours therefore follow the theme of the example. */
 .dc-styleguide__sample {
   min-width: 0;
   padding: var(--dc-space-5);

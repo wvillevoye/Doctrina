@@ -1,0 +1,39 @@
+.content-items {
+  margin: 0 0 var(--dc-space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.content-items li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--dc-space-4);
+  min-height: 3rem;
+  padding: var(--dc-space-2) 0;
+  border-bottom: var(--dc-border-width) solid var(--dc-border);
+}
+
+.content-items li:last-child {
+  border-bottom: 0;
+}
+
+.content-items__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--dc-space-2) var(--dc-space-3);
+}
+
+.content-items__meta {
+  color: var(--dc-text-muted);
+  font-size: var(--dc-font-size-sm);
+}
+
+/* The Launch button sits at the end of the row, compact so it does not outweigh the title. */
+.content-items li ::deep .dc-button {
+  flex: none;
+  min-height: 0;
+  padding: var(--dc-space-1) var(--dc-space-3);
+  font-size: var(--dc-font-size-sm);
+}

@@ -23,9 +23,17 @@ internal static class ContentErrors
     public const string UnknownTool = "Content.Item.UnknownTool";
     public const string CopyInvalidSource = "Content.Copy.InvalidSource";
     public const string CopyTargetNotEmpty = "Content.Copy.TargetNotEmpty";
+    public const string IntroductionInvalid = "Content.Introduction.Invalid";
+    public const string TemplateInvalid = "Content.Template.Invalid";
+    public const string TemplateNotFound = "Content.Template.NotFound";
+    public const string TemplateDefaultProtected = "Content.Template.DefaultProtected";
     public const string AccessForbidden = IContentDirectory.AccessForbiddenCode;
 
-    public static readonly string[] All = [SectionInvalid, SectionNotFound, ItemInvalid, ItemNotFound, FileTooLarge, FileMissing, UnknownTool, CopyInvalidSource, CopyTargetNotEmpty, AccessForbidden];
+    public static readonly string[] All =
+    [
+        SectionInvalid, SectionNotFound, ItemInvalid, ItemNotFound, FileTooLarge, FileMissing, UnknownTool, CopyInvalidSource, CopyTargetNotEmpty,
+        IntroductionInvalid, TemplateInvalid, TemplateNotFound, TemplateDefaultProtected, AccessForbidden,
+    ];
 
     public static Error Invalid(string code, string field, string message) =>
         Error.Validation(code, message, new Dictionary<string, string[]> { [field] = [message] });

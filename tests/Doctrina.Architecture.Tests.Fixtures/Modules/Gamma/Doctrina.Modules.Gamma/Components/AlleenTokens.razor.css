@@ -1,4 +1,4 @@
-/* Toegestaan: kleuren uit tokens. */
+/* Allowed: colours from tokens. */
 .melding {
   color: var(--dc-accent);
   border-color: var(--dc-border);

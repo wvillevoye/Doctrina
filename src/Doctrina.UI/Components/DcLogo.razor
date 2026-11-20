@@ -1,0 +1,14 @@
+@* The Doctrina mark: a "D" that is also an open book (page edge inside). Colors come from --dc-* tokens, so a
+   white-label theme recolors it. Decorative: the name is always shown next to it, so it is hidden from assistive tech. *@
+<svg class="dc-logo" viewBox="0 0 48 48" width="@Size" height="@Size" aria-hidden="true" focusable="false">
+  <rect width="48" height="48" rx="11" class="dc-logo__tile" />
+  <path d="M14 11h10.5a13 13 0 0 1 0 26H14z" class="dc-logo__d" />
+  <path d="M20 17h4.5a7 7 0 0 1 0 14H20z" class="dc-logo__page" />
+  <path d="M14 41h20" class="dc-logo__rule" />
+</svg>
+
+@code {
+    /// <summary>Width and height in pixels.</summary>
+    [Parameter]
+    public int Size { get; set; } = 40;
+}

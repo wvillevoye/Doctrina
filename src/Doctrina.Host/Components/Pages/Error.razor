@@ -1,8 +1,8 @@
 @page "/error"
 @using System.Diagnostics
 
-@* Foutpagina voor pagina's (niet voor /api: die krijgen ProblemDetails). Toont geen exceptiondetails, alleen een
-   trace-id waarmee beheer de fout in de logs terugvindt. *@
+@* Error page for pages (not for /api: those get ProblemDetails). Shows no exception details, only a
+   trace id with which an administrator finds the error in the logs. *@
 <DcPageHeader Title="Something went wrong" />
 
 <DcAlert Severity="DcSeverity.Danger">

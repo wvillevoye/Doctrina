@@ -2,7 +2,7 @@ using System.Net;
 using Doctrina.TestKit.Authentication;
 using Doctrina.UI.Theming;
 
-// Spec theming, requirement "Licht en donker thema naar keuze van de gebruiker"; taak 3.1, design D3.
+// Spec theming, requirement "Licht en donker thema naar keuze van de gebruiker"; task 3.1, design D3.
 namespace Doctrina.Host.IntegrationTests.Theming;
 
 public sealed class LichtEnDonkerThemaNaarKeuzeVanDeGebruiker(DoctrinaHostFactory factory) : IClassFixture<DoctrinaHostFactory>
@@ -36,7 +36,7 @@ public sealed class LichtEnDonkerThemaNaarKeuzeVanDeGebruiker(DoctrinaHostFactor
         Assert.Contains("secure", cookie, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("httponly", cookie, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("samesite=lax", cookie, StringComparison.OrdinalIgnoreCase);
-        // Eerste weergave meteen donker: het attribuut staat al in de HTML van de server, zonder script.
+        // First render immediately dark: the attribute is already in the server's HTML, without script.
         Assert.Contains("<html lang=\"en\" data-dc-theme=\"dark\" data-bs-theme=\"dark\">", html, StringComparison.Ordinal);
     }
 
@@ -59,7 +59,7 @@ public sealed class LichtEnDonkerThemaNaarKeuzeVanDeGebruiker(DoctrinaHostFactor
         using var browser = factory.CreateBrowser();
         var page = await browser.GetStringAsync(new Uri("/?tab=2", UriKind.Relative), Ct);
 
-        // Gewoon HTML-formulier met submitknoppen; de huidige pagina gaat mee als terugkeeradres.
+        // Plain HTML form with submit buttons; the current page goes along as the return address.
         Assert.Contains("<form method=\"post\" action=\"/theme\"", page, StringComparison.Ordinal);
         Assert.Contains("name=\"returnUrl\" value=\"/?tab=2\"", page, StringComparison.Ordinal);
         Assert.Contains("type=\"submit\" name=\"theme\" value=\"light\"", page, StringComparison.Ordinal);
@@ -95,7 +95,7 @@ public sealed class LichtEnDonkerThemaNaarKeuzeVanDeGebruiker(DoctrinaHostFactor
         Assert.False(response.Headers.Contains("Set-Cookie") && response.Headers.GetValues("Set-Cookie").Any(c => c.StartsWith(DcThemes.CookieName, StringComparison.Ordinal)));
     }
 
-    /// <summary>Verstuurt het themaformulier zoals een browser zonder scripts dat doet.</summary>
+    /// <summary>Submits the theme form the way a browser without scripts does.</summary>
     private static async Task<HttpResponseMessage> ChooseAsync(HttpClient browser, string theme, string returnUrl = "/", string? page = null)
     {
         page ??= await browser.GetStringAsync(new Uri("/", UriKind.Relative), Ct);
@@ -110,7 +110,7 @@ public sealed class LichtEnDonkerThemaNaarKeuzeVanDeGebruiker(DoctrinaHostFactor
     }
 }
 
-// Spec app-shell, requirement "De themakeuze staat in de header" (add-design-system, taak 6.1/6.2): de hele keten.
+// Spec app-shell, requirement "De themakeuze staat in de header" (add-design-system, task 6.1/6.2): the whole chain.
 public sealed class DeThemakeuzeStaatInDeHeader(DoctrinaHostFactory factory) : IClassFixture<DoctrinaHostFactory>
 {
     private static CancellationToken Ct => Xunit.TestContext.Current.CancellationToken;

@@ -1,9 +1,9 @@
-// Spec theming, requirement "Kleurcontrast voldoet aan WCAG 2.2 AA in beide thema's"; taak 2.1, design D12.
+// Spec theming, requirement "Kleurcontrast voldoet aan WCAG 2.2 AA in beide thema's"; task 2.1, design D12.
 namespace Doctrina.UI.Tests.Theming;
 
 public sealed class KleurcontrastVoldoetAanWcag22AaInBeideThemas
 {
-    /// <summary>Tekst op achtergrond: gewone tekst, links, tekst op gekleurde vlakken en meldingen (≥ 4,5:1).</summary>
+    /// <summary>Text on background: ordinary text, links, text on coloured surfaces and alerts (≥ 4.5:1).</summary>
     public static TheoryData<string, string> TekstParen => new()
     {
         { "--dc-text", "--dc-bg" },
@@ -25,13 +25,25 @@ public sealed class KleurcontrastVoldoetAanWcag22AaInBeideThemas
         { "--dc-warning-contrast", "--dc-warning" },
         { "--dc-danger-contrast", "--dc-danger" },
         { "--dc-info-contrast", "--dc-info" },
+        { "--dc-md-accent", "--dc-surface" },
+        { "--dc-md-blue", "--dc-surface" },
+        { "--dc-md-lightblue", "--dc-surface" },
+        { "--dc-md-success", "--dc-surface" },
+        { "--dc-md-warning", "--dc-surface" },
+        { "--dc-md-danger", "--dc-surface" },
+        { "--dc-md-muted", "--dc-surface" },
+        { "--dc-md-purple", "--dc-surface" },
+        { "--dc-md-teal", "--dc-surface" },
+        { "--dc-md-pink", "--dc-surface" },
+        { "--dc-md-brown", "--dc-surface" },
+        { "--dc-md-olive", "--dc-surface" },
         { "--dc-text", "--dc-success-subtle" },
         { "--dc-text", "--dc-warning-subtle" },
         { "--dc-text", "--dc-danger-subtle" },
         { "--dc-text", "--dc-info-subtle" },
     };
 
-    /// <summary>Focus-indicator en grenzen van bedieningselementen op elke achtergrond (≥ 3:1).</summary>
+    /// <summary>Focus indicator and borders of controls on every background (≥ 3:1).</summary>
     public static TheoryData<string, string> NietTekstParen => new()
     {
         { "--dc-focus", "--dc-bg" },

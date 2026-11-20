@@ -1,5 +1,5 @@
-// Formuliervelden (DcTextField, DcSelect, DcCheckbox). Globaal i.p.v. .razor.css, omdat de velden dezelfde opmaak
-// delen en de invoerelementen door InputBase worden gerenderd (buiten de CSS-scope van het veld).
+// Form fields (DcTextField, DcSelect, DcCheckbox). Global instead of .razor.css, because the fields share the same styling
+// and the input elements are rendered by InputBase (outside the field's CSS scope).
 
 .dc-field {
   margin-bottom: var(--dc-space-4);

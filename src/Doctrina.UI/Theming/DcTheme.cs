@@ -1,28 +1,28 @@
 namespace Doctrina.UI.Theming;
 
-/// <summary>Themakeuze van de gebruiker (spec theming, design D3).</summary>
+/// <summary>Theme choice of the user (spec theming, design D3).</summary>
 public enum DcTheme
 {
-    /// <summary>Volgt de systeeminstelling van het apparaat (standaard).</summary>
+    /// <summary>Follows the device's system setting (default).</summary>
     System,
 
-    /// <summary>Altijd licht.</summary>
+    /// <summary>Always light.</summary>
     Light,
 
-    /// <summary>Altijd donker.</summary>
+    /// <summary>Always dark.</summary>
     Dark,
 }
 
-/// <summary>Cookie, endpoint en attribuutwaarden van de themakeuze.</summary>
+/// <summary>Cookie, endpoint and attribute values of the theme choice.</summary>
 public static class DcThemes
 {
-    /// <summary>Functionele cookie met de keuze <c>light</c> of <c>dark</c>; zonder cookie geldt <see cref="DcTheme.System"/>.</summary>
+    /// <summary>Functional cookie with the choice <c>light</c> or <c>dark</c>; without a cookie <see cref="DcTheme.System"/> applies.</summary>
     public const string CookieName = "doctrina.theme";
 
-    /// <summary>Formulier-endpoint dat de keuze opslaat (POST, antiforgery, <c>theme</c> + <c>returnUrl</c>).</summary>
+    /// <summary>Form endpoint that saves the choice (POST, antiforgery, <c>theme</c> + <c>returnUrl</c>).</summary>
     public const string EndpointPath = "/theme";
 
-    /// <summary>Waarde voor <c>data-dc-theme</c> en het formulierveld <c>theme</c>.</summary>
+    /// <summary>Value for <c>data-dc-theme</c> and the form field <c>theme</c>.</summary>
     public static string ToValue(this DcTheme theme) => theme switch
     {
         DcTheme.Light => "light",
@@ -30,7 +30,7 @@ public static class DcThemes
         _ => "system",
     };
 
-    /// <summary>Nederlandse naam voor de themakeuze.</summary>
+    /// <summary>Display name for the theme choice.</summary>
     public static string ToDisplayName(this DcTheme theme) => theme switch
     {
         DcTheme.Light => "Light",
@@ -38,7 +38,7 @@ public static class DcThemes
         _ => "System",
     };
 
-    /// <summary>Leest een waarde uit cookie of formulier; onbekend of leeg wordt <see langword="null"/>.</summary>
+    /// <summary>Reads a value from the cookie or form; unknown or empty becomes <see langword="null"/>.</summary>
     public static DcTheme? TryParse(string? value) => value switch
     {
         "light" => DcTheme.Light,

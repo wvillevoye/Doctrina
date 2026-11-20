@@ -1,4 +1,4 @@
-// Spec theming, requirement "Beweging respecteert de voorkeur van de gebruiker"; taak 2.2.
+// Spec theming, requirement "Beweging respecteert de voorkeur van de gebruiker"; task 2.2.
 namespace Doctrina.UI.Tests.Theming;
 
 public sealed class BewegingRespecteertDeVoorkeurVanDeGebruiker
@@ -10,7 +10,7 @@ public sealed class BewegingRespecteertDeVoorkeurVanDeGebruiker
         var everything = CompiledCss.Declarations(block, "*");
         var root = CompiledCss.Declarations(block, ":root");
 
-        // Waarden genormaliseerd: gecomprimeerde CSS (Release) schrijft "0.01ms !important" als ".01ms!important".
+        // Values normalised: compressed CSS (Release) writes "0.01ms !important" as ".01ms!important".
         Assert.Equal(".01ms!important", Normalize(everything["transition-duration"]));
         Assert.Equal(".01ms!important", Normalize(everything["animation-duration"]));
         Assert.Equal("1!important", Normalize(everything["animation-iteration-count"]));

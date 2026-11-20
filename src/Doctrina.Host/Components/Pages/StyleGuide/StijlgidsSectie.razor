@@ -1,4 +1,4 @@
-@* Eén sectie van de stijlgids: het component in het lichte en het donkere thema naast elkaar (design D11). *@
+@* One section of the style guide: the component in the light and the dark theme side by side (design D11). *@
 <section id="@SectionId(Component)" class="dc-styleguide__section" aria-labelledby="@($"{SectionId(Component)}-titel")">
   <h2 id="@($"{SectionId(Component)}-titel")" class="dc-styleguide__name">@Component.Name.Split('`')[0]</h2>
   <p class="dc-styleguide__description">@Description</p>
@@ -15,14 +15,14 @@
 </section>
 
 @code {
-    /// <summary>Het component; bepaalt de id van de sectie (<c>dc-&lt;naam-in-kebab-case&gt;</c>).</summary>
+    /// <summary>The component; determines the id of the section (<c>dc-&lt;name-in-kebab-case&gt;</c>).</summary>
     [Parameter, EditorRequired]
     public Type Component { get; set; } = default!;
 
     [Parameter, EditorRequired]
     public string Description { get; set; } = string.Empty;
 
-    /// <summary>Het voorbeeld; krijgt "licht" of "donker" mee voor unieke id's.</summary>
+    /// <summary>The example; receives "light" or "dark" for unique ids.</summary>
     [Parameter, EditorRequired]
     public RenderFragment<string> Sample { get; set; } = default!;
 

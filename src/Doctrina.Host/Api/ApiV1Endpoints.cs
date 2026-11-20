@@ -4,8 +4,8 @@ using Doctrina.Infrastructure.Authentication;
 namespace Doctrina.Host.Api;
 
 /// <summary>
-/// De <c>/api/v1</c>-groep: alleen bearer-tokens, nooit de sessiecookie, geen redirects.
-/// Modules hangen hier later hun endpoints onder (change add-modular-foundation, taakgroep 3).
+/// The <c>/api/v1</c> group: bearer tokens only, never the session cookie, no redirects.
+/// Modules later hang their endpoints under it (change add-modular-foundation, task group 3).
 /// </summary>
 internal static class ApiV1Endpoints
 {
@@ -15,7 +15,7 @@ internal static class ApiV1Endpoints
     {
         var api = endpoints.MapGroup(Prefix).RequireAuthorization(DoctrinaPolicies.ApiCaller);
 
-        // Wie roept aan? Handig voor koppelpartners om hun token te controleren.
+        // Who is calling? Handy for integration partners to check their token.
         api.MapGet("/me", (ClaimsPrincipal caller) => new CurrentCallerResponse(
             Subject: caller.FindFirst(DoctrinaClaimTypes.Subject)?.Value,
             Client: caller.FindFirst(DoctrinaClaimTypes.AuthorizedParty)?.Value,
@@ -27,8 +27,8 @@ internal static class ApiV1Endpoints
 }
 
 /// <summary>
-/// De <c>/ooapi/v5</c>-groep voor modules die OOAPI aanbieden (change add-ooapi-interop): hetzelfde als <c>/api/v1</c>,
-/// alleen bearer-tokens, nooit de sessiecookie, geen redirects.
+/// The <c>/ooapi/v5</c> group for modules that offer OOAPI (change add-ooapi-interop): the same as <c>/api/v1</c>,
+/// bearer tokens only, never the session cookie, no redirects.
 /// </summary>
 internal static class OoapiV5Endpoints
 {
@@ -38,5 +38,5 @@ internal static class OoapiV5Endpoints
         endpoints.MapGroup(Prefix).RequireAuthorization(DoctrinaPolicies.ApiCaller);
 }
 
-/// <summary>Antwoord van <c>GET /api/v1/me</c>.</summary>
+/// <summary>Response of <c>GET /api/v1/me</c>.</summary>
 internal sealed record CurrentCallerResponse(string? Subject, string? Client, string? Name, IReadOnlyList<string> Roles);

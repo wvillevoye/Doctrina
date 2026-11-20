@@ -1,19 +1,19 @@
 namespace Doctrina.Architecture.Tests;
 
-/// <summary>Paden in de repository, gevonden vanaf de uitvoermap van de tests.</summary>
+/// <summary>Paths in the repository, found from the output folder of the tests.</summary>
 internal static class RepoPaths
 {
     public static string Root { get; } = FindRoot();
 
-    /// <summary><c>src/Modules</c>: de productmodules.</summary>
+    /// <summary><c>src/Modules</c>: the product modules.</summary>
     public static string ProductModules => Path.Combine(Root, "src", "Modules");
 
-    /// <summary>Opzettelijk foute en goede fixture-modules voor de tests van de regels zelf.</summary>
+    /// <summary>Deliberately wrong and correct fixture modules for testing the rules themselves.</summary>
     public static string FixtureModules => Path.Combine(Root, "tests", "Doctrina.Architecture.Tests.Fixtures", "Modules");
 
     public static string Project(params string[] parts) => Path.Combine([Root, .. parts]);
 
-    /// <summary>Gecompileerde assembly naast de tests (via projectverwijzingen gekopieerd).</summary>
+    /// <summary>Compiled assembly next to the tests (copied via project references).</summary>
     public static string OutputAssembly(string name) => Path.Combine(AppContext.BaseDirectory, name + ".dll");
 
     private static string FindRoot()

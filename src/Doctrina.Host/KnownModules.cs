@@ -8,8 +8,8 @@ using Doctrina.Modules.Lti;
 namespace Doctrina.Host;
 
 /// <summary>
-/// De statische modulecatalogus (design D1): elke productmodule wordt hier één keer bekendgemaakt. Of een module
-/// start, bepaalt <c>Modules:Enabled</c>.
+/// The static module catalog (design D1): every product module is made known here once. Whether a module
+/// starts is determined by <c>Modules:Enabled</c>.
 /// </summary>
 internal static class KnownModules
 {

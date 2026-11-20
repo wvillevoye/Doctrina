@@ -3,23 +3,23 @@ using Microsoft.Extensions.Options;
 namespace Doctrina.Host.Theming;
 
 /// <summary>
-/// White-label per installatie (spec theming "Een instelling kan het thema aanpassen zonder code", design D4):
-/// sectie <c>Theme</c> in de configuratie. Zie docs/ontwikkelen/vormgeving.md.
+/// White-label per installation (spec theming "Een instelling kan het thema aanpassen zonder code", design D4):
+/// section <c>Theme</c> in the configuration. See docs/ontwikkelen/vormgeving.md.
 /// </summary>
 public sealed class ThemeSettings
 {
     public const string Section = "Theme";
 
-    /// <summary>Lokaal pad van een stylesheet met alleen <c>--dc-*</c>-waarden, geladen ná <c>doctrina.css</c>.</summary>
+    /// <summary>Local path of a stylesheet with <c>--dc-*</c> values only, loaded after <c>doctrina.css</c>.</summary>
     public string? StylesheetPath { get; set; }
 
-    /// <summary>Lokaal pad van een logo dat het woordmerk "Doctrina" vervangt.</summary>
+    /// <summary>Local path of a logo that replaces the "Doctrina" wordmark.</summary>
     public string? LogoPath { get; set; }
 
-    /// <summary>Alternatieve tekst van het logo; verplicht als <see cref="LogoPath"/> is gezet.</summary>
+    /// <summary>Alternative text of the logo; required if <see cref="LogoPath"/> is set.</summary>
     public string? LogoAlt { get; set; }
 
-    /// <summary>Alleen paden op deze site: begint met één <c>/</c> (geen externe domeinen, spec "zelf gehost").</summary>
+    /// <summary>Only paths on this site: starts with a single <c>/</c> (no external domains, spec "zelf gehost").</summary>
     public static bool IsLocalPath(string path) =>
         path.StartsWith('/')
         && !path.StartsWith("//", StringComparison.Ordinal)
@@ -27,7 +27,7 @@ public sealed class ThemeSettings
         && !path.Contains("://", StringComparison.Ordinal);
 }
 
-/// <summary>Controleert <see cref="ThemeSettings"/> bij het opstarten; een fout laat het opstarten mislukken.</summary>
+/// <summary>Checks <see cref="ThemeSettings"/> at start-up; an error makes start-up fail.</summary>
 public sealed class ThemeSettingsValidator : IValidateOptions<ThemeSettings>
 {
     public ValidateOptionsResult Validate(string? name, ThemeSettings options)

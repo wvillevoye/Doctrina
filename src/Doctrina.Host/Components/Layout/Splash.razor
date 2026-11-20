@@ -1,0 +1,6 @@
+@* Startup screen: large logo in the middle, fades out by itself (pure CSS). Shown once per browser session: the host
+   marks <html data-dc-splash="seen"> (see App.razor) when it was already shown. *@
+<div class="dc-splash" aria-hidden="true" data-testid="splash">
+  <DcLogo Size="112" />
+  <span class="dc-splash__name">Doctrina</span>
+</div>

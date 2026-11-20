@@ -12,8 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Doctrina.TestKit.Modules;
 
 /// <summary>
-/// Testmodule <c>Sample</c> uit de specs: endpoint <c>GET samples</c>, pagina <c>/sample</c>, een openbaar
-/// navigatie-item, een item dat <c>Sample.Manage</c> vereist en een eigen
+/// Test module <c>Sample</c> from the specs: endpoint <c>GET samples</c>, page <c>/sample</c>, a public
+/// navigation item, an item that requires <c>Sample.Manage</c> and its own
 /// database (schema <c>sample</c>, <see cref="SampleDbContext"/>).
 /// </summary>
 public sealed class SampleModule : TestModule
@@ -41,10 +41,10 @@ public sealed class SampleModule : TestModule
         services.AddErrorTitles("Doctrina.TestKit.Modules.Resources.SampleErrors", typeof(SampleModule).Assembly);
     }
 
-    /// <summary>Fout met vertalingen (nl/en) in <c>Resources/SampleErrors.resx</c>.</summary>
+    /// <summary>Error with translations (nl/en) in <c>Resources/SampleErrors.resx</c>.</summary>
     public static Error ItemNotFound { get; } = Error.NotFound("Sample.Item.NotFound", "Item bestaat niet.");
 
-    /// <summary>Fout zonder vertalingen: de titel valt terug op de melding.</summary>
+    /// <summary>Error without translations: the title falls back to the message.</summary>
     public static Error Untranslated { get; } = Error.NotFound("Sample.Item.Untranslated", "Item not found");
 
     public const string ManagePageTitle = "Voorbeeldbeheer";
@@ -54,7 +54,7 @@ public sealed class SampleModule : TestModule
 
     public override void MapEndpoints(IEndpointRouteBuilder api)
     {
-        // Zonder autorisatiemetadata: valt onder "standaard beveiligd" van de /api/v1-groep.
+        // Without authorization metadata: falls under "secured by default" of the /api/v1 group.
         api.MapGet("samples", () => Samples);
         api.MapGet("samples/beheer", () => Samples).RequirePermission("Sample.Manage");
         api.MapGet("samples/ontbreekt", () => Result<string>.Failure(ItemNotFound).ToHttpResult());

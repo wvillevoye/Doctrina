@@ -1,5 +1,5 @@
-@* Themakeuze licht/donker/systeem als gewoon formulier: werkt zonder scripts (spec theming, design D3). De actieve
-   keuze heeft aria-pressed="true" en een zichtbare markering (spec app-shell "De themakeuze staat in de header"). *@
+@* Theme choice light/dark/system as a plain form: works without scripts (spec theming, design D3). The active
+   choice has aria-pressed="true" and a visible marker (spec app-shell "De themakeuze staat in de header"). *@
 <form method="post" action="@DcThemes.EndpointPath" class="dc-theme-switcher" data-testid="theme-switcher">
   <AntiforgeryToken />
   <input type="hidden" name="returnUrl" value="@ReturnUrl" />
@@ -19,11 +19,11 @@
     private static readonly (DcTheme Theme, string Icon)[] Options =
         [(DcTheme.Light, "sun"), (DcTheme.Dark, "moon"), (DcTheme.System, "monitor")];
 
-    /// <summary>De huidige keuze (uit de cookie, zie <see cref="DcThemes.CookieName"/>).</summary>
+    /// <summary>The current choice (from the cookie, see <see cref="DcThemes.CookieName"/>).</summary>
     [Parameter]
     public DcTheme Current { get; set; }
 
-    /// <summary>Lokaal pad waarnaar het formulier na het opslaan terugkeert (de huidige pagina).</summary>
+    /// <summary>Local path the form returns to after saving (the current page).</summary>
     [Parameter, EditorRequired]
     public string ReturnUrl { get; set; } = "/";
 }

@@ -34,7 +34,7 @@ public sealed class GroupsModule : IModule
         services.AddErrorTitles("Doctrina.Modules.Groups.Resources.GroupsErrors", typeof(GroupsModule).Assembly);
         services.AddScoped<GroupService>();
         services.AddScoped<GroupsAccess>();
-        services.AddOfferingPageSection<Components.MyGroupsSection>(order: 20);
+        services.AddOfferingPageSection<Components.MyGroupsSection>(order: 20, title: "My groups", icon: "user");
         services.AddHealthChecks().AddCheck<GroupsHealthCheck>("groups", tags: [ModuleHealthChecks.TagFor(Name)]);
     }
 

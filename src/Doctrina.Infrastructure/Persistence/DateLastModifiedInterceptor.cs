@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Doctrina.Infrastructure.Persistence;
 
-/// <summary>Zet <see cref="ExchangeableEntity.DateLastModified"/> (UTC) bij elke invoeging en wijziging (design D4/D5).</summary>
+/// <summary>Sets <see cref="ExchangeableEntity.DateLastModified"/> (UTC) on every insert and update (design D4/D5).</summary>
 public sealed class DateLastModifiedInterceptor(TimeProvider time) : SaveChangesInterceptor
 {
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)

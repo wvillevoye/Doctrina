@@ -7,10 +7,10 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Doctrina.Infrastructure.Api;
 
-/// <summary>API-conventies van de host (design D9): ProblemDetails, fouttitels, exceptions, OpenAPI, health.</summary>
+/// <summary>API conventions of the host (design D9): ProblemDetails, error titles, exceptions, OpenAPI, health.</summary>
 public static class ApiServiceCollectionExtensions
 {
-    /// <summary>Ondersteunde talen voor fouttitels en de UI; Nederlands is standaard.</summary>
+    /// <summary>Supported languages for error titles and the UI; Dutch is the default.</summary>
     public static IReadOnlyList<CultureInfo> SupportedCultures { get; } = [new("nl"), new("en")];
 
     public static IServiceCollection AddDoctrinaApi(this IServiceCollection services)
@@ -24,7 +24,7 @@ public static class ApiServiceCollectionExtensions
         return services;
     }
 
-    /// <summary>Taal van het verzoek uit <c>Accept-Language</c> (nl of en), standaard nl.</summary>
+    /// <summary>Language of the request from <c>Accept-Language</c> (nl or en), nl by default.</summary>
     public static IApplicationBuilder UseDoctrinaRequestLocalization(this IApplicationBuilder app) =>
         app.UseRequestLocalization(new RequestLocalizationOptions
         {

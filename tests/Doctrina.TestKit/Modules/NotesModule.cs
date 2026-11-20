@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Doctrina.TestKit.Modules;
 
-/// <summary>Tweede testmodule met een eigen database (schema <c>notes</c>), voor de scenario's met twee modules.</summary>
+/// <summary>Second test module with its own database (schema <c>notes</c>), for the scenarios with two modules.</summary>
 public sealed class NotesModule() : TestModule(ModuleName)
 {
     public const string ModuleName = "Notes";

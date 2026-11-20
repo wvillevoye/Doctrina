@@ -4,19 +4,19 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Doctrina.Host.Theming;
 
-/// <summary>Themakeuze van de gebruiker (spec theming "Licht en donker thema naar keuze van de gebruiker", design D3).</summary>
+/// <summary>Theme choice of the user (spec theming "Licht en donker thema naar keuze van de gebruiker", design D3).</summary>
 public static class ThemeEndpoints
 {
     private static readonly TimeSpan CookieLifetime = TimeSpan.FromDays(365);
 
-    /// <summary>Thema uit de cookie; zonder (geldige) cookie volgt het thema het systeem.</summary>
+    /// <summary>Theme from the cookie; without a (valid) cookie the theme follows the system.</summary>
     public static DcTheme CurrentTheme(this HttpContext? context) =>
         DcThemes.TryParse(context?.Request.Cookies[DcThemes.CookieName]) ?? DcTheme.System;
 
-    /// <summary><c>POST /theme</c>: slaat de keuze op en stuurt terug naar de pagina (werkt zonder scripts).</summary>
+    /// <summary><c>POST /theme</c>: saves the choice and redirects back to the page (works without scripts).</summary>
     public static IEndpointRouteBuilder MapDoctrinaThemeEndpoint(this IEndpointRouteBuilder endpoints)
     {
-        // [FromForm]: antiforgery-validatie is verplicht.
+        // [FromForm]: antiforgery validation is mandatory.
         endpoints.MapPost(DcThemes.EndpointPath, ([FromForm] string? theme, [FromForm] string? returnUrl, HttpContext context) =>
             {
                 if (DcThemes.TryParse(theme) is not { } choice)
@@ -43,7 +43,7 @@ public static class ThemeEndpoints
         return endpoints;
     }
 
-    // Functionele cookie: geen toestemming nodig, niet leesbaar voor scripts.
+    // Functional cookie: no consent needed, not readable by scripts.
     private static CookieOptions CookieOptions(HttpContext context) => new()
     {
         Path = "/",

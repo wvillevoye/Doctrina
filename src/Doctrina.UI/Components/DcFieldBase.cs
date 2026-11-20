@@ -5,17 +5,17 @@ using Microsoft.AspNetCore.Components.Forms;
 namespace Doctrina.UI.Components;
 
 /// <summary>
-/// Gemeenschappelijke basis van de formuliervelden (spec ui-components "Formuliervelden zijn gekoppeld aan label en
-/// foutmelding"): zichtbaar label gekoppeld via <c>for</c>/<c>id</c>, verplicht-markering, en bij fouten
-/// <c>aria-invalid</c> plus <c>aria-describedby</c> naar de foutmelding. Werkt binnen <see cref="DcForm"/> of een
-/// <see cref="EditForm"/>; gebruik met <c>@bind-Value</c>.
+/// Common base of the form fields (spec ui-components "Formuliervelden zijn gekoppeld aan label en
+/// foutmelding"): visible label linked via <c>for</c>/<c>id</c>, required marker, and on errors
+/// <c>aria-invalid</c> plus <c>aria-describedby</c> pointing to the error message. Works inside <see cref="DcForm"/> or an
+/// <see cref="EditForm"/>; use with <c>@bind-Value</c>.
 /// </summary>
-/// <typeparam name="TValue">Type van de waarde.</typeparam>
+/// <typeparam name="TValue">Type of the value.</typeparam>
 public abstract class DcFieldBase<TValue> : ComponentBase, IDisposable
 {
     private EditContext? _subscribedContext;
 
-    /// <summary>Zichtbaar label.</summary>
+    /// <summary>Visible label.</summary>
     [Parameter, EditorRequired]
     public string Label { get; set; } = string.Empty;
 
@@ -25,45 +25,45 @@ public abstract class DcFieldBase<TValue> : ComponentBase, IDisposable
     [Parameter]
     public EventCallback<TValue?> ValueChanged { get; set; }
 
-    /// <summary>Gezet door <c>@bind-Value</c>; bepaalt de veldnaam voor validatie.</summary>
+    /// <summary>Set by <c>@bind-Value</c>; determines the field name for validation.</summary>
     [Parameter]
     public Expression<Func<TValue?>>? ValueExpression { get; set; }
 
-    /// <summary>Verplicht veld: gemarkeerd op het invoerelement en in het label.</summary>
+    /// <summary>Required field: marked on the input element and in the label.</summary>
     [Parameter]
     public bool Required { get; set; }
 
-    /// <summary>Korte toelichting onder het veld, gekoppeld via <c>aria-describedby</c>.</summary>
+    /// <summary>Short explanation below the field, linked via <c>aria-describedby</c>.</summary>
     [Parameter]
     public string? Hint { get; set; }
 
-    /// <summary>Eigen id van het invoerelement; standaard een unieke id.</summary>
+    /// <summary>Own id of the input element; by default a unique id.</summary>
     [Parameter]
     public string? Id { get; set; }
 
-    /// <summary>Extra attributen voor het invoerelement, bv. <c>autocomplete</c>.</summary>
+    /// <summary>Extra attributes for the input element, e.g. <c>autocomplete</c>.</summary>
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
     [CascadingParameter]
     protected EditContext? EditContext { get; set; }
 
-    /// <summary>Id van het invoerelement.</summary>
+    /// <summary>Id of the input element.</summary>
     protected string InputId { get; private set; } = string.Empty;
 
-    /// <summary>Id van de foutmelding (<see cref="DcFieldError"/>).</summary>
+    /// <summary>Id of the error message (<see cref="DcFieldError"/>).</summary>
     protected string ErrorId => InputId + "-fout";
 
-    /// <summary>Id van de toelichting.</summary>
+    /// <summary>Id of the explanation.</summary>
     protected string HintId => InputId + "-hint";
 
-    /// <summary>Het veld in het <see cref="Microsoft.AspNetCore.Components.Forms.EditContext"/>.</summary>
+    /// <summary>The field in the <see cref="Microsoft.AspNetCore.Components.Forms.EditContext"/>.</summary>
     protected FieldIdentifier Field { get; private set; }
 
-    /// <summary>Heeft het veld validatiefouten?</summary>
+    /// <summary>Does the field have validation errors?</summary>
     protected bool IsInvalid => EditContext is not null && ValueExpression is not null && EditContext.GetValidationMessages(Field).Any();
 
-    /// <summary>Attributen voor het invoerelement: verplicht, beschrijving, eigen attributen.</summary>
+    /// <summary>Attributes for the input element: required, description, custom attributes.</summary>
     protected IReadOnlyDictionary<string, object> InputAttributes
     {
         get

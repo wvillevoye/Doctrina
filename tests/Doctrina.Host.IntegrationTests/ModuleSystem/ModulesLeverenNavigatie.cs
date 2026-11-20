@@ -6,7 +6,7 @@ using Doctrina.Infrastructure.Modules;
 using Doctrina.TestKit.Modules;
 using Microsoft.Extensions.DependencyInjection;
 
-// bUnit-tests voor spec module-system, requirement "Modules leveren navigatie".
+// bUnit tests for spec module-system, requirement "Modules leveren navigatie".
 namespace Doctrina.Host.IntegrationTests.ModuleSystem;
 
 public sealed class ModulesLeverenNavigatie : IDisposable

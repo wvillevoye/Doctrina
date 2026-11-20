@@ -1,5 +1,5 @@
-@* Kop van een pagina: de enige h1, een beschrijving en acties. Zet ook de titel van het browservenster in de vorm
-   "<titel> · Doctrina" (spec app-shell "Elke pagina heeft dezelfde toegankelijke opbouw"). *@
+@* Heading of a page: the only h1, a description and actions. Also sets the title of the browser window in the form
+   "<title> · Doctrina" (spec app-shell "Elke pagina heeft dezelfde toegankelijke opbouw"). *@
 <PageTitle>@($"{DocumentTitle ?? Title} · Doctrina")</PageTitle>
 
 <div class="dc-page-header">
@@ -17,19 +17,19 @@
 </div>
 
 @code {
-    /// <summary>Kop van de pagina (h1).</summary>
+    /// <summary>Heading of the page (h1).</summary>
     [Parameter, EditorRequired]
     public string Title { get; set; } = string.Empty;
 
-    /// <summary>Korte uitleg onder de kop.</summary>
+    /// <summary>Short explanation below the heading.</summary>
     [Parameter]
     public RenderFragment? Description { get; set; }
 
-    /// <summary>Knoppen voor de belangrijkste acties van de pagina.</summary>
+    /// <summary>Buttons for the page's main actions.</summary>
     [Parameter]
     public RenderFragment? Actions { get; set; }
 
-    /// <summary>Andere titel voor het browservenster dan de kop, bv. "Start" voor een welkomstkop.</summary>
+    /// <summary>Different title for the browser window than the heading, e.g. "Home" for a welcome heading.</summary>
     [Parameter]
     public string? DocumentTitle { get; set; }
 }

@@ -1,6 +1,6 @@
-// Ingang van de stylesheet van Doctrina → wwwroot/css/doctrina.css (design D1).
-// Bootstrap 5.3 wordt selectief geïmporteerd; zonder JavaScript-afhankelijke onderdelen (modal, dropdown, collapse,
-// offcanvas, tooltip): dialogen en menu's gebruiken native HTML (design D9, D10).
+// Entry point of Doctrina's stylesheet → wwwroot/css/doctrina.css (design D1).
+// Bootstrap 5.3 is imported selectively; without JavaScript-dependent parts (modal, dropdown, collapse,
+// offcanvas, tooltip): dialogs and menus use native HTML (design D9, D10).
 
 @import "tokens";
 @import "bootstrap-config";

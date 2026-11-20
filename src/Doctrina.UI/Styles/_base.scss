@@ -1,4 +1,4 @@
-// Basisstijlen bovenop Bootstrap's reboot: typografie, links, focus, beweging. Alleen tokens.
+// Base styles on top of Bootstrap's reboot: typography, links, focus, motion. Tokens only.
 
 body {
   font-family: var(--dc-font-body);
@@ -23,7 +23,7 @@ h1 { font-size: var(--dc-font-size-h1); }
 h2 { font-size: var(--dc-font-size-h2); }
 h3 { font-size: var(--dc-font-size-h3); }
 
-// Onderstreepte links met offset (voorstel §7.0).
+// Underlined links with offset (voorstel §7.0).
 a {
   color: var(--dc-link);
   text-decoration: underline;
@@ -42,7 +42,7 @@ code {
   color: var(--dc-text);
 }
 
-// Eén herkenbare focus-ring in de accentkleur, voor elk bedienbaar element (WCAG 2.2: 2.4.7, 2.4.11).
+// One recognisable focus ring in the accent colour, for every operable element (WCAG 2.2: 2.4.7, 2.4.11).
 :focus-visible,
 .btn:focus-visible,
 .form-control:focus-visible,
@@ -53,14 +53,14 @@ code {
   box-shadow: none;
 }
 
-// Ingeklapte rij voor gegevens (profiel e.d.)
+// Collapsed row for data (profile etc.)
 .dc-stack {
   display: flex;
   flex-direction: column;
   gap: var(--dc-space-4);
 }
 
-// Beweging: kort, en uit bij "minder beweging" (spec theming, WCAG 2.3.3).
+// Motion: short, and off with "reduced motion" (spec theming, WCAG 2.3.3).
 @media (prefers-reduced-motion: reduce) {
   :root {
     --dc-duration: 0ms;
@@ -77,7 +77,7 @@ code {
   }
 }
 
-// Melding van Blazor bij een verbroken verbinding of fout in een interactieve pagina.
+// Message from Blazor on a broken connection or an error in an interactive page.
 #blazor-error-ui {
   display: none;
   position: fixed;
@@ -91,7 +91,7 @@ code {
   background-color: var(--dc-warning-subtle);
 }
 
-// Lijst van gegevens (term – waarde), bv. op een profielpagina.
+// List of data (term – value), e.g. on a profile page.
 .dc-details {
   display: grid;
   grid-template-columns: minmax(10rem, max-content) 1fr;

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# End-to-end test: inloggen via het Keycloak-formulier in de Doctrina.AuthCheck-app + API met client credentials.
-# Vereist: dev-stack draait, app draait op https://localhost:5001 (dotnet run --launch-profile https).
+# End-to-end test: sign in through the Keycloak form in the Doctrina.AuthCheck app + API with client credentials.
+# Requires: dev-stack is running, app is running on https://localhost:5001 (dotnet run --launch-profile https).
 set -euo pipefail
 APP=https://localhost:5001
 KC=http://localhost:8080/realms/doctrina
@@ -12,11 +12,11 @@ login() { # $1 user $2 password $3 cookiejar
   page=$(curl -sk -c "$3" -b "$3" -L "$APP/login")
   action=$(grep -o 'id="kc-form-login"[^>]*action="[^"]*"' <<<"$page" | sed 's/.*action="//;s/"$//;s/&amp;/\&/g')
   [[ -n "$action" ]] || { echo "FOUT geen Keycloak-loginformulier gevonden"; exit 1; }
-  # Keycloak zet Secure-cookies, ook op http://localhost. Browsers sturen die mee (localhost = secure context), curl niet.
+  # Keycloak sets Secure cookies, also on http://localhost. Browsers send them along (localhost = secure context), curl does not.
   sed -i 's/^\(\(#HttpOnly_\)\?localhost\t[A-Z]*\t[^\t]*\t\)TRUE/\1FALSE/' "$3"
   local post target args=()
   post=$(curl -sk -c "$3" -b "$3" --data-urlencode "username=$1" --data-urlencode "password=$2" "$action")
-  # Keycloak antwoordt met een zelf-verzendend formulier (response_mode=form_post); een browser doet dit automatisch.
+  # Keycloak responds with a self-submitting form (response_mode=form_post); a browser does this automatically.
   target=$(grep -oE '<FORM [^>]*ACTION="[^"]*"' <<<"$post" | sed 's/.*ACTION="//;s/"$//')
   [[ -n "$target" ]] || { echo "FOUT inloggen als $1 mislukt (geen form_post-antwoord)"; return 1; }
   while read -r name value; do args+=(--data-urlencode "$name=$value"); done < <(

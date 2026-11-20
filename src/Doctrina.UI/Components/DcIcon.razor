@@ -1,19 +1,19 @@
-@* Lucide-icoon als inline SVG (design D6). Decoratief (aria-hidden) tenzij Label is gezet. *@
+@* Lucide icon as inline SVG (design D6). Decorative (aria-hidden) unless Label is set. *@
 <svg class="@(Class is null ? "dc-icon" : $"dc-icon {Class}")" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor"
      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" focusable="false"
      aria-hidden="@(Label is null ? "true" : null)" role="@(Label is null ? null : "img")" aria-label="@Label"
      @attributes="AdditionalAttributes">@((MarkupString)Doctrina.UI.Icons.DcIconSet.Content(Name))</svg>
 
 @code {
-    /// <summary>Naam van het Lucide-icoon, bv. <c>trash-2</c>.</summary>
+    /// <summary>Name of the Lucide icon, e.g. <c>trash-2</c>.</summary>
     [Parameter, EditorRequired]
     public string Name { get; set; } = string.Empty;
 
-    /// <summary>Alleen voor een betekenisvol icoon zonder tekst ernaast; anders is het icoon decoratief.</summary>
+    /// <summary>Only for a meaningful icon without text next to it; otherwise the icon is decorative.</summary>
     [Parameter]
     public string? Label { get; set; }
 
-    /// <summary>Extra class, bv. <c>dc-icon--spin</c>.</summary>
+    /// <summary>Extra class, e.g. <c>dc-icon--spin</c>.</summary>
     [Parameter]
     public string? Class { get; set; }
 

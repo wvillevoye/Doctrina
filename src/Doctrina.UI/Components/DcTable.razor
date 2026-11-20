@@ -1,8 +1,8 @@
 @typeparam TItem
 
-@* Semantische tabel (spec ui-components "Tabellen zijn semantisch en hebben een lege toestand"): bijschrift,
-   kolomkoppen met scope="col" en een melding in plaats van een lege tabel. Een brede tabel scrolt binnen een
-   benoemde regio die met het toetsenbord bereikbaar is (WCAG 2.1.1, 1.4.10). *@
+@* Semantic table (spec ui-components "Tabellen zijn semantisch en hebben een lege toestand"): caption,
+   column headers with scope="col" and a message instead of an empty table. A wide table scrolls within a
+   named region that is reachable with the keyboard (WCAG 2.1.1, 1.4.10). *@
 @if (Items.Count == 0)
 {
   <p class="dc-table__empty" data-testid="table-empty">@EmptyText</p>
@@ -38,11 +38,11 @@ else
 @code {
     private readonly string _captionId = DcIds.New("table");
 
-    /// <summary>Bijschrift; verplicht, want het is de naam van de tabel.</summary>
+    /// <summary>Caption; required, because it is the name of the table.</summary>
     [Parameter, EditorRequired]
     public string Caption { get; set; } = string.Empty;
 
-    /// <summary>Bijschrift alleen voor hulptechnologie (als de kop erboven al zegt wat de tabel is).</summary>
+    /// <summary>Caption for assistive technology only (when the heading above already says what the table is).</summary>
     [Parameter]
     public bool HideCaption { get; set; }
 
@@ -52,7 +52,7 @@ else
     [Parameter, EditorRequired]
     public IReadOnlyList<TItem> Items { get; set; } = [];
 
-    /// <summary>Tekst als er geen rijen zijn, bv. "Nog geen cursussen.".</summary>
+    /// <summary>Text when there are no rows, e.g. "No courses yet.".</summary>
     [Parameter, EditorRequired]
     public string EmptyText { get; set; } = string.Empty;
 

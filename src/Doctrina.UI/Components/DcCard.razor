@@ -1,4 +1,4 @@
-@* Vlak met dunne rand en ruime radius (voorstel §7.0). Met een titel is het een benoemde sectie. *@
+@* Surface with a thin border and a generous radius (voorstel §7.0). With a title it is a named section. *@
 @if (Title is not null)
 {
   <section class="card dc-card" aria-labelledby="@_titleId" @attributes="AdditionalAttributes">
@@ -37,18 +37,18 @@ else
 @code {
     private readonly string _titleId = DcIds.New("card");
 
-    /// <summary>Titel; maakt van de card een sectie die naar die titel heet.</summary>
+    /// <summary>Title; makes the card a section named after that title.</summary>
     [Parameter]
     public string? Title { get; set; }
 
-    /// <summary>Kopniveau van de titel: 2 (standaard, onder de h1 van <see cref="DcPageHeader"/>), 3 of 4.</summary>
+    /// <summary>Heading level of the title: 2 (default, below the h1 of <see cref="DcPageHeader"/>), 3 or 4.</summary>
     [Parameter]
     public int HeadingLevel { get; set; } = 2;
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
-    /// <summary>Onderrand met acties.</summary>
+    /// <summary>Bottom edge with actions.</summary>
     [Parameter]
     public RenderFragment? Footer { get; set; }
 

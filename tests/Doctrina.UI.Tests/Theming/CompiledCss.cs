@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 
 namespace Doctrina.UI.Tests.Theming;
 
-/// <summary>Eenvoudige lezer van de gecompileerde <c>doctrina.css</c> (uitgebreid of gecomprimeerd).</summary>
+/// <summary>Simple reader of the compiled <c>doctrina.css</c> (expanded or compressed).</summary>
 internal static partial class CompiledCss
 {
     private static readonly Lazy<string> Text = new(() =>
@@ -13,11 +13,11 @@ internal static partial class CompiledCss
 
     public static string All => Text.Value;
 
-    /// <summary>Declaraties (eigenschap → waarde, laatste wint) van alle regels met precies deze selector, buiten at-rules.</summary>
+    /// <summary>Declarations (property → value, last wins) of all rules with exactly this selector, outside at-rules.</summary>
     public static IReadOnlyDictionary<string, string> Declarations(string selector) =>
         Declarations(TopLevel(All), selector);
 
-    /// <summary>Inhoud van alle <c>@media</c>-blokken met deze voorwaarde, achter elkaar.</summary>
+    /// <summary>Content of all <c>@media</c> blocks with this condition, one after another.</summary>
     public static string MediaBlock(string condition)
     {
         var pattern = @"@media\s*" + Regex.Escape(condition).Replace(@"\ ", @"\s*", StringComparison.Ordinal) + @"\s*\{";
@@ -50,7 +50,7 @@ internal static partial class CompiledCss
         return result;
     }
 
-    /// <summary>De CSS zonder at-rules (<c>@media</c>, <c>@font-face</c>, <c>@charset</c>, …).</summary>
+    /// <summary>The CSS without at-rules (<c>@media</c>, <c>@font-face</c>, <c>@charset</c>, …).</summary>
     private static string TopLevel(string css)
     {
         var builder = new System.Text.StringBuilder();
@@ -72,7 +72,7 @@ internal static partial class CompiledCss
         return builder.ToString();
     }
 
-    /// <summary>Tekst tussen de accolade op <paramref name="open"/> en de bijbehorende sluitaccolade.</summary>
+    /// <summary>Text between the brace at <paramref name="open"/> and the matching closing brace.</summary>
     private static string Block(string css, int open)
     {
         var depth = 0;

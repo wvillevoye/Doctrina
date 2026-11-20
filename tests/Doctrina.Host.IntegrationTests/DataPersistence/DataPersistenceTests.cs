@@ -7,8 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Time.Testing;
 
-// Tests volgen spec openspec/specs/data-persistence/spec.md:
-// klasse = requirement, methode = scenario. Elke test krijgt een eigen, lege LocalDB-database.
+// Tests follow spec openspec/specs/data-persistence/spec.md:
+// class = requirement, method = scenario. Every test gets its own, empty LocalDB database.
 namespace Doctrina.Host.IntegrationTests.DataPersistence;
 
 public abstract class DatabaseTest : IAsyncLifetime
@@ -113,7 +113,7 @@ public sealed class AutomatischMigrerenIsInstelbaar(DoctrinaHostFactory factory)
 
         Assert.Empty(await SchemasAsync());
         Assert.Empty(await Database.TablesAsync(Ct));
-        // Ook zonder de expliciete waarde in appsettings.Production.json is de standaard buiten Development: niet migreren.
+        // Even without the explicit value in appsettings.Production.json the default outside Development is: do not migrate.
         Assert.False(ModuleMigrationService.IsEnabled(new ConfigurationBuilder().Build(), new TestEnvironment(Environments.Production)));
         Assert.True(ModuleMigrationService.IsEnabled(new ConfigurationBuilder().Build(), new TestEnvironment(Environments.Development)));
     }

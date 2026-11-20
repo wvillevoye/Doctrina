@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.DependencyInjection;
 
-// Spec app-shell; taak 6.1 van add-design-system (design D3, D9). Klasse = requirement, methode = scenario.
+// Spec app-shell; task 6.1 of add-design-system (design D3, D9). Class = requirement, method = scenario.
 namespace Doctrina.UI.Tests.Components;
 
-/// <summary>Antiforgery-token zoals de host dat bij statische weergave levert.</summary>
+/// <summary>Antiforgery token as the host supplies it in static rendering.</summary>
 internal sealed class TestAntiforgery : AntiforgeryStateProvider
 {
     public override AntiforgeryRequestToken? GetAntiforgeryToken() => new("test-token", "__RequestVerificationToken");
@@ -23,29 +23,45 @@ public sealed class HetHoofdmenuWerktOpElkSchermformaat : IDisposable
     [Fact]
     public void MenuknopOpSmalleSchermen()
     {
-        var cut = _context.Render<DcNavMenu>(p => p.Add(n => n.Items, Items));
+        var cut = RenderShell(_context);
 
-        var nav = cut.Find("nav");
-        var toggle = cut.Find("nav > button");
+        var toggle = cut.Find("header button[popovertarget]");
         var panel = cut.Find($"#{toggle.GetAttribute("popovertarget")}");
 
-        // Native Popover API: openen/sluiten, Escape en aria-expanded regelt de browser, zonder script (design D9).
-        Assert.Equal("Main menu", nav.GetAttribute("aria-label"));
+        // Native Popover API: opening/closing, Escape and aria-expanded are handled by the browser, without script (design D2).
         Assert.Equal("button", toggle.GetAttribute("type"));
         Assert.Equal("Menu", toggle.TextContent.Trim());
         Assert.True(panel.HasAttribute("popover"));
-        Assert.Equal(3, panel.QuerySelectorAll("a").Length);
+        Assert.Equal("ASIDE", panel.TagName);
+        Assert.Equal("Main menu", panel.QuerySelector("nav")!.GetAttribute("aria-label"));
+        Assert.Equal(3, panel.QuerySelectorAll("nav a").Length);
         Assert.Empty(cut.FindAll("[onclick]"));
     }
 
     [Fact]
-    public void OpBredeSchermenIsHetMenuAltijdZichtbaar()
+    public void ZijbalkOpBredeSchermen()
     {
-        var css = File.ReadAllText(Path.Combine(RepoPaths.Ui, "Components", "DcNavMenu.razor.css"));
-        var wide = css[css.IndexOf("@media (min-width: 48rem)", StringComparison.Ordinal)..];
+        var css = File.ReadAllText(Path.Combine(RepoPaths.Ui, "Components", "DcAppShell.razor.css"));
+        var wide = css[css.IndexOf("@media (min-width: 64rem)", StringComparison.Ordinal)..];
 
-        Assert.Matches(@"\.dc-nav__toggle\s*\{\s*display:\s*none;", wide);
-        Assert.Matches(@"\.dc-nav__panel\s*\{[^}]*position:\s*static;[^}]*display:\s*block;", wide);
+        Assert.Matches(@"\.dc-shell__toggle\s*\{\s*display:\s*none;", wide);
+        Assert.Matches(@"\.dc-shell__sidebar\s*\{[^}]*position:\s*static;[^}]*display:\s*block;", wide);
+        Assert.Matches(@"\.dc-shell__sidebar-inner\s*\{[^}]*position:\s*sticky;", wide);
+    }
+
+    internal static IRenderedComponent<DcAppShell> RenderShell(BunitContext context)
+    {
+        context.Services.AddSingleton<AntiforgeryStateProvider, TestAntiforgery>();
+        return context.Render<DcAppShell>(p => p
+            .Add(x => x.ReturnUrl, "/")
+            .Add(x => x.SignInHref, "/sign-in")
+            .Add(x => x.SignOutAction, "/sign-out")
+            .Add(x => x.Navigation, (RenderFragment)(b =>
+            {
+                b.OpenComponent<DcNavMenu>(0);
+                b.AddComponentParameter(1, nameof(DcNavMenu.Items), Items);
+                b.CloseComponent();
+            })));
     }
 
     [Theory]
@@ -60,7 +76,46 @@ public sealed class HetHoofdmenuWerktOpElkSchermformaat : IDisposable
 
         var current = Assert.Single(cut.FindAll("a[aria-current]"));
         Assert.Equal("page", current.GetAttribute("aria-current"));
-        Assert.Equal(expected, current.TextContent);
+        Assert.Equal(expected, current.TextContent.Trim());
+    }
+
+    [Fact]
+    public void HuidigePaginaIsNietAlleenMetKleurGemarkeerd()
+    {
+        var css = File.ReadAllText(Path.Combine(RepoPaths.Ui, "Components", "DcNavMenu.razor.css"));
+        var current = css[css.IndexOf("[aria-current=\"page\"]", StringComparison.Ordinal)..];
+        current = current[..current.IndexOf('}', StringComparison.Ordinal)];
+
+        // WCAG 1.4.1: besides colour a bar (box-shadow) and a bolder weight.
+        Assert.Contains("box-shadow", current, StringComparison.Ordinal);
+        Assert.Contains("font-weight", current, StringComparison.Ordinal);
+    }
+
+    public void Dispose() => _context.Dispose();
+}
+
+public sealed class MenuItemsKunnenEenIcoonHebben : IDisposable
+{
+    private readonly BunitContext _context = new();
+
+    [Fact]
+    public void ItemMetIcoon()
+    {
+        var cut = _context.Render<DcNavMenu>(p => p.Add(n => n.Items, [new DcNavItem("Home", "/", Icon: "house")]));
+
+        var link = cut.Find("a");
+
+        Assert.Equal("Home", link.QuerySelector("span")!.TextContent);
+        Assert.Equal("true", link.QuerySelector("svg")!.GetAttribute("aria-hidden"));
+    }
+
+    [Fact]
+    public void ItemZonderIcoon()
+    {
+        var cut = _context.Render<DcNavMenu>(p => p.Add(n => n.Items, [new DcNavItem("Home", "/")]));
+
+        Assert.Empty(cut.FindAll("svg"));
+        Assert.Equal("Home", cut.Find("a").TextContent.Trim());
     }
 
     public void Dispose() => _context.Dispose();
@@ -97,7 +152,7 @@ public sealed class DeThemakeuzeStaatInDeHeader : IDisposable
         Assert.Equal("/profile?tab=2", cut.Find("input[name=returnUrl]").GetAttribute("value"));
         Assert.Equal("test-token", cut.Find("input[name=__RequestVerificationToken]").GetAttribute("value"));
         Assert.All(cut.FindAll("button"), b => Assert.Equal("submit", b.GetAttribute("type")));
-        Assert.Equal("true", cut.FindAll("button")[2].GetAttribute("aria-pressed")); // standaard: systeem
+        Assert.Equal("true", cut.FindAll("button")[2].GetAttribute("aria-pressed")); // default: system
     }
 
     public void Dispose() => _context.Dispose();
@@ -164,10 +219,19 @@ public sealed class ElkePaginaHeeftDezelfdeToegankelijkeOpbouw : IDisposable
         Assert.Equal("A", first.TagName);
         Assert.Equal("#content", first.GetAttribute("href"));
         Assert.Equal("Skip to content", first.TextContent);
-        Assert.NotNull(cut.Find("header nav[aria-label='Main menu']"));
+        Assert.NotNull(cut.Find("aside nav[aria-label='Main menu']"));
         Assert.Equal("content", cut.Find("main").Id);
         Assert.Equal("Welkom", cut.Find("main h1").TextContent);
         Assert.Equal("Doctrina", cut.Find("header a[href='/'] .dc-shell__wordmark").TextContent);
+    }
+
+    [Fact]
+    public void HetHoofdmenuStaatInDeZijbalk()
+    {
+        var cut = HetHoofdmenuWerktOpElkSchermformaat.RenderShell(_context);
+
+        Assert.NotNull(cut.Find("aside nav[aria-label='Main menu']"));
+        Assert.Empty(cut.FindAll("header nav"));
     }
 
     public void Dispose() => _context.Dispose();

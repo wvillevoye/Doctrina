@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Doctrina.UI.Icons;
 
-/// <summary>De ingesloten Lucide-iconen (design D6). Geeft de inhoud van de SVG zonder het buitenste element.</summary>
+/// <summary>The embedded Lucide icons (design D6). Returns the content of the SVG without the outer element.</summary>
 public static class DcIconSet
 {
     private const string Prefix = "Doctrina.UI.Icons.";
@@ -12,7 +12,7 @@ public static class DcIconSet
     private static readonly Assembly Assembly = typeof(DcIconSet).Assembly;
     private static readonly ConcurrentDictionary<string, string> Cache = new(StringComparer.Ordinal);
 
-    /// <summary>Namen van alle beschikbare iconen, gesorteerd.</summary>
+    /// <summary>Names of all available icons, sorted.</summary>
     public static IReadOnlyList<string> Names { get; } =
     [
         .. Assembly.GetManifestResourceNames()
@@ -21,8 +21,8 @@ public static class DcIconSet
             .Order(StringComparer.Ordinal),
     ];
 
-    /// <summary>De paden e.d. binnen het <c>&lt;svg&gt;</c>-element van icoon <paramref name="name"/>.</summary>
-    /// <exception cref="InvalidOperationException">Het icoon bestaat niet (fout van de ontwikkelaar).</exception>
+    /// <summary>The paths etc. inside the <c>&lt;svg&gt;</c> element of icon <paramref name="name"/>.</summary>
+    /// <exception cref="InvalidOperationException">The icon does not exist (developer error).</exception>
     public static string Content(string name) => Cache.GetOrAdd(name, Load);
 
     private static string Load(string name)

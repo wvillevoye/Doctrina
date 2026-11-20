@@ -10,8 +10,8 @@ using Scalar.AspNetCore;
 namespace Doctrina.Infrastructure.Api;
 
 /// <summary>
-/// OpenAPI-document (<c>/openapi/v1.json</c>) en Scalar (<c>/scalar</c>) voor de <c>/api/v1</c>-endpoints, met het
-/// bearer-beveiligingsschema (design D9). Aan in Development; elders alleen als <c>Api:Documentation:Enabled</c> true is.
+/// OpenAPI document (<c>/openapi/v1.json</c>) and Scalar (<c>/scalar</c>) for the <c>/api/v1</c> endpoints, with the
+/// bearer security scheme (design D9). On in Development; elsewhere only if <c>Api:Documentation:Enabled</c> is true.
 /// </summary>
 public static class ApiDocumentation
 {
@@ -62,7 +62,7 @@ public static class ApiDocumentation
             });
         });
 
-    /// <summary>Koppelt het OpenAPI-document en Scalar, als de documentatie aan staat.</summary>
+    /// <summary>Maps the OpenAPI document and Scalar, if the documentation is enabled.</summary>
     public static IEndpointRouteBuilder MapDoctrinaApiDocumentation(this IEndpointRouteBuilder endpoints, IConfiguration configuration, IHostEnvironment environment)
     {
         if (!IsEnabled(configuration, environment))

@@ -22,10 +22,11 @@
           <DcBadge Variant="DcBadgeVariant.Warning">Draft</DcBadge>
         }
       </h3>
-      <ul data-testid="content-items">
+      <ul class="content-items" data-testid="content-items">
         @foreach (var item in section.Items)
         {
           <li>
+            <span class="content-items__title">
             @if (item.Kind == ContentItemKind.Link)
             {
               <DcLink Href="@(item.Url!)" External>@item.Title</DcLink>
@@ -36,15 +37,16 @@
             }
             @if (item.Kind == ContentItemKind.File)
             {
-              <span> (@item.FileName, @ContentLabels.Size(item.Size ?? 0))</span>
-            }
-            @if (item.Kind == ContentItemKind.ToolLink)
-            {
-              <DcButton Href="@ContentLabels.LaunchUrl(item.Id)" Icon="external-link" target="_blank" rel="noopener noreferrer" data-testid="launch">Launch</DcButton>
+              <span class="content-items__meta">@item.FileName · @ContentLabels.Size(item.Size ?? 0)</span>
             }
             @if (!item.Published)
             {
               <DcBadge Variant="DcBadgeVariant.Warning">Draft</DcBadge>
+            }
+            </span>
+            @if (item.Kind == ContentItemKind.ToolLink)
+            {
+              <DcButton Href="@ContentLabels.LaunchUrl(item.Id)" Icon="external-link" target="_blank" rel="noopener noreferrer" data-testid="launch">Launch</DcButton>
             }
           </li>
         }

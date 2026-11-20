@@ -1,17 +1,17 @@
 namespace Doctrina.UI.Components;
 
-/// <summary>Varianten van <see cref="DcButton"/> (design D7).</summary>
+/// <summary>Variants of <see cref="DcButton"/> (design D7).</summary>
 public enum DcButtonVariant
 {
-    /// <summary>Hoofdactie van een scherm, in de accentkleur.</summary>
+    /// <summary>Main action of a screen, in the accent colour.</summary>
     Primary,
 
-    /// <summary>Gewone actie, met rand.</summary>
+    /// <summary>Ordinary action, with a border.</summary>
     Secondary,
 
-    /// <summary>Minder belangrijke actie of icoonknop, zonder rand.</summary>
+    /// <summary>Less important action or icon button, without a border.</summary>
     Ghost,
 
-    /// <summary>Onomkeerbare actie, zoals verwijderen.</summary>
+    /// <summary>Irreversible action, such as delete.</summary>
     Danger,
 }

@@ -42,4 +42,16 @@
   <data name="Content.Copy.TargetNotEmpty" xml:space="preserve">
     <value>The offering already has content</value>
   </data>
+  <data name="Content.Introduction.Invalid" xml:space="preserve">
+    <value>Invalid introduction</value>
+  </data>
+  <data name="Content.Template.Invalid" xml:space="preserve">
+    <value>Invalid template</value>
+  </data>
+  <data name="Content.Template.NotFound" xml:space="preserve">
+    <value>Template not found</value>
+  </data>
+  <data name="Content.Template.DefaultProtected" xml:space="preserve">
+    <value>The default template can't be deleted</value>
+  </data>
 </root>

@@ -139,6 +139,13 @@ foutcode als sleutel. Zonder vertaling wordt de melding uit de code getoond. Op 
     `SaveChanges` afgeleverd.
   - Anders publiceer je met `IEventBus.PublishAsync`.
   - Een andere module registreert een handler met `services.AddEventHandler<CourseCreated, …>()`.
+- **Sections on the course page:** register a component with
+  `services.AddOfferingPageSection<TComponent>(order, title, icon, isVisible)`. Title and icon appear in the course menu
+  in the sidebar. Pass `isVisible` (`(services, user, offeringId) => Task<bool>`) when the section can be empty for some
+  users: the section and its menu item are then left out. Sections render at the same time, so a section that uses a
+  `DbContext` creates its own scope (`IServiceScopeFactory`) instead of sharing the page's context. The Content module's
+  introduction (`IntroductionSection`) is an example; its layouts come from introduction templates, a fixed set of
+  CSS classes that only use `--dc-*` tokens.
 
 ## 7. Tests
 

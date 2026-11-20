@@ -25,8 +25,11 @@ public sealed class ContentModule : IModule
         new(ContentPermissions.Read, "Read the published content of every course offering"),
     ];
 
-    // No menu item: content is reached from the page of a course offering.
-    public IReadOnlyCollection<NavItem> Navigation => [];
+    // Content is reached from the page of a course offering; the menu only has the template management for administrators.
+    public IReadOnlyCollection<NavItem> Navigation =>
+    [
+        new("Intro templates", "/content/templates", ContentPermissions.Manage, Order: 92, Icon: "pencil"),
+    ];
 
     public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
@@ -36,8 +39,11 @@ public sealed class ContentModule : IModule
         services.AddSingleton<ContentFileStore>();
         services.AddScoped<ContentService>();
         services.AddScoped<ContentAccess>();
+        services.AddScoped<IntroductionService>();
         services.AddScoped<Contracts.IContentDirectory, ContentDirectory>();
-        services.AddOfferingPageSection<Components.ContentSectionList>(order: 10);
+        services.AddOfferingPageSection<Components.IntroductionSection>(
+            order: 5, title: "Introduction", icon: "info", isVisible: IntroductionVisibility.IsVisibleAsync);
+        services.AddOfferingPageSection<Components.ContentSectionList>(order: 10, title: "Content", icon: "book-open");
         services.AddHealthChecks().AddCheck<ContentHealthCheck>("content", tags: [ModuleHealthChecks.TagFor(Name)]);
     }
 

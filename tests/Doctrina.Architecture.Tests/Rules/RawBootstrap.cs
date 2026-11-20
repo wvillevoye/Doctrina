@@ -3,8 +3,8 @@ using System.Text.RegularExpressions;
 namespace Doctrina.Architecture.Tests.Rules;
 
 /// <summary>
-/// Regel "geen ruwe Bootstrap-classes in modules" (huisregel 4): modules gebruiken <c>Doctrina.UI</c>-componenten en
-/// <c>--dc-*</c>-tokens. Herkent de gangbare Bootstrap 5.3-classes in <c>class</c>-attributen van <c>.razor</c>-bestanden.
+/// Rule "no raw Bootstrap classes in modules" (house rule 4): modules use <c>Doctrina.UI</c> components and
+/// <c>--dc-*</c> tokens. Recognises the common Bootstrap 5.3 classes in <c>class</c> attributes of <c>.razor</c> files.
 /// </summary>
 internal static partial class RawBootstrap
 {

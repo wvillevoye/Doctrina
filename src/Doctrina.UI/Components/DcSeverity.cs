@@ -1,17 +1,17 @@
 namespace Doctrina.UI.Components;
 
-/// <summary>Ernst van een melding (<see cref="DcAlert"/>) of soort label (<see cref="DcBadge"/>).</summary>
+/// <summary>Severity of an alert (<see cref="DcAlert"/>) or kind of label (<see cref="DcBadge"/>).</summary>
 public enum DcSeverity
 {
-    /// <summary>Neutrale informatie.</summary>
+    /// <summary>Neutral information.</summary>
     Info,
 
-    /// <summary>Iets is gelukt.</summary>
+    /// <summary>Something succeeded.</summary>
     Success,
 
-    /// <summary>Let op, maar het werk kan door.</summary>
+    /// <summary>Pay attention, but work can continue.</summary>
     Warning,
 
-    /// <summary>Fout of onomkeerbaar.</summary>
+    /// <summary>Error or irreversible.</summary>
     Danger,
 }

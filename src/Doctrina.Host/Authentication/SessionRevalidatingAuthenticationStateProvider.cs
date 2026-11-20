@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components.Server;
 namespace Doctrina.Host.Authentication;
 
 /// <summary>
-/// Beëindigt interactieve Blazor-circuits waarvan de sessie is verlopen (design D7): de gebruiker moet dan opnieuw inloggen.
+/// Ends interactive Blazor circuits whose session has expired (design D7): the user then has to sign in again.
 /// </summary>
 internal sealed class SessionRevalidatingAuthenticationStateProvider(ILoggerFactory loggerFactory, TimeProvider timeProvider)
     : RevalidatingServerAuthenticationStateProvider(loggerFactory)

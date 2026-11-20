@@ -2,7 +2,7 @@ using Doctrina.Core.Results;
 
 namespace Doctrina.Core.Tests.Results;
 
-// Proposal §3.6 (Result-pattern); taak 2.1 van add-modular-foundation.
+// Proposal §3.6 (Result pattern); task 2.1 of add-modular-foundation.
 public sealed class ResultTests
 {
     private static readonly Error NotFound = Error.NotFound("Sample.Item.NotFound", "Item bestaat niet.");

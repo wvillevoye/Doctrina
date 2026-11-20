@@ -1,0 +1,150 @@
+@page "/content/templates"
+@attribute [RequirePermission(ContentPermissions.Manage)]
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using Doctrina.Core.Results
+@using Doctrina.Modules.Content.Application
+@using Doctrina.Modules.Content.Domain
+@using Microsoft.Extensions.DependencyInjection
+@inject IServiceScopeFactory Scopes
+
+@* Management of the introduction templates (spec course-introduction, design D2-D4 of add-course-introduction).
+   Interactive; every action runs in its own scope and then reloads. Access: Content.Manage. *@
+<DcPageHeader Title="Intro templates">
+  <Description>A template fixes the layout of the introduction of a course and gives it a starting text.</Description>
+</DcPageHeader>
+
+<div class="dc-stack">
+  @if (_message is not null)
+  {
+    <DcAlert Severity="DcSeverity.Success" data-testid="templates-message"><p>@_message</p></DcAlert>
+  }
+
+  @if (_loaded)
+  {
+    <DcTable TItem="IntroductionTemplate" Caption="Templates" HideCaption Columns="Columns" Items="_templates" EmptyText="There are no templates yet." data-testid="templates" />
+  }
+
+  <DcCard Title="@(_form.Id is null ? "New template" : "Edit template")">
+    <DcForm Model="_form" Error="_error" OnValidSubmit="SaveAsync" FormName="template" data-testid="template-form">
+      <DcTextField Label="Name" Required @bind-Value="_form.Name" />
+      <DcSelect TValue="IntroductionLayout" Label="Layout" @bind-Value="_form.Layout">
+        <option value="@IntroductionLayout.Plain">plain</option>
+        <option value="@IntroductionLayout.Banner">banner</option>
+        <option value="@IntroductionLayout.Objectives">objectives</option>
+      </DcSelect>
+      <MarkdownEditor Label="Starting text" Rows="10" Hint="Markdown that fills an empty introduction when a lecturer chooses this template." @bind-Value="_form.StartBody" />
+      <div class="dc-form__actions">
+        <DcButton Type="submit" Variant="DcButtonVariant.Primary">Save</DcButton>
+        @if (_form.Id is not null)
+        {
+          <DcButton Variant="DcButtonVariant.Ghost" OnClick="ResetForm">Cancel</DcButton>
+        }
+      </div>
+    </DcForm>
+  </DcCard>
+</div>
+
+<DcModal @ref="_deleteModal" Title="@($"Delete {_delete?.Name}?")">
+  <ChildContent>
+    <p>Course offerings that use this template switch to the default layout. Their text stays.</p>
+  </ChildContent>
+  <Footer>
+    <DcButton OnClick="() => _deleteModal!.CloseAsync()">Cancel</DcButton>
+    <DcButton Variant="DcButtonVariant.Danger" OnClick="DeleteAsync" data-testid="confirm-delete">Delete</DcButton>
+  </Footer>
+</DcModal>
+
+@code {
+    private IReadOnlyList<IntroductionTemplate> _templates = [];
+    private readonly TemplateForm _form = new();
+    private IntroductionTemplate? _delete;
+    private DcModal? _deleteModal;
+    private Error? _error;
+    private string? _message;
+    private bool _loaded;
+
+    private DcTableColumn<IntroductionTemplate>[] Columns =>
+    [
+        new("Name", t => t.IsDefault ? $"{t.Name} (default)" : t.Name),
+        new("Layout", t => t.Layout.ToString().ToLowerInvariant()),
+        new("Actions", Template: t => @<div class="dc-form__actions">
+            <DcButton Icon="pencil" OnClick="() => Edit(t)" data-testid="edit-template">Edit</DcButton>
+            @if (!t.IsDefault)
+            {
+              <DcButton Icon="trash-2" Variant="DcButtonVariant.Danger" OnClick="() => ConfirmDeleteAsync(t)" data-testid="delete-template">Delete</DcButton>
+            }
+          </div>),
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadAsync();
+        _loaded = true;
+    }
+
+    private async Task ReloadAsync()
+    {
+        using var scope = Scopes.CreateScope();
+        _templates = await scope.ServiceProvider.GetRequiredService<IntroductionService>().TemplatesAsync(CancellationToken.None);
+    }
+
+    private void Edit(IntroductionTemplate template)
+    {
+        _message = null;
+        _error = null;
+        (_form.Id, _form.Name, _form.Layout, _form.StartBody) = (template.Id, template.Name, template.Layout, template.StartBody);
+    }
+
+    private void ResetForm() => (_form.Id, _form.Name, _form.Layout, _form.StartBody) = (null, null, IntroductionLayout.Plain, null);
+
+    private async Task SaveAsync()
+    {
+        _message = null;
+        using (var scope = Scopes.CreateScope())
+        {
+            var result = await scope.ServiceProvider.GetRequiredService<IntroductionService>()
+                .SaveTemplateAsync(_form.Id, _form.Name, _form.Layout, _form.StartBody, CancellationToken.None);
+            _error = result.Error;
+            if (result.IsSuccess)
+            {
+                _message = $"Template “{_form.Name!.Trim()}” saved.";
+                ResetForm();
+            }
+        }
+
+        await ReloadAsync();
+    }
+
+    private async Task ConfirmDeleteAsync(IntroductionTemplate template)
+    {
+        _delete = template;
+        await _deleteModal!.ShowAsync();
+    }
+
+    private async Task DeleteAsync()
+    {
+        _message = null;
+        using (var scope = Scopes.CreateScope())
+        {
+            var result = await scope.ServiceProvider.GetRequiredService<IntroductionService>().DeleteTemplateAsync(_delete!.Id, CancellationToken.None);
+            _error = result.Error;
+            _message = result.IsSuccess ? $"Template “{_delete.Name}” deleted." : null;
+        }
+
+        await _deleteModal!.CloseAsync();
+        await ReloadAsync();
+    }
+
+    private sealed class TemplateForm
+    {
+        public Guid? Id { get; set; }
+
+        [Required(ErrorMessage = "Enter a name.")]
+        public string? Name { get; set; }
+
+        public IntroductionLayout Layout { get; set; }
+
+        public string? StartBody { get; set; }
+    }
+}

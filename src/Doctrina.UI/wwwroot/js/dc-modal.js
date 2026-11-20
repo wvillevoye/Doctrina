@@ -1,5 +1,5 @@
-// DcModal (design D10): de enige scriptcode van Doctrina.UI. De browser regelt bij showModal() het onbereikbaar maken
-// van de rest van de pagina, de focus en Escape; dit script onthoudt alleen wie de focus had en zet die terug.
+// DcModal (design D10): the only script code of Doctrina.UI. On showModal() the browser makes the rest of the page inert,
+// handles focus and Escape; this script only remembers who had the focus and restores it.
 
 export function show(dialog, dotNet) {
   if (dialog.open) {

@@ -6,13 +6,13 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 namespace Doctrina.Infrastructure.Persistence;
 
 /// <summary>
-/// Levert de events van entiteiten af ná een geslaagde <c>SaveChanges</c> (design D6). Mislukt het opslaan, dan wordt
-/// niets afgeleverd en blijven de events op de entiteiten staan voor een volgende poging.
+/// Delivers the events of entities after a successful <c>SaveChanges</c> (design D6). If saving fails,
+/// nothing is delivered and the events stay on the entities for a next attempt.
 /// </summary>
 /// <remarks>
-/// Aflevering gebeurt na <c>SaveChanges</c>; gebruik geen expliciete transactie om meerdere <c>SaveChanges</c>-aanroepen
-/// heen als handlers pas na de commit mogen reageren. Gegarandeerde aflevering (outbox) volgt wanneer een module die
-/// nodig heeft (zie de risico's in design D6).
+/// Delivery happens after <c>SaveChanges</c>; do not use an explicit transaction spanning several <c>SaveChanges</c> calls
+/// if handlers may only react after the commit. Guaranteed delivery (outbox) follows when a module needs
+/// it (see the risks in design D6).
 /// </remarks>
 public sealed class DomainEventsInterceptor(InProcessEventBus bus) : SaveChangesInterceptor
 {
@@ -78,7 +78,7 @@ public sealed class DomainEventsInterceptor(InProcessEventBus bus) : SaveChanges
         return Task.CompletedTask;
     }
 
-    // Entiteiten vóór het opslaan vasthouden: verwijderde entiteiten zijn daarna niet meer in de change tracker.
+    // Hold on to the entities before saving: deleted entities are no longer in the change tracker afterwards.
     private void Remember(DbContext? context)
     {
         if (context is null)

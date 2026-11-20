@@ -14,7 +14,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Doctrina.Host.IntegrationTests;
 
-/// <summary>Start Doctrina.Host in het geheugen met de nagebootste OIDC-provider in plaats van Keycloak.</summary>
+/// <summary>Starts Doctrina.Host in memory with the stubbed OIDC provider instead of Keycloak.</summary>
 public sealed class DoctrinaHostFactory : WebApplicationFactory<Program>
 {
     public const string WebClientId = "doctrina-web";
@@ -22,13 +22,13 @@ public sealed class DoctrinaHostFactory : WebApplicationFactory<Program>
 
     public StubOidcProvider Idp { get; } = new();
 
-    /// <summary>Variant met extra configuratie, bv. <c>Authentication:Oidc:IdpHint</c>.</summary>
+    /// <summary>Variant with extra configuration, e.g. <c>Authentication:Oidc:IdpHint</c>.</summary>
     public WebApplicationFactory<Program> WithSettings(params (string Key, string? Value)[] settings) =>
         WithWebHostBuilder(builder => builder.ConfigureAppConfiguration((_, config) =>
             config.AddInMemoryCollection(settings.Select(s => new KeyValuePair<string, string?>(s.Key, s.Value)))));
 
     /// <summary>
-    /// Variant waarin de host <paramref name="known"/> kent (naast de productmodules) en <paramref name="enabled"/>
+    /// Variant in which the host knows <paramref name="known"/> (besides the product modules) and <paramref name="enabled"/>
     /// in <c>Modules:Enabled</c> staan.
     /// </summary>
     public WebApplicationFactory<Program> WithModules(IEnumerable<IModule> known, params string[] enabled) =>
@@ -48,15 +48,15 @@ public sealed class DoctrinaHostFactory : WebApplicationFactory<Program>
             });
         });
 
-    /// <summary>Bearer-token van een systeem zonder rollen, voor aanroepen van <c>/api/v1</c>.</summary>
+    /// <summary>Bearer token of a system without roles, for calls to <c>/api/v1</c>.</summary>
     public string CreateApiToken() => Idp.CreateAccessToken(ApiAudience, "doctrina-test-client", []);
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // Omgeving "Test": instellingen uit src/Doctrina.Host/appsettings.Test.json, geen appsettings.Secrets.json (design D13).
+        // Environment "Test": settings from src/Doctrina.Host/appsettings.Test.json, no appsettings.Secrets.json (design D13).
         builder.UseEnvironment(DoctrinaConfigurationExtensions.TestEnvironment);
-        // Statische bestanden van Razor Class Libraries (_content/Doctrina.UI/...) laadt ASP.NET Core buiten Development
-        // alleen uit de publish-uitvoer; in tests komen ze uit het manifest van de build.
+        // Static files of Razor Class Libraries (_content/Doctrina.UI/...) are loaded by ASP.NET Core outside Development
+        // only from the publish output; in tests they come from the build manifest.
         builder.UseStaticWebAssets();
 
         builder.ConfigureTestServices(services =>
@@ -85,7 +85,7 @@ public sealed class DoctrinaHostFactory : WebApplicationFactory<Program>
 
 public static class HostFactoryExtensions
 {
-    /// <summary>Start de host en geeft de exception terug waarmee het opstarten mislukt (of <see langword="null"/>).</summary>
+    /// <summary>Starts the host and returns the exception that makes start-up fail (or <see langword="null"/>).</summary>
     public static ModuleConfigurationException? StartupFailure(this WebApplicationFactory<Program> factory)
     {
         var exception = Record.Exception(() => factory.CreateClient().Dispose());
@@ -100,7 +100,7 @@ public static class HostFactoryExtensions
         return exception is null ? null : throw new InvalidOperationException("Opstarten mislukte om een andere reden.", exception);
     }
 
-    /// <summary>Een "browser": volgt geen redirects automatisch, bewaart cookies, praat https.</summary>
+    /// <summary>A "browser": does not follow redirects automatically, keeps cookies, speaks https.</summary>
     public static HttpClient CreateBrowser(this WebApplicationFactory<Program> factory) =>
         factory.CreateClient(new WebApplicationFactoryClientOptions
         {

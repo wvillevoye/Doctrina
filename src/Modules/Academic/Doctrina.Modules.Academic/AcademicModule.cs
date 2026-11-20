@@ -31,8 +31,8 @@ public sealed class AcademicModule : IModule
 
     public IReadOnlyCollection<NavItem> Navigation =>
     [
-        new("My courses", "/my-courses", AcademicPermissions.MyCourses, Order: 10),
-        new("Academic", "/academic", AcademicPermissions.Read, Order: 90),
+        new("My courses", "/my-courses", AcademicPermissions.MyCourses, Order: 10, Icon: "book-open"),
+        new("Academic", "/academic", AcademicPermissions.Read, Order: 90, Icon: "graduation-cap"),
     ];
 
     public void ConfigureServices(IServiceCollection services, IConfiguration configuration)

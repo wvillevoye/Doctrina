@@ -22,7 +22,7 @@
     <DcCard>
       <DcForm Model="_form" Error="_error" OnValidSubmit="SaveAsync" FormName="edit-page" data-testid="edit-page-form">
         <DcTextField Label="Title" Required @bind-Value="_form.Title" />
-        <DcTextField Label="Text" Rows="16" Hint="Markdown: # heading, **bold**, *italic*, - list, [link](https://…)." @bind-Value="_form.Body" />
+        <MarkdownEditor Label="Text" Rows="16" Hint="Markdown: # heading, **bold**, *italic*, - list, [link](https://…)." @bind-Value="_form.Body" />
         <div class="dc-form__actions">
           <DcButton Type="submit" Variant="DcButtonVariant.Primary">Save</DcButton>
           <DcButton OnClick="() => _preview = !_preview" data-testid="preview-toggle">@(_preview ? "Hide preview" : "Preview")</DcButton>
@@ -33,9 +33,7 @@
 
     @if (_preview)
     {
-      <DcCard Title="Preview" data-testid="preview">
-        <MarkdownView Text="@_form.Body" />
-      </DcCard>
+      <PreviewWindow Text="@_form.Body" OnClose="() => _preview = false" />
     }
   </div>
 }

@@ -1,36 +1,36 @@
-// Design tokens van Doctrina: de enige plek met letterlijke kleurwaarden (spec theming, design D2).
+// Design tokens of Doctrina: the only place with literal colour values (spec theming, design D2).
 //
-// Opbouw:
-// 1. Sass-variabelen met de kleurwaarden per thema. Bootstrap gebruikt de lichte waarden tijdens het compileren
-//    (_bootstrap-config.scss); tijdens runtime gelden alleen de CSS-variabelen hieronder.
-// 2. CSS-variabelen `--dc-*`, één per regel. Een white-label-stylesheet overschrijft alleen deze variabelen
-//    (docs/ontwikkelen/vormgeving.md). Tests lezen dit bestand regel voor regel (contrast, design D12).
+// Structure:
+// 1. Sass variables with the colour values per theme. Bootstrap uses the light values at compile time
+//    (_bootstrap-config.scss); at runtime only the CSS variables below apply.
+// 2. CSS variables `--dc-*`, one per line. A white-label stylesheet overrides only these variables
+//    (docs/ontwikkelen/vormgeving.md). Tests read this file line by line (contrast, design D12).
 //
-// Thema's (design D3): `data-dc-theme="light|dark|system"` op <html> of op een container.
+// Themes (design D3): `data-dc-theme="light|dark|system"` on <html> or on a container.
 
 // ---------------------------------------------------------------------------------------------------------------
-// 1. Kleurwaarden
+// 1. Colour values
 // ---------------------------------------------------------------------------------------------------------------
 
-// Palet "Doctrina" (voorstel §7.0)
-$dc-ink: #1f2a44;
-$dc-accent: #b44d32;
-$dc-sage: #6f8f7a;
-$dc-paper: #faf7f2;
+// Palette Maastricht University (https://localhost:5001/brand/colors.json; design D1 of add-um-theme)
+$um-dark-blue: #001c3d;
+$um-dark-blue-hover: #001428;
+$um-orange: #d2460f;
+$um-light-blue: #007fad;
+$um-light-blue-hover: #006089;
+$um-grey-100: #f5f5f5;
+$um-grey-600: #6c757d;
+$um-text: #333333;
 $dc-white: #ffffff;
 $dc-black: #000000;
-$dc-stone-50: #f7f4ef;
-$dc-stone-100: #efeae2;
-$dc-stone-200: #e2dbd0;
-$dc-stone-300: #cdc4b6;
-$dc-stone-400: #a99f91;
-$dc-stone-500: #8a8177;
-$dc-stone-600: #5e574e;
-$dc-stone-700: #48423b;
-$dc-stone-800: #2f2b27;
-$dc-stone-900: #1c1a17;
 
-// Licht thema: semantische kleuren
+// Light theme: colours derived from the palette where a brand colour is too weak as text (design D2)
+$dc-light-surface-sunken: #eceef0;
+$dc-light-neutral-subtle: #e6e9ec;
+$dc-light-text-muted: #5f676e;
+$dc-light-border: #dde1e5;
+
+// Light theme: semantic colours
 $dc-light-success: #3f6b52;
 $dc-light-success-subtle: #e6efe8;
 $dc-light-warning: #8a5a00;
@@ -39,16 +39,22 @@ $dc-light-danger: #a8322b;
 $dc-light-danger-subtle: #f8e5e2;
 $dc-light-info: #2f5d8a;
 $dc-light-info-subtle: #e4ecf5;
+$dc-light-md-purple: #6a3d9a;
+$dc-light-md-teal: #0b6e6e;
+$dc-light-md-pink: #b3237a;
+$dc-light-md-brown: #7a4a21;
+$dc-light-md-olive: #5d6b1a;
 
-// Donker thema: diepe inkt, perkament-tekst, accent iets lichter (voorstel §7.0)
-$dc-dark-bg: #121827;
-$dc-dark-surface: #1a2236;
-$dc-dark-surface-sunken: #0e1320;
-$dc-dark-text: #efe8dc;
-$dc-dark-text-muted: #b5ac9e;
-$dc-dark-border: #2e3850;
-$dc-dark-border-strong: #7d7568;
-$dc-dark-accent: #e58a6e;
+// Dark theme: dark blue background; lighter orange and light blue so they can be used as text (design D3)
+$dc-dark-bg: #001c3d; // = $um-dark-blue
+$dc-dark-surface: #0a2a52;
+$dc-dark-surface-sunken: #001428; // = $um-dark-blue-hover
+$dc-dark-text: #e8edf3;
+$dc-dark-text-muted: #a9b8c9;
+$dc-dark-border: #1b3a63;
+$dc-dark-border-strong: #7389a6;
+$dc-dark-accent: #f07a4d;
+$dc-dark-link: #4db8e3;
 $dc-dark-success: #8dbb9e;
 $dc-dark-success-subtle: #1c3328;
 $dc-dark-warning: #e2b45c;
@@ -57,25 +63,30 @@ $dc-dark-danger: #f08a80;
 $dc-dark-danger-subtle: #3d1f1f;
 $dc-dark-info: #8fb8e3;
 $dc-dark-info-subtle: #1b2c42;
+$dc-dark-md-purple: #c3a6e8;
+$dc-dark-md-teal: #5fd0c8;
+$dc-dark-md-pink: #f08fc4;
+$dc-dark-md-brown: #d4a373;
+$dc-dark-md-olive: #bccb6a;
 
 // ---------------------------------------------------------------------------------------------------------------
-// 2. CSS-variabelen
+// 2. CSS variables
 // ---------------------------------------------------------------------------------------------------------------
 
-// Kleuren van het lichte thema (ook de standaard).
+// Colours of the light theme (also the default).
 @mixin dc-light-colors {
-  --dc-bg: #{$dc-paper};
+  --dc-bg: #{$um-grey-100};
   --dc-surface: #{$dc-white};
-  --dc-surface-sunken: #{$dc-stone-50};
-  --dc-text: #{$dc-ink};
-  --dc-text-muted: #{$dc-stone-600};
-  --dc-heading: #{$dc-ink};
-  --dc-border: #{$dc-stone-200};
-  --dc-border-strong: #{$dc-stone-500};
-  --dc-accent: #{$dc-accent};
+  --dc-surface-sunken: #{$dc-light-surface-sunken};
+  --dc-text: #{$um-text};
+  --dc-text-muted: #{$dc-light-text-muted};
+  --dc-heading: #{$um-dark-blue};
+  --dc-border: #{$dc-light-border};
+  --dc-border-strong: #{$um-grey-600};
+  --dc-accent: #{$um-orange};
   --dc-accent-contrast: #{$dc-white};
-  --dc-link: #{$dc-accent};
-  --dc-focus: #{$dc-accent};
+  --dc-link: #{$um-light-blue-hover};
+  --dc-focus: #{$um-light-blue};
   --dc-shade: #{$dc-black};
   --dc-success: #{$dc-light-success};
   --dc-success-contrast: #{$dc-white};
@@ -89,12 +100,31 @@ $dc-dark-info-subtle: #1b2c42;
   --dc-info: #{$dc-light-info};
   --dc-info-contrast: #{$dc-white};
   --dc-info-subtle: #{$dc-light-info-subtle};
-  --dc-neutral-subtle: #{$dc-stone-100};
-  --dc-backdrop: #{rgba($dc-ink, 0.45)};
+  --dc-neutral-subtle: #{$dc-light-neutral-subtle};
+  --dc-md-accent: var(--dc-accent);
+  --dc-md-blue: var(--dc-heading);
+  --dc-md-lightblue: var(--dc-link);
+  --dc-md-success: var(--dc-success);
+  --dc-md-warning: var(--dc-warning);
+  --dc-md-danger: var(--dc-danger);
+  --dc-md-muted: var(--dc-text-muted);
+  --dc-md-purple: #{$dc-light-md-purple};
+  --dc-md-teal: #{$dc-light-md-teal};
+  --dc-md-pink: #{$dc-light-md-pink};
+  --dc-md-brown: #{$dc-light-md-brown};
+  --dc-md-olive: #{$dc-light-md-olive};
+  --dc-sidebar-bg: var(--dc-bg);
+  --dc-sidebar-text: var(--dc-text);
+  --dc-sidebar-text-muted: var(--dc-text-muted);
+  --dc-sidebar-hover: var(--dc-neutral-subtle);
+  --dc-sidebar-active-bg: var(--dc-surface);
+  --dc-sidebar-indicator: var(--dc-accent);
+  --dc-sidebar-border: var(--dc-border);
+  --dc-backdrop: #{rgba($um-dark-blue, 0.45)};
   color-scheme: light;
 }
 
-// Kleuren van het donkere thema.
+// Colours of the dark theme.
 @mixin dc-dark-colors {
   --dc-bg: #{$dc-dark-bg};
   --dc-surface: #{$dc-dark-surface};
@@ -106,8 +136,8 @@ $dc-dark-info-subtle: #1b2c42;
   --dc-border-strong: #{$dc-dark-border-strong};
   --dc-accent: #{$dc-dark-accent};
   --dc-accent-contrast: #{$dc-dark-bg};
-  --dc-link: #{$dc-dark-accent};
-  --dc-focus: #{$dc-dark-accent};
+  --dc-link: #{$dc-dark-link};
+  --dc-focus: #{$dc-dark-link};
   --dc-shade: #{$dc-white};
   --dc-success: #{$dc-dark-success};
   --dc-success-contrast: #{$dc-dark-bg};
@@ -122,25 +152,34 @@ $dc-dark-info-subtle: #1b2c42;
   --dc-info-contrast: #{$dc-dark-bg};
   --dc-info-subtle: #{$dc-dark-info-subtle};
   --dc-neutral-subtle: #{$dc-dark-border};
+  --dc-md-accent: var(--dc-accent);
+  --dc-md-blue: var(--dc-heading);
+  --dc-md-lightblue: var(--dc-link);
+  --dc-md-success: var(--dc-success);
+  --dc-md-warning: var(--dc-warning);
+  --dc-md-danger: var(--dc-danger);
+  --dc-md-muted: var(--dc-text-muted);
+  --dc-md-purple: #{$dc-dark-md-purple};
+  --dc-md-teal: #{$dc-dark-md-teal};
+  --dc-md-pink: #{$dc-dark-md-pink};
+  --dc-md-brown: #{$dc-dark-md-brown};
+  --dc-md-olive: #{$dc-dark-md-olive};
+  --dc-sidebar-bg: var(--dc-bg);
+  --dc-sidebar-text: var(--dc-text);
+  --dc-sidebar-text-muted: var(--dc-text-muted);
+  --dc-sidebar-hover: var(--dc-neutral-subtle);
+  --dc-sidebar-active-bg: var(--dc-surface);
+  --dc-sidebar-indicator: var(--dc-accent);
+  --dc-sidebar-border: var(--dc-border);
   --dc-backdrop: #{rgba($dc-black, 0.6)};
   color-scheme: dark;
 }
 
-// Thema-onafhankelijke tokens: palet, typografie, spacing, radius, schaduw, motion.
+// Theme-independent tokens: palette, typography, spacing, radius, shadow, motion.
 :root {
-  --dc-ink: #{$dc-ink};
-  --dc-sage: #{$dc-sage};
-  --dc-paper: #{$dc-paper};
-  --dc-stone-50: #{$dc-stone-50};
-  --dc-stone-100: #{$dc-stone-100};
-  --dc-stone-200: #{$dc-stone-200};
-  --dc-stone-300: #{$dc-stone-300};
-  --dc-stone-400: #{$dc-stone-400};
-  --dc-stone-500: #{$dc-stone-500};
-  --dc-stone-600: #{$dc-stone-600};
-  --dc-stone-700: #{$dc-stone-700};
-  --dc-stone-800: #{$dc-stone-800};
-  --dc-stone-900: #{$dc-stone-900};
+  --dc-um-dark-blue: #{$um-dark-blue};
+  --dc-um-orange: #{$um-orange};
+  --dc-um-light-blue: #{$um-light-blue};
 
   --dc-font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --dc-font-heading: "Fraunces", Georgia, "Times New Roman", serif;
@@ -174,7 +213,7 @@ $dc-dark-info-subtle: #1b2c42;
   --dc-focus-width: 3px;
   --dc-focus-offset: 2px;
 
-  --dc-shadow-float: 0 0.5rem 1.5rem #{rgba($dc-ink, 0.18)};
+  --dc-shadow-float: 0 0.5rem 1.5rem #{rgba($um-dark-blue, 0.18)};
 
   --dc-duration: 180ms;
   --dc-duration-fast: 150ms;

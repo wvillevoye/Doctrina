@@ -1,10 +1,10 @@
 namespace Doctrina.UI.Components;
 
-/// <summary>Kolom van een <see cref="DcTable{TItem}"/>: kop plus de waarde of een eigen weergave per rij.</summary>
-/// <typeparam name="TItem">Type van de rijen.</typeparam>
-/// <param name="Title">Kolomkop (wordt een <c>th scope="col"</c>).</param>
-/// <param name="Value">Tekstwaarde van een rij; genegeerd als <paramref name="Template"/> is gezet.</param>
-/// <param name="Template">Eigen weergave van een cel, bv. een link of badge.</param>
+/// <summary>Column of a <see cref="DcTable{TItem}"/>: heading plus the value or a custom rendering per row.</summary>
+/// <typeparam name="TItem">Type of the rows.</typeparam>
+/// <param name="Title">Column heading (becomes a <c>th scope="col"</c>).</param>
+/// <param name="Value">Text value of a row; ignored if <paramref name="Template"/> is set.</param>
+/// <param name="Template">Custom rendering of a cell, e.g. a link or badge.</param>
 public sealed record DcTableColumn<TItem>(
     string Title,
     Func<TItem, object?>? Value = null,

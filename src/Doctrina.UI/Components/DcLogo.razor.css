@@ -1,0 +1,24 @@
+.dc-logo {
+  display: block;
+  flex: none;
+}
+
+.dc-logo__tile {
+  fill: var(--dc-accent);
+}
+
+.dc-logo__d {
+  fill: var(--dc-accent-contrast);
+}
+
+.dc-logo__page {
+  fill: var(--dc-accent);
+}
+
+.dc-logo__rule {
+  fill: none;
+  stroke: var(--dc-accent-contrast);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  opacity: 0.7;
+}

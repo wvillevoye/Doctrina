@@ -1,9 +1,9 @@
-﻿# Genereert realm-bestanden met vaste testaccounts + N nepgebruikers (medewerkers/studenten).
-#   realm/doctrina-realm.json  voor Doctrina (clients doctrina-web / doctrina-api / doctrina-sis-sync)
-#   realm/demo-realm.json      algemene speeltuin (alleen met -Realm demo of all); the shared Keycloak reads its own
+﻿# Generates realm files with fixed test accounts + N fake users (staff/students).
+#   realm/doctrina-realm.json  for Doctrina (clients doctrina-web / doctrina-api / doctrina-sis-sync)
+#   realm/demo-realm.json      general playground (only with -Realm demo or all); the shared Keycloak reads its own
 #                              copy, so copy the result to ..\..\Keycloak\realm\ afterwards
-# Gebruik:  powershell -ExecutionPolicy Bypass -File scripts\generate-realm.ps1 [-Realm doctrina|demo|all] [-Count 100] [-StudentRatio 0.7] [-Seed 42]
-# Daarna (in ..\..\Keycloak):   docker compose down -v; docker compose up -d
+# Usage:  powershell -ExecutionPolicy Bypass -File scripts\generate-realm.ps1 [-Realm doctrina|demo|all] [-Count 100] [-StudentRatio 0.7] [-Seed 42]
+# Afterwards (in ..\..\Keycloak):   docker compose down -v; docker compose up -d
 param(
     [ValidateSet("all","demo","doctrina")][string]$Realm = "doctrina",
     [int]$Count = 250,
@@ -20,7 +20,7 @@ $firstNames = @("Daan","Sem","Lucas","Levi","Finn","Noah","Milan","Luuk","Bram",
 $lastNames  = @("de Jong","Jansen","de Vries","van den Berg","van Dijk","Bakker","Janssen","Visser","Smit","Meijer","de Boer","Mulder","de Groot","Bos","Vos",
                 "Peters","Hendriks","van Leeuwen","Dekker","Brouwer","de Wit","Dijkstra","Smits","de Graaf","van der Meer","Kok","Jacobs","Vermeulen","Willems","Hermans",
                 "Lemmens","Claessens","Schreurs","Coenen","Wouters","Huntjens","Ramaekers","Eurlings","Vroemen","Kuipers")
-# Indeling Universiteit Maastricht: 6 faculteiten + service centres (department = korte code, departmentName = volledige naam)
+# Layout of Maastricht University: 6 faculties + service centres (department = short code, departmentName = full name)
 $faculties = @(
     @{ code = "FHML";  name = "Faculty of Health, Medicine and Life Sciences"; programs = @("Geneeskunde","Biomedical Sciences","Health Sciences") },
     @{ code = "SBE";   name = "School of Business and Economics";             programs = @("International Business","Econometrics and Operations Research","Economics and Business Economics") },
@@ -42,14 +42,14 @@ $serviceShare = 0.3   # deel van de medewerkers dat bij een dienst werkt i.p.v. 
 
 function To-Slug([string]$s) { ($s.ToLower() -replace "[^a-z0-9]", "") }
 
-# ---------------------------------------------------------------- gebruikers
-# $aff: hoe "medewerker"/"student" heet in deze realm (rol + attribuutwaarde + groep)
-#       en optioneel $aff.numbers: nummerformaat + personId (realm doctrina)
+# ---------------------------------------------------------------- users
+# $aff: what "medewerker"/"student" is called in this realm (role + attribute value + group)
+#       and optionally $aff.numbers: number format + personId (realm doctrina)
 function New-Users($fixed, $aff) {
     $null = Get-Random -SetSeed $Seed
     $users = New-Object System.Collections.ArrayList
     $usedNumbers = @{}
-    # Precies één Get-Random per gebruiker, zodat namen gelijk blijven bij een ander nummerformaat.
+    # Exactly one Get-Random per user, so names stay the same with a different number format.
     function Next-Number([bool]$student) {
         $s = $aff.numbers
         if (-not $s) {   # oud formaat (realm demo): i6xxxxxx / Exxxxx
@@ -137,7 +137,7 @@ function New-UserProfile($affValues) {
             [ordered]@{ name = "lastName"; displayName = '${lastName}'; required = @{ roles = @("user") }; permissions = $userEdit; multivalued = $false
                         validations = [ordered]@{ length = @{ max = 255 }; "person-name-prohibited-characters" = @{} } },
             (Attr "affiliation" "Aanstelling" @{ validations = @{ options = @{ options = $affValues } }; annotations = @{ inputType = "select" } }),
-            # Vrij tekstveld (geen keuzelijst): via Entra kunnen andere waarden binnenkomen
+            # Free text field (no drop-down): other values can arrive via Entra
             (Attr "department" "Faculteit / dienst (code, bv. FASoS, ICTS)"),
             (Attr "departmentName" "Faculteit / dienst (naam)"),
             (Attr "employeeNumber" "Personeelsnummer"),
@@ -165,17 +165,17 @@ function M-Attr($attr, $claim) {
 }
 function M-Groups { [ordered]@{ name = "groups"; protocol = "openid-connect"; protocolMapper = "oidc-group-membership-mapper"; consentRequired = $false
         config = [ordered]@{ "claim.name" = "groups"; "full.path" = "false"; "id.token.claim" = "true"; "access.token.claim" = "true"; "userinfo.token.claim" = "true" } } }
-# Platte "roles"-claim met realm-rollen, zoals Entra app-rollen
+# Flat "roles" claim with realm roles, like Entra app roles
 function M-RealmRolesFlat { [ordered]@{ name = "roles (Entra-stijl)"; protocol = "openid-connect"; protocolMapper = "oidc-usermodel-realm-role-mapper"; consentRequired = $false
         config = [ordered]@{ "claim.name" = "roles"; "multivalued" = "true"; "jsonType.label" = "String"
                              "id.token.claim" = "true"; "access.token.claim" = "true"; "userinfo.token.claim" = "true"; "introspection.token.claim" = "true" } } }
-# Platte "roles"-claim met client-rollen van een andere client (Entra: application permissions bij client credentials)
+# Flat "roles" claim with client roles of another client (Entra: application permissions with client credentials)
 function M-ClientRolesFlat($clientId) { [ordered]@{ name = "roles ($clientId)"; protocol = "openid-connect"; protocolMapper = "oidc-usermodel-client-role-mapper"; consentRequired = $false
         config = [ordered]@{ "usermodel.clientRoleMapping.clientId" = $clientId; "claim.name" = "roles"; "multivalued" = "true"; "jsonType.label" = "String"
                              "access.token.claim" = "true"; "introspection.token.claim" = "true"; "id.token.claim" = "false"; "userinfo.token.claim" = "false" } } }
 function M-Audience($aud) { [ordered]@{ name = "aud $aud"; protocol = "openid-connect"; protocolMapper = "oidc-audience-mapper"; consentRequired = $false
         config = [ordered]@{ "included.client.audience" = $aud; "access.token.claim" = "true"; "id.token.claim" = "false"; "introspection.token.claim" = "true" } } }
-# "oid" = Keycloak user-id (Entra: object-id van de gebruiker)
+# "oid" = Keycloak user id (Entra: object id of the user)
 function M-Oid { [ordered]@{ name = "oid"; protocol = "openid-connect"; protocolMapper = "oidc-usermodel-property-mapper"; consentRequired = $false
         config = [ordered]@{ "user.attribute" = "id"; "claim.name" = "oid"; "jsonType.label" = "String"
                              "id.token.claim" = "true"; "access.token.claim" = "true"; "userinfo.token.claim" = "true"; "introspection.token.claim" = "true" } } }
@@ -316,10 +316,10 @@ if ($Realm -in "all","demo") {
 
 # ================================================================ realm: doctrina
 if ($Realm -in "all","doctrina") {
-    # Rollen en affiliation volgen OOAPI / eduPersonAffiliation-waarden (employee, student)
+    # Roles and affiliation follow OOAPI / eduPersonAffiliation values (employee, student)
     $aff = @{ student  = @{ value = "student";  role = "student";  group = "Studenten" }
               employee = @{ value = "employee"; role = "employee"; group = "Medewerkers" }
-              # UM-stijl nummers: studenten I6 + 6 cijfers, medewerkers P7 + 6 cijfers; ook als personId
+              # UM-style numbers: students I6 + 6 digits, staff P7 + 6 digits; also as personId
               numbers  = @{ studentPrefix = "I6"; employeePrefix = "P7"; personId = $true } }
     $fixed = @(
         @{ u="beheerder"; f="Beheer"; l="Doctrina"; roles=@("admin","employee"); groups=@("/Beheerders","/Medewerkers"); aff="employee"; dep="ICTS"; nr="P7000001" },
@@ -340,7 +340,7 @@ if ($Realm -in "all","doctrina") {
                 @{ name = "employee"; description = "Medewerker (OOAPI affiliation: employee)" },
                 @{ name = "student";  description = "Student (OOAPI affiliation: student)" })
             client = [ordered]@{
-                # Application permissions voor systemen (client credentials) - Entra: app roles met allowedMemberTypes = Application
+                # Application permissions for systems (client credentials) - Entra: app roles with allowedMemberTypes = Application
                 "doctrina-api" = @($apiScopes | ForEach-Object { @{ name = $_; description = "API-permissie $_" } })
             } }
         groups = @(
@@ -359,20 +359,20 @@ if ($Realm -in "all","doctrina") {
                     "post.logout.redirect.uris" = "https://localhost:5001/signout-callback-oidc##http://localhost:5000/signout-callback-oidc##https://localhost:5001/##http://localhost:5000/" }
                 webOrigins = @("+")
                 protocolMappers = @($userMappers + (M-Attr "personId" "personId") + (M-RealmRolesFlat) + (M-Oid) + (M-Audience "doctrina-api")) },
-            # De API als resource (audience); geen eigen login-flows
+            # The API as a resource (audience); no login flows of its own
             [ordered]@{ clientId = "doctrina-api"; name = "Doctrina API (resource)"; enabled = $true; publicClient = $false
                 secret = "doctrina-api-secret"; standardFlowEnabled = $false; directAccessGrantsEnabled = $false; serviceAccountsEnabled = $false; bearerOnly = $false },
-            # Voorbeeld-systeemclient (SIS-koppeling): client credentials met API-permissies
+            # Example system client (SIS integration): client credentials with API permissions
             [ordered]@{ clientId = "doctrina-sis-sync"; name = "SIS-koppeling (client credentials)"; enabled = $true; publicClient = $false
                 secret = "doctrina-sis-sync-secret"; standardFlowEnabled = $false; directAccessGrantsEnabled = $false; serviceAccountsEnabled = $true
                 protocolMappers = @((M-ClientRolesFlat "doctrina-api"), (M-Audience "doctrina-api")) },
-            # Hulpclient voor tests/scripts (password grant) - alleen dev
+            # Helper client for tests/scripts (password grant) - dev only
             [ordered]@{ clientId = "doctrina-dev-cli"; name = "Dev CLI (password grant, alleen lokaal)"; enabled = $true; publicClient = $true
                 standardFlowEnabled = $false; directAccessGrantsEnabled = $true
                 protocolMappers = @($userMappers + (M-Attr "personId" "personId") + (M-RealmRolesFlat) + (M-Oid) + (M-Audience "doctrina-api")) }
         )
     }
-    # Service-account van de SIS-client krijgt API-permissies
+    # Service account of the SIS client gets API permissions
     [void]$realmObj.users.Add([ordered]@{
         username = "service-account-doctrina-sis-sync"; enabled = $true; serviceAccountClientId = "doctrina-sis-sync"
         clientRoles = @{ "doctrina-api" = @("doctrina.persons.read","doctrina.persons.write","doctrina.courses.read","doctrina.courses.write","doctrina.import") }

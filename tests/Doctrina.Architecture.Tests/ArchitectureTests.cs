@@ -3,8 +3,8 @@ using Doctrina.Architecture.Tests.Rules;
 using Doctrina.Core.Results;
 using NetArchTest.Rules;
 
-// Tests volgen spec openspec/specs/module-system/spec.md
-// (requirement "Modulegrenzen worden tijdens de build bewaakt") en taak 4.1.
+// Tests follow spec openspec/specs/module-system/spec.md
+// (requirement "Modulegrenzen worden tijdens de build bewaakt") and task 4.1.
 namespace Doctrina.Architecture.Tests;
 
 public sealed class ModulegrenzenWordenTijdensDeBuildBewaakt
@@ -81,7 +81,7 @@ public sealed class DoctrinaCoreBevatGeenInfrastructuur
     }
 }
 
-// Design D7 / taak 1.4 van add-design-system: de componentenbibliotheek kent alleen Core en ASP.NET Core.
+// Design D7 / task 1.4 of add-design-system: the component library only knows Core and ASP.NET Core.
 public sealed class DoctrinaUiHangtAlleenAfVanCore
 {
     private static readonly string[] Forbidden = ["Doctrina.Infrastructure", "Doctrina.Host", ModuleBoundaries.Prefix];
@@ -106,7 +106,7 @@ public sealed class DoctrinaUiHangtAlleenAfVanCore
             .ToList();
 
         Assert.Equal(["Doctrina.Core"], projectReferences);
-        Assert.DoesNotContain("AspNetCore.SassCompiler", assemblyReferences); // alleen een build-hulpmiddel
+        Assert.DoesNotContain("AspNetCore.SassCompiler", assemblyReferences); // only a build tool
         Assert.DoesNotContain(assemblyReferences, IsForbidden);
     }
 }
@@ -118,7 +118,7 @@ public sealed class ModulesGebruikenGeenRuweBootstrapClasses
     {
         var violations = RawBootstrap.Violations(RepoPaths.FixtureModules);
 
-        // Alleen de foute fixture (Alpha) wordt gemeld; Gamma gebruikt dc-classes.
+        // Only the wrong fixture (Alpha) is reported; Gamma uses dc classes.
         Assert.Collection(
             violations,
             v => Assert.Contains("RuweBootstrap.razor:2: ruwe Bootstrap-class(es) container, mt-3", v, StringComparison.Ordinal),
@@ -130,7 +130,7 @@ public sealed class ModulesGebruikenGeenRuweBootstrapClasses
         Assert.Empty(RawBootstrap.Violations(RepoPaths.ProductModules));
 }
 
-// Spec ui-components, requirement "Modules geven alleen vorm via de componentenbibliotheek" (add-design-system, taak 6.3).
+// Spec ui-components, requirement "Modules geven alleen vorm via de componentenbibliotheek" (add-design-system, task 6.3).
 public sealed class ModulesGevenAlleenVormViaDeComponentenbibliotheek
 {
     [Fact]
@@ -153,7 +153,7 @@ public sealed class ModulesGevenAlleenVormViaDeComponentenbibliotheek
         Assert.Empty(LiteralColors.Violations(RepoPaths.ProductModules));
 }
 
-// Spec app-shell, requirement "Hostpagina's gebruiken de componentenbibliotheek" (add-design-system, taak 6.3).
+// Spec app-shell, requirement "Hostpagina's gebruiken de componentenbibliotheek" (add-design-system, task 6.3).
 public sealed class HostpaginasGebruikenDeComponentenbibliotheek
 {
     [Fact]

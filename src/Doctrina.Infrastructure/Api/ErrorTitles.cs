@@ -9,20 +9,20 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Doctrina.Infrastructure.Api;
 
-/// <summary>Een <c>.resx</c>-bron met fouttitels; sleutel = foutcode (bv. <c>Academic.Course.NotFound</c>).</summary>
-/// <param name="Resources">De resources (neutrale taal = Nederlands, plus <c>.en</c>).</param>
+/// <summary>A <c>.resx</c> source with error titles; key = error code (e.g. <c>Academic.Course.NotFound</c>).</summary>
+/// <param name="Resources">The resources (neutral language = Dutch, plus <c>.en</c>).</param>
 public sealed record ErrorTitleSource(ResourceManager Resources);
 
 /// <summary>
-/// Vertaalde titels voor foutcodes (spec api-conventions "Fouttitels zijn vertaald", design D9): de taal van het verzoek
-/// (<c>Accept-Language</c>, nl standaard, en), met de eigen melding van de fout als terugval.
+/// Translated titles for error codes (spec api-conventions "Fouttitels zijn vertaald", design D9): the language of the request
+/// (<c>Accept-Language</c>, nl default, en), with the error's own message as fallback.
 /// </summary>
 public sealed class ErrorTitles(IEnumerable<ErrorTitleSource> sources) : IErrorTitles
 {
     private readonly ErrorTitleSource[] _sources = [.. sources];
     private static readonly CultureInfo English = CultureInfo.GetCultureInfo("en");
 
-    /// <summary>De vertaling van <paramref name="code"/> in <paramref name="culture"/>, of <paramref name="fallback"/>.</summary>
+    /// <summary>The translation of <paramref name="code"/> in <paramref name="culture"/>, or <paramref name="fallback"/>.</summary>
     public string For(string code, string fallback, CultureInfo? culture = null)
     {
         ArgumentNullException.ThrowIfNull(code);
@@ -44,12 +44,12 @@ public sealed class ErrorTitles(IEnumerable<ErrorTitleSource> sources) : IErrorT
     string IErrorTitles.For(string code, string fallback) => For(code, fallback, English);
 }
 
-/// <summary>ProblemDetails-afspraken voor alle fouten van de host.</summary>
+/// <summary>ProblemDetails conventions for all errors of the host.</summary>
 public static class DoctrinaProblemDetails
 {
     /// <summary>
-    /// Vult elke ProblemDetails aan: <c>code</c> voor kale 401/403 (<c>Auth.Unauthorized</c>/<c>Auth.Forbidden</c>) en
-    /// een vertaalde <c>title</c> op basis van <c>code</c>. <c>traceId</c> voegt ASP.NET Core zelf toe.
+    /// Completes every ProblemDetails: <c>code</c> for bare 401/403 (<c>Auth.Unauthorized</c>/<c>Auth.Forbidden</c>) and
+    /// a translated <c>title</c> based on <c>code</c>. ASP.NET Core adds <c>traceId</c> itself.
     /// </summary>
     public static void Customize(ProblemDetailsContext context)
     {
@@ -66,11 +66,11 @@ public static class DoctrinaProblemDetails
     }
 }
 
-/// <summary>Registratie van fouttitels.</summary>
+/// <summary>Registration of error titles.</summary>
 public static class ErrorTitleServiceCollectionExtensions
 {
     /// <summary>
-    /// Registreert de fouttitels uit <c>&lt;baseName&gt;.resx</c> in <paramref name="assembly"/>, bv.
+    /// Registers the error titles from <c>&lt;baseName&gt;.resx</c> in <paramref name="assembly"/>, e.g.
     /// <c>services.AddErrorTitles("Doctrina.Modules.Academic.Resources.AcademicErrors", typeof(AcademicModule).Assembly)</c>.
     /// </summary>
     public static IServiceCollection AddErrorTitles(this IServiceCollection services, string baseName, Assembly assembly)

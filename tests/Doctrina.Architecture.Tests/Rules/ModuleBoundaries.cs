@@ -5,15 +5,15 @@ using System.Xml.Linq;
 namespace Doctrina.Architecture.Tests.Rules;
 
 /// <summary>
-/// Regel "modules verwijzen niet naar elkaars implementatie" (huisregel 2, spec module-system). Een module bestaat uit
-/// <c>Doctrina.Modules.&lt;Naam&gt;</c> (implementatie) en <c>Doctrina.Modules.&lt;Naam&gt;.Contracts</c>.
+/// Rule "modules don't reference each other's implementation" (house rule 2, spec module-system). A module consists of
+/// <c>Doctrina.Modules.&lt;Name&gt;</c> (implementation) and <c>Doctrina.Modules.&lt;Name&gt;.Contracts</c>.
 /// </summary>
 internal static class ModuleBoundaries
 {
     public const string Prefix = "Doctrina.Modules.";
     public const string ContractsSuffix = ".Contracts";
 
-    /// <summary>Modulenaam van een project of assembly, of <see langword="null"/> als het geen module is.</summary>
+    /// <summary>Module name of a project or assembly, or <see langword="null"/> if it is not a module.</summary>
     public static string? ModuleOf(string projectName) =>
         projectName.StartsWith(Prefix, StringComparison.Ordinal)
             ? projectName[Prefix.Length..] is var rest && rest.EndsWith(ContractsSuffix, StringComparison.Ordinal)
@@ -24,7 +24,7 @@ internal static class ModuleBoundaries
     public static bool IsImplementation(string projectName) =>
         ModuleOf(projectName) is not null && !projectName.EndsWith(ContractsSuffix, StringComparison.Ordinal);
 
-    /// <summary>Foutmelding als <paramref name="from"/> naar de implementatie van een andere module verwijst.</summary>
+    /// <summary>Error message if <paramref name="from"/> references the implementation of another module.</summary>
     public static string? Check(string from, string to)
     {
         if (!IsImplementation(from) || !IsImplementation(to) || ModuleOf(from) == ModuleOf(to))
@@ -36,7 +36,7 @@ internal static class ModuleBoundaries
             + $"verwijs alleen naar {Prefix}{ModuleOf(to)}{ContractsSuffix} of gebruik events.";
     }
 
-    /// <summary>Implementatieprojecten van modules onder <paramref name="modulesRoot"/>.</summary>
+    /// <summary>Implementation projects of modules under <paramref name="modulesRoot"/>.</summary>
     public static IReadOnlyList<string> FindImplementationProjects(string modulesRoot) =>
         Directory.Exists(modulesRoot)
             ? [.. Directory.EnumerateFiles(modulesRoot, "*.csproj", SearchOption.AllDirectories)
@@ -44,7 +44,7 @@ internal static class ModuleBoundaries
                 .Order(StringComparer.Ordinal)]
             : [];
 
-    /// <summary>Overtredingen op projectniveau (<c>ProjectReference</c> in de <c>.csproj</c>-bestanden).</summary>
+    /// <summary>Violations at project level (<c>ProjectReference</c> in the <c>.csproj</c> files).</summary>
     public static IReadOnlyList<string> ProjectViolations(IEnumerable<string> projectFiles)
     {
         var violations = new List<string>();
@@ -62,7 +62,7 @@ internal static class ModuleBoundaries
         return violations;
     }
 
-    /// <summary>Overtredingen op assemblyniveau (verwijzingen in de gecompileerde metadata).</summary>
+    /// <summary>Violations at assembly level (references in the compiled metadata).</summary>
     public static IReadOnlyList<string> AssemblyViolations(IEnumerable<string> assemblyFiles)
     {
         var violations = new List<string>();

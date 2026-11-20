@@ -88,13 +88,30 @@ public sealed class ModulesVoegenSectiesToeAanDePaginaVanEenUitvoering(DoctrinaH
     [Fact]
     public async Task SectieVanEenIngeschakeldeModule()
     {
-        var sections = new TestModule("Sections", "Academic") { Services = s => s.AddOfferingPageSection<TestOfferingSection>(50) };
+        var sections = new TestModule("Sections", "Academic") { Services = s => s.AddOfferingPageSection<TestOfferingSection>(50, "Test section") };
         await using var academic = await AcademicHost.CreateAsync(factory, Ct, sections);
         var id = await academic.WithStudentAsync();
 
         var (_, html) = await academic.GetAsync(factory, StubUser.Student, $"/courses/{id}", Ct);
 
         Assert.Equal($"Test section {id}", Html.Parse(html).QuerySelector("[data-testid=test-section]")?.TextContent);
+    }
+
+    [Fact]
+    public async Task SectieDieZichVerbergtOntbreektOokInHetMenu()
+    {
+        var sections = new TestModule("Sections", "Academic")
+        {
+            Services = s => s.AddOfferingPageSection<TestOfferingSection>(50, "Test section", isVisible: (_, _, _) => Task.FromResult(false)),
+        };
+        await using var academic = await AcademicHost.CreateAsync(factory, Ct, sections);
+        var id = await academic.WithStudentAsync();
+
+        var (_, html) = await academic.GetAsync(factory, StubUser.Student, $"/courses/{id}", Ct);
+
+        var page = Html.Parse(html);
+        Assert.Null(page.QuerySelector("[data-testid=test-section]"));
+        Assert.DoesNotContain(page.QuerySelectorAll("[data-testid=course-nav] a"), a => a.TextContent.Trim() == "Test section");
     }
 
     [Fact]

@@ -1,7 +1,7 @@
 @inject NavigationManager Navigation
 
-@* Inhoud van de router als een pagina niet mag (navigeren binnen een geopende Blazor-pagina). Bij het laden van een
-   pagina regelt de server dit al: anoniem → inloggen, ingelogd zonder permissie → /access-denied (403). *@
+@* Content of the router when a page is not allowed (navigating within an open Blazor page). When a
+   page is loaded, the server already handles this: anonymous → sign in, signed in without permission → /access-denied (403). *@
 @if (_authenticated)
 {
   <DcPageHeader Title="Access denied" />

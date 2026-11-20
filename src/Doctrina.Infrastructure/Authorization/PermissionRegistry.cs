@@ -4,16 +4,16 @@ using Microsoft.Extensions.Configuration;
 namespace Doctrina.Infrastructure.Authorization;
 
 /// <summary>
-/// De permissies van de ingeschakelde modules en de koppeling van <c>roles</c>-waarden aan permissies uit
-/// <c>Authorization:RolePermissions</c> (design D8, spec access-control). Gebruikersrollen (<c>admin</c>,
-/// <c>employee</c>, …) en systeempermissies (<c>doctrina.import</c>, …) gebruiken dezelfde koppeling.
+/// The permissions of the enabled modules and the mapping of <c>roles</c> values to permissions from
+/// <c>Authorization:RolePermissions</c> (design D8, spec access-control). User roles (<c>admin</c>,
+/// <c>employee</c>, …) and system permissions (<c>doctrina.import</c>, …) use the same mapping.
 /// </summary>
 public sealed class PermissionRegistry
 {
-    /// <summary>Configuratiesectie met de koppeling rol → permissies.</summary>
+    /// <summary>Configuration section with the role → permissions mapping.</summary>
     public const string RolePermissionsSection = "Authorization:RolePermissions";
 
-    /// <summary>Waarde die alle permissies van ingeschakelde modules geeft.</summary>
+    /// <summary>Value that grants all permissions of enabled modules.</summary>
     public const string Wildcard = "*";
 
     private readonly Dictionary<string, Permission> _byName;
@@ -26,13 +26,13 @@ public sealed class PermissionRegistry
         All = [.. byName.Values.OrderBy(p => p.Name, StringComparer.Ordinal)];
     }
 
-    /// <summary>Alle permissies van de ingeschakelde modules, gesorteerd op naam.</summary>
+    /// <summary>All permissions of the enabled modules, sorted by name.</summary>
     public IReadOnlyList<Permission> All { get; }
 
-    /// <summary>De permissie met deze naam, of <see langword="null"/>.</summary>
+    /// <summary>The permission with this name, or <see langword="null"/>.</summary>
     public Permission? Find(string name) => _byName.GetValueOrDefault(name);
 
-    /// <summary>De vereniging van de permissies van alle <paramref name="roles"/>; onbekende rollen geven niets.</summary>
+    /// <summary>The union of the permissions of all <paramref name="roles"/>; unknown roles yield nothing.</summary>
     public IReadOnlySet<string> PermissionsFor(IEnumerable<string> roles)
     {
         ArgumentNullException.ThrowIfNull(roles);
@@ -48,7 +48,7 @@ public sealed class PermissionRegistry
         return result;
     }
 
-    /// <summary>Leest <see cref="RolePermissionsSection"/>: per rol een lijst permissienamen (of <see cref="Wildcard"/>).</summary>
+    /// <summary>Reads <see cref="RolePermissionsSection"/>: per role a list of permission names (or <see cref="Wildcard"/>).</summary>
     public static IReadOnlyDictionary<string, IReadOnlyList<string>> ReadMapping(IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
@@ -59,8 +59,8 @@ public sealed class PermissionRegistry
     }
 
     /// <summary>
-    /// Bouwt het register en voegt fouten toe aan <paramref name="errors"/>: permissie zonder modulenaam als prefix,
-    /// dubbele permissienaam, en een koppeling naar een onbekende permissie.
+    /// Builds the registry and adds errors to <paramref name="errors"/>: a permission without the module name as prefix,
+    /// a duplicate permission name, and a mapping to an unknown permission.
     /// </summary>
     internal static PermissionRegistry Create(
         IReadOnlyList<IModule> enabled,

@@ -1,12 +1,16 @@
 @page "/"
 
-<DcPageHeader Title="Welcome to Doctrina" DocumentTitle="Home" />
+<div class="dc-page--center" style="text-align: center">
+  <div style="display: flex; justify-content: center; margin-bottom: var(--dc-space-4)"><DcLogo Size="72" /></div>
+  <PageTitle>Home · Doctrina</PageTitle>
+  <h1>Welcome to Doctrina</h1>
 
-<AuthorizeView>
-  <Authorized>
-    <p>You are signed in as <strong>@context.User.Identity?.Name</strong>. View <DcLink Href="/profile">your profile</DcLink>.</p>
-  </Authorized>
-  <NotAuthorized>
-    <p>Sign in with your institution account to continue.</p>
-  </NotAuthorized>
-</AuthorizeView>
+  <AuthorizeView>
+    <Authorized>
+      <p>You are signed in as <strong>@context.User.Identity?.Name</strong>. View <DcLink Href="/profile">your profile</DcLink>.</p>
+    </Authorized>
+    <NotAuthorized>
+      <p>Sign in with your institution account to continue.</p>
+    </NotAuthorized>
+  </AuthorizeView>
+</div>

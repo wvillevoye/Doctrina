@@ -1,6 +1,6 @@
 @using Doctrina.UI.Components
 
-@* Testopstelling voor DcModal (taak 5.4): een knop die een dialoog "Bevestigen" opent. *@
+@* Test setup for DcModal (task 5.4): a button that opens a dialog "Bevestigen". *@
 <DcButton OnClick="() => _modal.ShowAsync()" data-testid="open">Verwijderen…</DcButton>
 <DcModal @ref="_modal" Title="Bevestigen" OnClose="() => Closed++">
   <p>Weet je het zeker?</p>

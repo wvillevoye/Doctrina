@@ -6,10 +6,10 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Doctrina.TestKit.Modules;
 
-/// <summary>Markering die een module bij <see cref="IModule.ConfigureServices"/> registreert, om de startvolgorde te zien.</summary>
+/// <summary>Marker that a module registers in <see cref="IModule.ConfigureServices"/>, to see the start order.</summary>
 public sealed record InitializedModule(string Name);
 
-/// <summary>Instelbare testmodule (design D10): naam, afhankelijkheden, navigatie, permissies en health check.</summary>
+/// <summary>Configurable test module (design D10): name, dependencies, navigation, permissions and health check.</summary>
 public class TestModule(string name, params string[] dependsOn) : IModule
 {
     public string Name => name;
@@ -20,19 +20,19 @@ public class TestModule(string name, params string[] dependsOn) : IModule
 
     public List<Permission> DeclaredPermissions { get; } = [];
 
-    /// <summary>Uitkomst van de health check van deze module; <see langword="null"/> = geen health check.</summary>
+    /// <summary>Result of this module's health check; <see langword="null"/> = no health check.</summary>
     public HealthStatus? Health { get; init; }
 
-    /// <summary>Extra registraties van deze module, bv. eventhandlers; alleen uitgevoerd als de module is ingeschakeld.</summary>
+    /// <summary>Extra registrations of this module, e.g. event handlers; only run if the module is enabled.</summary>
     public Action<IServiceCollection>? Services { get; init; }
 
-    /// <summary>Extra endpoints onder <c>/api/v1</c>; alleen gekoppeld als de module is ingeschakeld.</summary>
+    /// <summary>Extra endpoints under <c>/api/v1</c>; only mapped if the module is enabled.</summary>
     public Action<IEndpointRouteBuilder>? Endpoints { get; init; }
 
-    /// <summary>Extra endpoints onder <c>/ooapi/v5</c>; alleen gekoppeld als de module is ingeschakeld.</summary>
+    /// <summary>Extra endpoints under <c>/ooapi/v5</c>; only mapped if the module is enabled.</summary>
     public Action<IEndpointRouteBuilder>? OoapiEndpoints { get; init; }
 
-    /// <summary>Extra browser-endpoints onder <c>/{naam}</c>; alleen gekoppeld als de module is ingeschakeld.</summary>
+    /// <summary>Extra browser endpoints under <c>/{name}</c>; only mapped if the module is enabled.</summary>
     public Action<IEndpointRouteBuilder>? BrowserEndpoints { get; init; }
 
     public IReadOnlyCollection<NavItem> Navigation => NavItems;
@@ -59,7 +59,7 @@ public class TestModule(string name, params string[] dependsOn) : IModule
     public virtual void MapOoapiEndpoints(IEndpointRouteBuilder ooapi) => OoapiEndpoints?.Invoke(ooapi);
 }
 
-/// <summary>De testmodules <c>A</c> en <c>B</c> uit de specs.</summary>
+/// <summary>The test modules <c>A</c> and <c>B</c> from the specs.</summary>
 public static class TestModules
 {
     public static TestModule A(params string[] dependsOn) => new("A", dependsOn);

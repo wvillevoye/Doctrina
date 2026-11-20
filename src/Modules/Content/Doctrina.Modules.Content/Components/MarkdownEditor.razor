@@ -1,0 +1,85 @@
+@using System.Linq.Expressions
+@using Doctrina.Modules.Content.Application
+@using Doctrina.UI.Components
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+@* Markdown text field with a formatting toolbar (spec markdown-editor). The rules live in MarkdownFormatter; the
+   script only reads and sets text and selection (design D1 of add-markdown-toolbar). *@
+<div class="md-editor" @ref="_container" data-testid="markdown-editor">
+  <div class="md-editor__toolbar" role="toolbar" aria-label="Formatting">
+    <DcButton Variant="DcButtonVariant.Ghost" Icon="heading-1" Label="Heading 1" OnClick="@(() => ApplyAsync(MarkdownActionKind.Heading1))" />
+    <DcButton Variant="DcButtonVariant.Ghost" Icon="heading-2" Label="Heading 2" OnClick="@(() => ApplyAsync(MarkdownActionKind.Heading2))" />
+    <DcButton Variant="DcButtonVariant.Ghost" Icon="heading-3" Label="Heading 3" OnClick="@(() => ApplyAsync(MarkdownActionKind.Heading3))" />
+    <DcButton Variant="DcButtonVariant.Ghost" Icon="bold" Label="Bold" OnClick="@(() => ApplyAsync(MarkdownActionKind.Bold))" />
+    <DcButton Variant="DcButtonVariant.Ghost" Icon="italic" Label="Italic" OnClick="@(() => ApplyAsync(MarkdownActionKind.Italic))" />
+    <DcButton Variant="DcButtonVariant.Ghost" Icon="list" Label="Bulleted list" OnClick="@(() => ApplyAsync(MarkdownActionKind.BulletedList))" />
+    <DcButton Variant="DcButtonVariant.Ghost" Icon="link" Label="Link" OnClick="@(() => ApplyAsync(MarkdownActionKind.Link))" />
+    <DcButton Variant="DcButtonVariant.Ghost" Icon="align-left" Label="Align left" OnClick="@(() => ApplyAsync(MarkdownActionKind.Align, "left"))" />
+    <DcButton Variant="DcButtonVariant.Ghost" Icon="align-center" Label="Align center" OnClick="@(() => ApplyAsync(MarkdownActionKind.Align, "center"))" />
+    <DcButton Variant="DcButtonVariant.Ghost" Icon="align-right" Label="Align right" OnClick="@(() => ApplyAsync(MarkdownActionKind.Align, "right"))" />
+    <span class="md-editor__colors" style="anchor-name: --@_popoverId">
+      <DcButton Variant="DcButtonVariant.Ghost" Icon="palette" Label="Color" aria-haspopup="true" popovertarget="@_popoverId" />
+      <div id="@_popoverId" popover class="md-editor__palette" style="position-anchor: --@_popoverId" role="group" aria-label="Color">
+        @foreach (var name in Markdown.ColorNames)
+        {
+          <DcButton Variant="DcButtonVariant.Ghost" popovertarget="@_popoverId" popovertargetaction="hide"
+                    data-color="@name" title="@Caption(name)" OnClick="@(() => ApplyAsync(MarkdownActionKind.Color, name))">
+            <span class="md-editor__swatch md-editor__swatch--@name" aria-hidden="true"></span><span class="md-editor__name">@Caption(name)</span>
+          </DcButton>
+        }
+      </div>
+    </span>
+  </div>
+  <DcTextField Label="@Label" Rows="@Rows" Hint="@Hint" Value="@Value" ValueChanged="@ValueChanged" ValueExpression="@ValueExpression" />
+</div>
+
+@code {
+    private readonly string _popoverId = "md-colors-" + Guid.NewGuid().ToString("N")[..8]; // DOM id only, not an entity key
+    private ElementReference _container;
+    private IJSObjectReference? _module;
+
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+    [Parameter] public Expression<Func<string?>>? ValueExpression { get; set; }
+    [Parameter] public int Rows { get; set; } = 16;
+    [Parameter] public string? Hint { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _module ??= await JS.InvokeAsync<IJSObjectReference>("import", ModulePath);
+            await _module.InvokeVoidAsync("keepSelection", _container);
+        }
+    }
+
+    private const string ModulePath = "./_content/Doctrina.Modules.Content/md-editor.js";
+
+    private static string Caption(string name) => name switch
+    {
+        "accent" => "UM orange",
+        "blue" => "UM dark blue",
+        "lightblue" => "UM light blue",
+        _ => char.ToUpperInvariant(name[0]) + name[1..],
+    };
+
+    private async Task ApplyAsync(MarkdownActionKind kind, string? color = null)
+    {
+        // The state comes from the browser: typed text that has not fired a change event yet is not lost.
+        _module ??= await JS.InvokeAsync<IJSObjectReference>("import", ModulePath);
+        var state = await _module.InvokeAsync<EditorState>("getState", _container);
+        var next = MarkdownFormatter.Apply(new MarkdownAction(kind, color), state);
+        await _module.InvokeVoidAsync("setState", _container, next);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module is not null)
+        {
+            try { await _module.DisposeAsync(); } catch (JSDisconnectedException) { }
+        }
+    }
+}

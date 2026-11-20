@@ -1,4 +1,4 @@
-/* OPZETTELIJK FOUT: letterlijke kleur in plaats van een --dc-token. */
+/* DELIBERATELY WRONG: literal colour instead of a --dc token. */
 .melding {
   color: #c2573a;
 }

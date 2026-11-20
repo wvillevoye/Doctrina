@@ -10,7 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Doctrina.TestKit.Authentication;
 
-/// <summary>Een testgebruiker zoals de provider hem in het ID-token zet.</summary>
+/// <summary>A test user as the provider puts it in the ID token.</summary>
 public sealed record StubUser(string Subject, string Name, IReadOnlyList<string> Roles, string? Email = null, string? PersonId = null)
 {
     public static StubUser Student { get; } = new("sub-student", "Sanne Student", ["student"], "student@example.test", "I6000001");
@@ -19,8 +19,8 @@ public sealed record StubUser(string Subject, string Name, IReadOnlyList<string>
 }
 
 /// <summary>
-/// Nagebootste OpenID Connect-provider in het geheugen: metadata, autorisatiecodes, token-endpoint en ondertekende tokens.
-/// Vormt tokens zoals de dev-stack (Keycloak) en Entra ID: platte <c>roles</c>-claim, <c>name</c>, <c>azp</c>.
+/// Stubbed OpenID Connect provider in memory: metadata, authorization codes, token endpoint and signed tokens.
+/// Shapes tokens like the dev stack (Keycloak) and Entra ID: flat <c>roles</c> claim, <c>name</c>, <c>azp</c>.
 /// </summary>
 public sealed class StubOidcProvider : IDisposable
 {
@@ -49,7 +49,7 @@ public sealed class StubOidcProvider : IDisposable
 
     public OpenIdConnectConfiguration Configuration { get; }
 
-    /// <summary>Wat de provider doet na een geslaagde login: een code uitgeven voor deze gebruiker.</summary>
+    /// <summary>What the provider does after a successful login: issue a code for this user.</summary>
     public string IssueAuthorizationCode(StubUser user, string nonce, string clientId)
     {
         var code = $"code-{Interlocked.Increment(ref _codeCounter)}";
@@ -57,7 +57,7 @@ public sealed class StubOidcProvider : IDisposable
         return code;
     }
 
-    /// <summary>Access token zoals bij client credentials of namens een gebruiker.</summary>
+    /// <summary>Access token as with client credentials or on behalf of a user.</summary>
     public string CreateAccessToken(
         string audience,
         string clientId,
@@ -90,7 +90,7 @@ public sealed class StubOidcProvider : IDisposable
     /// <summary>When <see langword="false"/>, only the token endpoint fails (the callback after signing in at the provider).</summary>
     public bool IsTokenEndpointReachable { get; set; } = true;
 
-    /// <summary>HttpClient voor het backchannel van de OIDC-handler (token-endpoint).</summary>
+    /// <summary>HttpClient for the backchannel of the OIDC handler (token endpoint).</summary>
     public HttpClient CreateBackchannelClient() => new(new TokenEndpointHandler(this), disposeHandler: true);
 
     /// <summary>

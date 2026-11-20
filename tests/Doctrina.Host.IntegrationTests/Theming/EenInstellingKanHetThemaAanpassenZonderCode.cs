@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Options;
 
-// Spec theming, requirement "Een instelling kan het thema aanpassen zonder code"; taken 3.2 en 3.4, design D4.
+// Spec theming, requirement "Een instelling kan het thema aanpassen zonder code"; tasks 3.2 and 3.4, design D4.
 namespace Doctrina.Host.IntegrationTests.Theming;
 
 public sealed partial class EenInstellingKanHetThemaAanpassenZonderCode(DoctrinaHostFactory factory) : IClassFixture<DoctrinaHostFactory>

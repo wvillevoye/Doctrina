@@ -1,9 +1,9 @@
-// Brug van Bootstrap naar de tokens (design D2). Bootstrap rekent kleuren uit tijdens het compileren; deze laag zet
-// zijn runtime-variabelen (--bs-*) op var(--dc-*), zodat een gewijzigd token (licht/donker, white-label) overal
-// doorwerkt. Afgeleide toestanden (hover/active) mengen de tokenkleur met --dc-shade via color-mix().
+// Bridge from Bootstrap to the tokens (design D2). Bootstrap computes colours at compile time; this layer sets
+// its runtime variables (--bs-*) to var(--dc-*), so a changed token (light/dark, white-label) takes effect everywhere.
+// Derived states (hover/active) mix the token colour with --dc-shade via color-mix().
 //
-// De selector bevat ook [data-dc-theme]: een custom property met var() wordt berekend op het element waar hij staat,
-// dus een container met een ander thema (stijlgids) moet de brug opnieuw krijgen.
+// The selector also contains [data-dc-theme]: a custom property with var() is computed on the element where it is declared,
+// so a container with a different theme (style guide) must get the bridge again.
 
 @function dc-hover($token, $amount: 15%) {
   @return unquote("color-mix(in srgb, var(#{$token}) #{100% - $amount}, var(--dc-shade))");
@@ -53,7 +53,7 @@
   background-color: var(--dc-bg);
 }
 
-// Knoppen: compacte vorm (radius 0.5rem), kleur volledig uit tokens.
+// Buttons: compact shape (radius 0.5rem), colour entirely from tokens.
 .btn {
   --bs-btn-font-family: var(--dc-font-body);
   --bs-btn-border-radius: var(--dc-radius);
@@ -96,7 +96,7 @@
   --bs-btn-disabled-border-color: var(--dc-danger);
 }
 
-// Secundair: rustige knop met rand (grens ≥ 3:1, token --dc-border-strong).
+// Secondary: quiet button with a border (boundary ≥ 3:1, token --dc-border-strong).
 .btn-secondary {
   --bs-btn-color: var(--dc-text);
   --bs-btn-bg: var(--dc-surface);
@@ -112,7 +112,7 @@
   --bs-btn-disabled-border-color: var(--dc-border);
 }
 
-// Ghost: alleen tekst, voor minder belangrijke acties en icoonknoppen.
+// Ghost: text only, for less important actions and icon buttons.
 .btn-ghost {
   --bs-btn-color: var(--dc-text);
   --bs-btn-bg: transparent;
@@ -128,7 +128,7 @@
   --bs-btn-disabled-border-color: transparent;
 }
 
-// Formulieren: randen van bedieningselementen ≥ 3:1 (WCAG 2.2, 1.4.11).
+// Forms: borders of controls ≥ 3:1 (WCAG 2.2, 1.4.11).
 .form-control,
 .form-select,
 .form-check-input {
@@ -165,7 +165,7 @@
   color: var(--dc-danger);
 }
 
-// Cards: ruime radius, dunne rand in plaats van schaduw (voorstel §7.0).
+// Cards: generous radius, thin border instead of a shadow (voorstel §7.0).
 .card {
   --bs-card-bg: var(--dc-surface);
   --bs-card-color: var(--dc-text);
@@ -177,7 +177,7 @@
   --bs-card-spacer-x: var(--dc-space-5);
 }
 
-// Tabellen: witruimte en dunne randen, hover in neutrale tint.
+// Tables: whitespace and thin borders, hover in a neutral tint.
 .table {
   --bs-table-color: var(--dc-text);
   --bs-table-bg: var(--dc-surface);

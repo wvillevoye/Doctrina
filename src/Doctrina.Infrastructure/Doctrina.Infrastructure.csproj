@@ -1,5 +1,5 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <!-- Technische basis: authenticatie (OIDC/JwtBearer), modulesysteem, EF Core-basis (ModuleDbContext), configuratie. -->
+  <Project Sdk="Microsoft.NET.Sdk">
+  <!-- Technical base: authentication (OIDC/JwtBearer), module system, EF Core base (ModuleDbContext), configuration. -->
   <PropertyGroup>
     <RootNamespace>Doctrina.Infrastructure</RootNamespace>
   </PropertyGroup>

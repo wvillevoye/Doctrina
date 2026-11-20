@@ -5,9 +5,9 @@
 @inject IConfiguration Configuration
 @inject NavigationManager Navigation
 
-@* Stijlgids (spec ui-components "De stijlgids toont elk component", design D11): elk Dc*-component in zijn varianten,
-   licht en donker naast elkaar. Alleen in Development of met Ui:StyleGuide:Enabled; anders 404. Interactief, zodat
-   de dialoog en de formulieren werken. *@
+@* Style guide (spec ui-components "De stijlgids toont elk component", design D11): every Dc* component in its variants,
+   light and dark side by side. Only in Development or with Ui:StyleGuide:Enabled; otherwise 404. Interactive, so
+   the dialog and the forms work. *@
 @if (_enabled)
 {
   <DcPageHeader Title="Style guide">
@@ -86,6 +86,15 @@
     </Sample>
   </StijlgidsSectie>
 
+  <StijlgidsSectie Component="typeof(DcLogo)" Description="The Doctrina mark; decorative, the name always stands next to it. Colours follow the theme.">
+    <Sample>
+      <div class="dc-styleguide__row">
+        <DcLogo Size="32" />
+        <DcLogo Size="72" />
+      </div>
+    </Sample>
+  </StijlgidsSectie>
+
   <StijlgidsSectie Component="typeof(DcBadge)" Description="Label for a status or category; the meaning is in the text.">
     <Sample>
       <div class="dc-styleguide__row">
@@ -148,9 +157,9 @@
     </Sample>
   </StijlgidsSectie>
 
-  <StijlgidsSectie Component="typeof(DcNavMenu)" Description="Main menu; on narrow screens behind the Menu button (Popover API), always visible on wide screens.">
+  <StijlgidsSectie Component="typeof(DcNavMenu)" Description="Main menu as a vertical list with optional icons; DcAppShell shows it in the sidebar (a drawer behind the Menu button on narrow screens).">
     <Sample>
-      <DcNavMenu Id="@($"voorbeeldmenu-{context}")" Label="@($"Sample menu {context}")" Items="NavItems" />
+      <DcNavMenu Label="@($"Sample menu {context}")" Items="NavItems" />
     </Sample>
   </StijlgidsSectie>
 
@@ -182,7 +191,7 @@
         typeof(DcButton), typeof(DcLink), typeof(DcIcon), typeof(DcPageHeader), typeof(DcCard), typeof(DcAlert),
         typeof(DcBadge), typeof(DcTable<>), typeof(DcForm), typeof(DcTextField), typeof(DcSelect<>), typeof(DcCheckbox),
         typeof(DcFieldError), typeof(DcResult), typeof(DcModal), typeof(DcNavMenu), typeof(DcAccountMenu),
-        typeof(DcThemeSwitcher), typeof(DcAppShell),
+        typeof(DcThemeSwitcher), typeof(DcAppShell), typeof(DcLogo),
     ];
 
     private static readonly DcTableColumn<Cursus>[] CourseColumns =
@@ -202,7 +211,7 @@
 
     private static readonly Cursus[] NoCourses = [];
 
-    private static readonly DcNavItem[] NavItems = [new("Home", "/", MatchAll: true), new("Style guide", "/style-guide"), new("My profile", "/profile")];
+    private static readonly DcNavItem[] NavItems = [new("Home", "/", MatchAll: true, Icon: "house"), new("Style guide", "/style-guide", Icon: "book-open"), new("My profile", "/profile", Icon: "user")];
 
     private static readonly Error SampleError = Error.Forbidden("Auth.Forbidden", "No access to this course.");
 

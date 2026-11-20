@@ -3,12 +3,12 @@ using System.Diagnostics.CodeAnalysis;
 namespace Doctrina.Core.Results;
 
 /// <summary>
-/// Uitkomst van een bewerking zonder waarde: succes, of een verwachte <see cref="Results.Error"/>.
-/// Onverwachte fouten blijven exceptions (proposal §3.6).
+/// Outcome of an operation without a value: success, or an expected <see cref="Results.Error"/>.
+/// Unexpected failures remain exceptions (proposal §3.6).
 /// </summary>
 public class Result
 {
-    /// <summary>Initialiseert een uitkomst; precies één van succes of fout.</summary>
+    /// <summary>Initializes an outcome; exactly one of success or error.</summary>
     protected Result(bool isSuccess, Error? error)
     {
         if (isSuccess == (error is not null))
@@ -20,31 +20,31 @@ public class Result
         Error = error;
     }
 
-    /// <summary>Of de bewerking is geslaagd.</summary>
+    /// <summary>Whether the operation succeeded.</summary>
     [MemberNotNullWhen(false, nameof(Error))]
     public bool IsSuccess { get; }
 
-    /// <summary>Of de bewerking is mislukt.</summary>
+    /// <summary>Whether the operation failed.</summary>
     [MemberNotNullWhen(true, nameof(Error))]
     public bool IsFailure => !IsSuccess;
 
-    /// <summary>De fout; alleen gezet als <see cref="IsFailure"/>.</summary>
+    /// <summary>The error; only set if <see cref="IsFailure"/>.</summary>
     public Error? Error { get; }
 
-    /// <summary>Een geslaagde uitkomst.</summary>
+    /// <summary>A successful outcome.</summary>
     public static Result Success() => new(true, null);
 
-    /// <summary>Een mislukte uitkomst met <paramref name="error"/>.</summary>
+    /// <summary>A failed outcome with <paramref name="error"/>.</summary>
     public static Result Failure(Error error)
     {
         ArgumentNullException.ThrowIfNull(error);
         return new(false, error);
     }
 
-    /// <summary>Maakt van een <see cref="Results.Error"/> een mislukte uitkomst.</summary>
+    /// <summary>Turns an <see cref="Results.Error"/> into a failed outcome.</summary>
     public static implicit operator Result(Error error) => Failure(error);
 
-    /// <summary>Vertaalt de uitkomst naar één waarde.</summary>
+    /// <summary>Translates the outcome into a single value.</summary>
     public TOut Match<TOut>(Func<TOut> onSuccess, Func<Error, TOut> onFailure)
     {
         ArgumentNullException.ThrowIfNull(onSuccess);
@@ -53,7 +53,7 @@ public class Result
     }
 }
 
-/// <summary>Uitkomst van een bewerking met een waarde van type <typeparamref name="T"/> bij succes.</summary>
+/// <summary>Outcome of an operation with a value of type <typeparamref name="T"/> on success.</summary>
 public sealed class Result<T> : Result
 {
     private Result(T value)
@@ -64,14 +64,14 @@ public sealed class Result<T> : Result
     {
     }
 
-    /// <summary>De waarde; alleen betekenisvol als <see cref="Result.IsSuccess"/>.</summary>
+    /// <summary>The value; only meaningful if <see cref="Result.IsSuccess"/>.</summary>
     public T? Value { get; }
 
-    /// <summary>Een geslaagde uitkomst met <paramref name="value"/>.</summary>
-#pragma warning disable CA1000 // Fabrieksmethode op het generieke type is bewust (proposal §3.6).
+    /// <summary>A successful outcome with <paramref name="value"/>.</summary>
+#pragma warning disable CA1000 // A factory method on the generic type is deliberate (proposal §3.6).
     public static Result<T> Success(T value) => new(value);
 
-    /// <summary>Een mislukte uitkomst met <paramref name="error"/>.</summary>
+    /// <summary>A failed outcome with <paramref name="error"/>.</summary>
     public static new Result<T> Failure(Error error)
     {
         ArgumentNullException.ThrowIfNull(error);
@@ -79,13 +79,13 @@ public sealed class Result<T> : Result
     }
 #pragma warning restore CA1000
 
-    /// <summary>Maakt van een waarde een geslaagde uitkomst.</summary>
+    /// <summary>Turns a value into a successful outcome.</summary>
     public static implicit operator Result<T>(T value) => Success(value);
 
-    /// <summary>Maakt van een <see cref="Results.Error"/> een mislukte uitkomst.</summary>
+    /// <summary>Turns an <see cref="Results.Error"/> into a failed outcome.</summary>
     public static implicit operator Result<T>(Error error) => Failure(error);
 
-    /// <summary>Vertaalt de uitkomst naar één waarde.</summary>
+    /// <summary>Translates the outcome into a single value.</summary>
     public TOut Match<TOut>(Func<T, TOut> onSuccess, Func<Error, TOut> onFailure)
     {
         ArgumentNullException.ThrowIfNull(onSuccess);

@@ -1,6 +1,6 @@
 @inherits DcFieldBase<string>
 
-@* Tekstveld met label, toelichting en foutmelding (spec ui-components, design D7). *@
+@* Text field with a label, explanation and error message (spec ui-components, design D7). *@
 <div class="dc-field">
   <label for="@InputId" class="form-label dc-field__label">
     @Label
@@ -29,7 +29,7 @@
 </div>
 
 @code {
-    /// <summary><c>text</c> (standaard), <c>email</c>, <c>password</c>, <c>tel</c>, <c>url</c>, <c>search</c>.</summary>
+    /// <summary><c>text</c> (default), <c>email</c>, <c>password</c>, <c>tel</c>, <c>url</c>, <c>search</c>.</summary>
     [Parameter]
     public string Type { get; set; } = "text";
 

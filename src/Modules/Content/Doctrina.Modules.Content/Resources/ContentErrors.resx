@@ -42,4 +42,16 @@
   <data name="Content.Copy.TargetNotEmpty" xml:space="preserve">
     <value>De uitvoering heeft al content</value>
   </data>
+  <data name="Content.Introduction.Invalid" xml:space="preserve">
+    <value>Ongeldige introductie</value>
+  </data>
+  <data name="Content.Template.Invalid" xml:space="preserve">
+    <value>Ongeldig sjabloon</value>
+  </data>
+  <data name="Content.Template.NotFound" xml:space="preserve">
+    <value>Sjabloon niet gevonden</value>
+  </data>
+  <data name="Content.Template.DefaultProtected" xml:space="preserve">
+    <value>Het standaardsjabloon kan niet worden verwijderd</value>
+  </data>
 </root>

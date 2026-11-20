@@ -1,0 +1,9 @@
+.course__menu {
+  margin-top: var(--dc-space-4);
+  padding-top: var(--dc-space-4);
+  border-top: var(--dc-border-width) solid var(--dc-sidebar-border);
+}
+
+section[id] {
+  scroll-margin-top: var(--dc-space-4);
+}

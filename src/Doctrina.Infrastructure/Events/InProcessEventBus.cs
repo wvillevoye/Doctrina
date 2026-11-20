@@ -7,9 +7,9 @@ using Microsoft.Extensions.Logging;
 namespace Doctrina.Infrastructure.Events;
 
 /// <summary>
-/// In-process eventbus (design D6): levert een event na elkaar af aan alle geregistreerde handlers in dezelfde
-/// DI-scope. Alleen ingeschakelde modules registreren handlers, dus handlers van uitgeschakelde modules worden nooit
-/// aangeroepen. Een falende handler wordt gelogd (eventtype + handler, geen inhoud) en raakt de rest niet.
+/// In-process event bus (design D6): delivers an event one after another to all registered handlers in the same
+/// DI scope. Only enabled modules register handlers, so handlers of disabled modules are never
+/// called. A failing handler is logged (event type + handler, no content) and does not affect the rest.
 /// </summary>
 public sealed partial class InProcessEventBus(IServiceProvider services, ILogger<InProcessEventBus> logger) : IEventBus
 {
@@ -32,7 +32,7 @@ public sealed partial class InProcessEventBus(IServiceProvider services, ILogger
         }
     }
 
-    /// <summary>Levert een event af op basis van zijn werkelijke type (voor events uit entiteiten).</summary>
+    /// <summary>Delivers an event based on its actual type (for events coming from entities).</summary>
     public Task PublishAsync(IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(domainEvent);
@@ -53,10 +53,10 @@ public sealed partial class InProcessEventBus(IServiceProvider services, ILogger
     private static partial void LogHandlerFailed(ILogger logger, Exception exception, string handler, string eventType);
 }
 
-/// <summary>Registratie van de eventbus en eventhandlers.</summary>
+/// <summary>Registration of the event bus and event handlers.</summary>
 public static class EventServiceCollectionExtensions
 {
-    /// <summary>Registreert de in-process eventbus (per scope).</summary>
+    /// <summary>Registers the in-process event bus (per scope).</summary>
     public static IServiceCollection AddDoctrinaEvents(this IServiceCollection services)
     {
         services.TryAddScoped<InProcessEventBus>();
@@ -65,8 +65,8 @@ public static class EventServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Registreert <typeparamref name="THandler"/> voor <typeparamref name="TEvent"/>. Roep aan vanuit
-    /// <c>IModule.ConfigureServices</c>, zodat alleen ingeschakelde modules events ontvangen.
+    /// Registers <typeparamref name="THandler"/> for <typeparamref name="TEvent"/>. Call from
+    /// <c>IModule.ConfigureServices</c>, so only enabled modules receive events.
     /// </summary>
     public static IServiceCollection AddEventHandler<TEvent, THandler>(this IServiceCollection services)
         where TEvent : IDomainEvent

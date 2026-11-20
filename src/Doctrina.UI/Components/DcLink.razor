@@ -1,4 +1,4 @@
-@* Tekstlink met de huisstijl (onderstreept, offset). Opent een externe link in een nieuw venster en zegt dat. *@
+@* Text link in the house style (underlined, with offset). Opens an external link in a new window and says so. *@
 <a href="@Href" class="dc-link" target="@(External ? "_blank" : null)" rel="@(External ? "noopener noreferrer" : null)"
    @attributes="AdditionalAttributes">@if (Icon is not null) { <DcIcon Name="@Icon" /> }@ChildContent@if (External) { <DcIcon Name="external-link" /><span class="visually-hidden"> (opens in a new window)</span> }</a>
 
@@ -6,14 +6,14 @@
     [Parameter, EditorRequired]
     public string Href { get; set; } = string.Empty;
 
-    /// <summary>Linktekst; verplicht, want die is de toegankelijke naam.</summary>
+    /// <summary>Link text; required, because it is the accessible name.</summary>
     [Parameter, EditorRequired]
     public RenderFragment? ChildContent { get; set; }
 
     [Parameter]
     public string? Icon { get; set; }
 
-    /// <summary>Link naar een andere site: opent in een nieuw venster.</summary>
+    /// <summary>Link to another site: opens in a new window.</summary>
     [Parameter]
     public bool External { get; set; }
 

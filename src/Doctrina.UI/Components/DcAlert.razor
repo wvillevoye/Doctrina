@@ -1,5 +1,5 @@
-@* Melding. Info en succes worden beleefd aangekondigd (role="status"), waarschuwingen en fouten direct
-   (role="alert"). Het icoon is decoratief; de ernst staat ook in de tekst voor hulptechnologie. *@
+@* Alert. Info and success are announced politely (role="status"), warnings and errors immediately
+   (role="alert"). The icon is decorative; the severity is also in the text for assistive technology. *@
 <div class="@CssClass" role="@(Severity is DcSeverity.Warning or DcSeverity.Danger ? "alert" : "status")" @attributes="AdditionalAttributes">
   <DcIcon Name="@IconName" Class="dc-alert__icon" />
   <div class="dc-alert__body">
@@ -16,7 +16,7 @@
     [Parameter]
     public DcSeverity Severity { get; set; } = DcSeverity.Info;
 
-    /// <summary>Korte, vette eerste regel.</summary>
+    /// <summary>Short, bold first line.</summary>
     [Parameter]
     public string? Title { get; set; }
 

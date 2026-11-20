@@ -3,9 +3,9 @@ using System.Text.RegularExpressions;
 namespace Doctrina.Architecture.Tests.Rules;
 
 /// <summary>
-/// Regel "geen letterlijke kleuren buiten Doctrina.UI" (huisregel 4, spec ui-components en app-shell): kleuren komen uit
-/// <c>--dc-*</c>-tokens. Controleert <c>.css</c>/<c>.razor.css</c> volledig en in <c>.razor</c> de <c>style</c>-attributen
-/// en <c>&lt;style&gt;</c>-blokken (zodat ankers als <c>href="#add"</c> geen vals alarm geven).
+/// Rule "no literal colours outside Doctrina.UI" (house rule 4, spec ui-components and app-shell): colours come from
+/// <c>--dc-*</c> tokens. Checks <c>.css</c>/<c>.razor.css</c> in full and, in <c>.razor</c>, the <c>style</c> attributes
+/// and <c>&lt;style&gt;</c> blocks (so anchors like <c>href="#add"</c> don't raise a false alarm).
 /// </summary>
 internal static partial class LiteralColors
 {
@@ -21,7 +21,7 @@ internal static partial class LiteralColors
             .Where(f => f.EndsWith(".css", StringComparison.Ordinal) || f.EndsWith(".razor", StringComparison.Ordinal))
             .Where(f => !f.Contains($"{sep}bin{sep}", StringComparison.Ordinal)
                 && !f.Contains($"{sep}obj{sep}", StringComparison.Ordinal)
-                // White-label-thema's van een instelling (docs/ontwikkelen/vormgeving.md) bevatten juist tokenwaarden.
+                // White-label themes of an installation (docs/ontwikkelen/vormgeving.md) contain token values by design.
                 && !f.Contains($"{sep}wwwroot{sep}theme{sep}", StringComparison.Ordinal))
             .Order(StringComparer.Ordinal);
 
@@ -44,7 +44,7 @@ internal static partial class LiteralColors
         return violations;
     }
 
-    /// <summary>De delen van een regel in een <c>.razor</c>-bestand waar CSS staat.</summary>
+    /// <summary>The parts of a line in a <c>.razor</c> file where CSS lives.</summary>
     private static string StyledParts(string line, ref bool inStyle)
     {
         var parts = new List<string>(StyleAttribute().Matches(line).Select(m => m.Groups["value"].Value));

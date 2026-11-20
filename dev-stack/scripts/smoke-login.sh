@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
-# Rooktest: echt inloggen in Doctrina.Host via Keycloak (dev-stack) + API met client credentials.
-# Vereist: dev-stack draait (docker compose up -d) en Doctrina.Host draait op https://localhost:5001.
-# Gebruik (Git Bash):  bash dev-stack/scripts/smoke-login.sh
+# Smoke test: really sign in to Doctrina.Host through Keycloak (dev-stack) + API with client credentials.
+# Requires: dev-stack is running (docker compose up -d) and Doctrina.Host is running on https://localhost:5001.
+# Usage (Git Bash):  bash dev-stack/scripts/smoke-login.sh
 set -euo pipefail
 APP=${APP:-https://localhost:5001}
 KC=${KC:-http://localhost:8080/realms/doctrina}
 fail=0
 check() { if [[ "$2" == "$3" ]]; then echo "OK   $1"; else echo "FOUT $1 (verwacht '$3', kreeg '$2')"; fail=1; fi; }
 
-login() { # $1 gebruiker  $2 wachtwoord  $3 cookiejar  $4 pad
+login() { # $1 user  $2 password  $3 cookie jar  $4 path
   local page action post target args=()
   page=$(curl -sk -c "$3" -b "$3" -L "$APP$4")
   action=$(grep -o 'id="kc-form-login"[^>]*action="[^"]*"' <<<"$page" | sed 's/.*action="//;s/"$//;s/&amp;/\&/g')
   [[ -n "$action" ]] || { echo "FOUT geen Keycloak-loginformulier"; return 1; }
-  # Keycloak zet Secure-cookies, ook op http://localhost; browsers sturen die mee, curl niet.
+  # Keycloak sets Secure cookies, also on http://localhost; browsers send them along, curl does not.
   sed -i 's/^\(\(#HttpOnly_\)\?localhost\t[A-Z]*\t[^\t]*\t\)TRUE/\1FALSE/' "$3"
   post=$(curl -sk -c "$3" -b "$3" --data-urlencode "username=$1" --data-urlencode "password=$2" "$action")
-  # response_mode=form_post: zelf-verzendend formulier, dat een browser automatisch post
+  # response_mode=form_post: self-submitting form, which a browser posts automatically
   target=$(grep -oE '<FORM [^>]*ACTION="[^"]*"' <<<"$post" | sed 's/.*ACTION="//;s/"$//')
   [[ -n "$target" ]] || { echo "FOUT inloggen als $1 mislukt"; return 1; }
   while read -r name value; do args+=(--data-urlencode "$name=$value"); done < <(

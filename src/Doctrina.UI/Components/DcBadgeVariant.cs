@@ -1,23 +1,23 @@
 namespace Doctrina.UI.Components;
 
-/// <summary>Varianten van <see cref="DcBadge"/>.</summary>
+/// <summary>Variants of <see cref="DcBadge"/>.</summary>
 public enum DcBadgeVariant
 {
-    /// <summary>Grijs, zonder bijzondere betekenis.</summary>
+    /// <summary>Grey, without special meaning.</summary>
     Neutral,
 
-    /// <summary>In de accentkleur, bv. "nieuw".</summary>
+    /// <summary>In the accent colour, e.g. "new".</summary>
     Accent,
 
-    /// <summary>Positief, bv. "actief".</summary>
+    /// <summary>Positive, e.g. "active".</summary>
     Success,
 
-    /// <summary>Aandacht nodig, bv. "concept".</summary>
+    /// <summary>Needs attention, e.g. "draft".</summary>
     Warning,
 
-    /// <summary>Negatief, bv. "geblokkeerd".</summary>
+    /// <summary>Negative, e.g. "blocked".</summary>
     Danger,
 
-    /// <summary>Informatief.</summary>
+    /// <summary>Informational.</summary>
     Info,
 }

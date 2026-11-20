@@ -9,10 +9,10 @@ using Microsoft.Extensions.Logging;
 namespace Doctrina.Infrastructure.Api;
 
 /// <summary>
-/// Onverwachte fouten in de API (spec api-conventions "Onverwachte fouten lekken geen details"): status 500 met een
-/// generieke ProblemDetails (<c>code</c> <c>Server.Unexpected</c>, <c>traceId</c>). Buiten Development zonder
-/// exceptionmelding of stacktrace. De log bevat dezelfde trace-id, het exceptiontype, de route en de stacktrace, maar
-/// geen exceptionmelding of URL met waarden: die kunnen persoonsgegevens bevatten (AVG).
+/// Unexpected failures in the API (spec api-conventions "Onverwachte fouten lekken geen details"): status 500 with a
+/// generic ProblemDetails (<c>code</c> <c>Server.Unexpected</c>, <c>traceId</c>). Outside Development without the
+/// exception message or stack trace. The log contains the same trace id, the exception type, the route and the stack trace, but
+/// no exception message or URL with values: those can contain personal data (GDPR).
 /// </summary>
 public sealed partial class UnexpectedExceptionHandler(
     IProblemDetailsService problemDetails,
@@ -26,8 +26,8 @@ public sealed partial class UnexpectedExceptionHandler(
         ArgumentNullException.ThrowIfNull(httpContext);
         ArgumentNullException.ThrowIfNull(exception);
 
-        // De exception-middleware wist endpoint en pad (bij een foutpagina is het pad al /error); het oorspronkelijke
-        // verzoek staat in de feature. Pagina's krijgen geen JSON maar de foutpagina van de host.
+        // The exception middleware clears the endpoint and path (for an error page the path is already /error); the original
+        // request is in the feature. Pages get no JSON but the host's error page.
         var feature = httpContext.Features.Get<IExceptionHandlerFeature>();
         var path = feature?.Path ?? httpContext.Request.Path.Value;
         if (path is null || !path.StartsWith("/api/", StringComparison.OrdinalIgnoreCase))

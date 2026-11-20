@@ -1,6 +1,6 @@
 namespace Doctrina.Core.Modules;
 
-/// <summary>Een permissie die een module declareert; rollen worden er via configuratie aan gekoppeld (design D8).</summary>
-/// <param name="Name">Unieke naam met module-prefix, bv. <c>Import.Execute</c>.</param>
-/// <param name="Description">Omschrijving voor beheerders (Nederlands).</param>
+/// <summary>A permission a module declares; roles are linked to it through configuration (design D8).</summary>
+/// <param name="Name">Unique name with module prefix, e.g. <c>Import.Execute</c>.</param>
+/// <param name="Description">Description for administrators (English).</param>
 public sealed record Permission(string Name, string Description);

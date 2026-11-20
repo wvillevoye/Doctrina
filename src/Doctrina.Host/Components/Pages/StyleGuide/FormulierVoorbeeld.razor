@@ -1,7 +1,7 @@
 @using System.ComponentModel.DataAnnotations
 @using Doctrina.Core.Results
 
-@* Formulier voor de stijlgids: alle velden, optioneel met een validatiefout uit een Result. *@
+@* Form for the style guide: all fields, optionally with a validation error from a Result. *@
 <DcForm Model="_model" Error="_error" FormName="@($"stijlgids-{Variant}")">
   <DcTextField Label="Email address" Type="email" Required Hint="Your address at the institution." @bind-Value="_model.Email" />
   <DcTextField Label="First name" @bind-Value="_model.GivenName" />
@@ -21,11 +21,11 @@
     private readonly Model _model = new() { Email = "sanne@" };
     private Error? _error;
 
-    /// <summary>Voor een unieke formuliernaam per thema.</summary>
+    /// <summary>For a unique form name per theme.</summary>
     [Parameter, EditorRequired]
     public string Variant { get; set; } = string.Empty;
 
-    /// <summary>Toon de fout zoals een upsert-service die teruggeeft.</summary>
+    /// <summary>Show the error as an upsert service returns it.</summary>
     [Parameter]
     public bool WithErrors { get; set; }
 

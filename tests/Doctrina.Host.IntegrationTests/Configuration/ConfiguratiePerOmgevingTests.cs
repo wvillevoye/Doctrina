@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 
-// Taak 1.5 / design D13: configuratiebestanden per omgeving en appsettings.Secrets.json.
+// Task 1.5 / design D13: configuration files per environment and appsettings.Secrets.json.
 namespace Doctrina.Host.IntegrationTests.Configuration;
 
 public sealed class ConfiguratiePerOmgeving : IDisposable
@@ -31,7 +31,7 @@ public sealed class ConfiguratiePerOmgeving : IDisposable
         Write("appsettings.json", "{}");
         Write(DoctrinaConfigurationExtensions.SecretsFile, """{ "Waarde": "secret" }""");
 
-        // De in-memory bron staat voor omgevingsvariabelen: die worden door ASP.NET Core ná de JSON-bestanden toegevoegd.
+        // The in-memory source stands in for environment variables: ASP.NET Core adds those after the JSON files.
         var configuration = Build(Environments.Production, new Dictionary<string, string?>(StringComparer.Ordinal) { ["Waarde"] = "omgeving" });
 
         Assert.Equal("omgeving", configuration["Waarde"]);

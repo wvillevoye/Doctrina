@@ -4,16 +4,16 @@ using Microsoft.Extensions.Hosting;
 
 namespace Doctrina.Infrastructure.Configuration;
 
-/// <summary>Configuratiebestanden per omgeving en het secrets-bestand (design D13).</summary>
+/// <summary>Configuration files per environment and the secrets file (design D13).</summary>
 public static class DoctrinaConfigurationExtensions
 {
-    /// <summary>Niet-gecommit bestand met secrets; voorbeeld in <c>appsettings.Secrets.example.json</c>.</summary>
+    /// <summary>Uncommitted file with secrets; example in <c>appsettings.Secrets.example.json</c>.</summary>
     public const string SecretsFile = "appsettings.Secrets.json";
 
-    /// <summary>Omgeving van de geautomatiseerde tests (<c>appsettings.Test.json</c>).</summary>
+    /// <summary>Environment of the automated tests (<c>appsettings.Test.json</c>).</summary>
     public const string TestEnvironment = "Test";
 
-    /// <summary>Of dit de omgeving van de geautomatiseerde tests is.</summary>
+    /// <summary>Whether this is the environment of the automated tests.</summary>
     public static bool IsTest(this IHostEnvironment environment)
     {
         ArgumentNullException.ThrowIfNull(environment);
@@ -21,9 +21,9 @@ public static class DoctrinaConfigurationExtensions
     }
 
     /// <summary>
-    /// Voegt het optionele <see cref="SecretsFile"/> toe direct ná <c>appsettings.{omgeving}.json</c>, dus vóór user
-    /// secrets, omgevingsvariabelen en command-line-argumenten. In de omgeving <see cref="TestEnvironment"/> wordt het
-    /// bewust niet geladen, zodat lokale secrets nooit in de tests terechtkomen.
+    /// Adds the optional <see cref="SecretsFile"/> right after <c>appsettings.{environment}.json</c>, so before user
+    /// secrets, environment variables and command-line arguments. In the <see cref="TestEnvironment"/> environment it is
+    /// deliberately not loaded, so local secrets never end up in the tests.
     /// </summary>
     public static IConfigurationBuilder AddDoctrinaSecrets(this IConfigurationBuilder configuration, IHostEnvironment environment)
     {

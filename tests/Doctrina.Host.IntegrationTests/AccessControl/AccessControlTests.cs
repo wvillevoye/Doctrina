@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 
-// Tests volgen spec openspec/specs/access-control/spec.md:
+// Tests follow spec openspec/specs/access-control/spec.md:
 // klasse = requirement, methode = scenario.
 namespace Doctrina.Host.IntegrationTests.AccessControl;
 
@@ -22,7 +22,7 @@ public static class AccessHosts
 
     public static string Mapping(string role, int index) => $"{PermissionRegistry.RolePermissionsSection}:{role}:{index}";
 
-    /// <summary>Profielpagina van een ingelogde gebruiker, met gedecodeerde HTML.</summary>
+    /// <summary>Profile page of a signed-in user, with decoded HTML.</summary>
     public static async Task<string> ProfileOfAsync(this WebApplicationFactory<Program> host, DoctrinaHostFactory root, StubUser user, CancellationToken ct)
     {
         using var browser = host.CreateBrowser();
@@ -86,7 +86,7 @@ public sealed class RollenWordenViaConfiguratieAanPermissiesGekoppeld(DoctrinaHo
     [Fact]
     public async Task JokertekenGeeftElkePermissie()
     {
-        // Standaardkoppeling uit appsettings.json: admin → *.
+        // Default mapping from appsettings.json: admin → *.
         using var host = factory.WithModules([new SampleModule()], SampleModule.ModuleName);
 
         var profile = await host.ProfileOfAsync(factory, new StubUser("sub-ad", "Ada Admin", ["admin"]), Ct);

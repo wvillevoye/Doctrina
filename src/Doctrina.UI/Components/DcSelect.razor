@@ -1,7 +1,7 @@
 @typeparam TValue
 @inherits DcFieldBase<TValue>
 
-@* Keuzelijst met label en foutmelding. De opties zijn gewone <option>-elementen als inhoud. *@
+@* Select list with a label and an error message. The options are plain <option> elements as content. *@
 <div class="dc-field">
   <label for="@InputId" class="form-label dc-field__label">
     @Label
@@ -21,7 +21,7 @@
 </div>
 
 @code {
-    /// <summary>De opties, als <c>&lt;option value="…"&gt;…&lt;/option&gt;</c>.</summary>
+    /// <summary>The options, as <c>&lt;option value="…"&gt;…&lt;/option&gt;</c>.</summary>
     [Parameter, EditorRequired]
     public RenderFragment? ChildContent { get; set; }
 }

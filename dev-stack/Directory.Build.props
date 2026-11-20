@@ -1,3 +1,3 @@
 <Project>
-  <!-- dev-stack is gereedschap, geen productcode: niet de build-regels van de Doctrina-solution erven. -->
+  <!-- dev-stack is tooling, not product code: do not inherit the build rules of the Doctrina solution. -->
 </Project>

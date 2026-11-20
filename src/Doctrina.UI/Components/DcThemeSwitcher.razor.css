@@ -31,7 +31,7 @@
   background-color: var(--dc-neutral-subtle);
 }
 
-/* Actieve keuze: niet alleen kleur, ook een rand (WCAG 1.4.1). */
+/* Active choice: not only colour, also a border (WCAG 1.4.1). */
 .dc-theme-switcher__option[aria-pressed="true"] {
   color: var(--dc-accent-contrast);
   background-color: var(--dc-accent);

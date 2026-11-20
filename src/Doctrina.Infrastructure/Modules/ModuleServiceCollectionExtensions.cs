@@ -10,37 +10,37 @@ using Microsoft.Extensions.Hosting;
 
 namespace Doctrina.Infrastructure.Modules;
 
-/// <summary>Een module die de host kent; of zij start, bepaalt <c>Modules:Enabled</c>.</summary>
-/// <param name="Module">De module.</param>
+/// <summary>A module the host knows; whether it starts is determined by <c>Modules:Enabled</c>.</summary>
+/// <param name="Module">The module.</param>
 public sealed record ModuleRegistration(IModule Module);
 
-/// <summary>Modules registreren, valideren en hun bijdragen aan de host koppelen (design D1/D2).</summary>
+/// <summary>Register modules, validate them and wire their contributions to the host (design D1/D2).</summary>
 public static class ModuleServiceCollectionExtensions
 {
-    /// <summary>Maakt <paramref name="module"/> bekend bij de host (de statische modulecatalogus, design D1).</summary>
+    /// <summary>Makes <paramref name="module"/> known to the host (the static module catalog, design D1).</summary>
     public static IServiceCollection AddDoctrinaModule(this IServiceCollection services, IModule module)
     {
         ArgumentNullException.ThrowIfNull(module);
         return services.AddSingleton(new ModuleRegistration(module));
     }
 
-    /// <summary>Maakt module <typeparamref name="TModule"/> bekend bij de host.</summary>
+    /// <summary>Makes module <typeparamref name="TModule"/> known to the host.</summary>
     public static IServiceCollection AddDoctrinaModule<TModule>(this IServiceCollection services)
         where TModule : IModule, new() =>
         services.AddDoctrinaModule(new TModule());
 
     /// <summary>
-    /// Zet het modulesysteem aan. Tijdens het bouwen van de app — nadat alle services, ook die van tests, zijn
-    /// geregistreerd en de configuratie definitief is — wordt de <see cref="ModuleCatalog"/> gemaakt en gevalideerd en
-    /// worden de services van de ingeschakelde modules in afhankelijkheidsvolgorde geregistreerd.
+    /// Turns on the module system. While the app is being built — after all services, including those of tests, have been
+    /// registered and the configuration is final — the <see cref="ModuleCatalog"/> is created and validated and
+    /// the services of the enabled modules are registered in dependency order.
     /// </summary>
-    /// <exception cref="ModuleConfigurationException">Bij <c>Build()</c> als de moduleconfiguratie ongeldig is.</exception>
+    /// <exception cref="ModuleConfigurationException">On <c>Build()</c> if the module configuration is invalid.</exception>
     public static IHostBuilder UseDoctrinaModules(this IHostBuilder host)
     {
         ArgumentNullException.ThrowIfNull(host);
         return host.UseServiceProviderFactory(context =>
         {
-            // Strenge DI-validatie in Development en in de tests (design D13).
+            // Strict DI validation in Development and in the tests (design D13).
             var development = context.HostingEnvironment.IsDevelopment() || context.HostingEnvironment.IsTest();
             return new ModuleServiceProviderFactory(
                 context.Configuration,
@@ -49,8 +49,8 @@ public static class ModuleServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Koppelt de endpoints van de ingeschakelde modules aan de <c>/api/v1</c>-groep; elke module krijgt een eigen
-    /// subgroep met haar naam als OpenAPI-tag.
+    /// Maps the endpoints of the enabled modules to the <c>/api/v1</c> group; each module gets its own
+    /// subgroup with its name as OpenAPI tag.
     /// </summary>
     public static IEndpointRouteBuilder MapDoctrinaModules(this IEndpointRouteBuilder api)
     {
@@ -64,7 +64,7 @@ public static class ModuleServiceCollectionExtensions
         return api;
     }
 
-    /// <summary>Koppelt de endpoints van de ingeschakelde modules aan de <c>/ooapi/v5</c>-groep (bearer-only, zoals <c>/api/v1</c>).</summary>
+    /// <summary>Maps the endpoints of the enabled modules to the <c>/ooapi/v5</c> group (bearer-only, like <c>/api/v1</c>).</summary>
     public static IEndpointRouteBuilder MapDoctrinaOoapiModules(this IEndpointRouteBuilder ooapi)
     {
         ArgumentNullException.ThrowIfNull(ooapi);
@@ -78,8 +78,8 @@ public static class ModuleServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Koppelt de browser-endpoints van de ingeschakelde modules, elk onder <c>/{modulenaam}</c> en standaard met
-    /// inloggen vereist (spec module-system).
+    /// Maps the browser endpoints of the enabled modules, each under <c>/{module name}</c> and by default requiring
+    /// sign-in (spec module-system).
     /// </summary>
     public static IEndpointRouteBuilder MapDoctrinaBrowserEndpoints(this IEndpointRouteBuilder app)
     {

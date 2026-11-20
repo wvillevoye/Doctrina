@@ -48,6 +48,7 @@ internal sealed class PageFixture : IAsyncDisposable
         f.Context.Services.AddSingleton(f.Db.CreateFileStore(maxSizeMb));
         f.Context.Services.AddScoped<ContentService>();
         f.Context.Services.AddScoped<ContentAccess>();
+        f.Context.Services.AddScoped<IntroductionService>();
         return f;
     }
 

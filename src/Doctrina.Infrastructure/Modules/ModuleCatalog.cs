@@ -6,12 +6,12 @@ using Microsoft.Extensions.Configuration;
 namespace Doctrina.Infrastructure.Modules;
 
 /// <summary>
-/// De ingeschakelde modules in afhankelijkheidsvolgorde, met wat ze aan de host leveren (spec module-system).
-/// Een uitgeschakelde module komt hier niet in voor en draagt dus niets bij.
+/// The enabled modules in dependency order, with what they contribute to the host (spec module-system).
+/// A disabled module does not appear here and so contributes nothing.
 /// </summary>
 public sealed class ModuleCatalog
 {
-    /// <summary>Configuratiesleutel met de namen van de modules die starten.</summary>
+    /// <summary>Configuration key with the names of the modules that start.</summary>
     public const string EnabledSection = "Modules:Enabled";
 
     private ModuleCatalog(IReadOnlyList<IModule> enabled, PermissionRegistry permissions)
@@ -22,19 +22,19 @@ public sealed class ModuleCatalog
         Navigation = [.. enabled.SelectMany(m => m.Navigation).OrderBy(n => n.Order)];
     }
 
-    /// <summary>Ingeschakelde modules; een module staat altijd ná de modules waarvan zij afhankelijk is.</summary>
+    /// <summary>Enabled modules; a module always comes after the modules it depends on.</summary>
     public IReadOnlyList<IModule> Enabled { get; }
 
-    /// <summary>Assemblies met de Razor-componenten van de ingeschakelde modules.</summary>
+    /// <summary>Assemblies with the Razor components of the enabled modules.</summary>
     public IReadOnlyList<Assembly> ComponentAssemblies { get; }
 
-    /// <summary>Navigatie-items van de ingeschakelde modules, gesorteerd op <see cref="NavItem.Order"/>.</summary>
+    /// <summary>Navigation items of the enabled modules, sorted by <see cref="NavItem.Order"/>.</summary>
     public IReadOnlyList<NavItem> Navigation { get; }
 
-    /// <summary>Permissies van de ingeschakelde modules en de rolkoppeling (design D8).</summary>
+    /// <summary>Permissions of the enabled modules and the role mapping (design D8).</summary>
     public PermissionRegistry Permissions { get; }
 
-    /// <summary>Leest <see cref="EnabledSection"/> uit de configuratie.</summary>
+    /// <summary>Reads <see cref="EnabledSection"/> from the configuration.</summary>
     public static IReadOnlyList<string> ReadEnabledNames(IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
@@ -45,15 +45,15 @@ public sealed class ModuleCatalog
     }
 
     /// <summary>
-    /// Kiest de ingeschakelde modules uit <paramref name="known"/>, controleert namen en afhankelijkheden en sorteert
-    /// ze topologisch.
+    /// Selects the enabled modules from <paramref name="known"/>, checks names and dependencies and sorts
+    /// them topologically.
     /// </summary>
-    /// <param name="known">Alle modules die de host kent.</param>
-    /// <param name="enabledNames">Namen uit <see cref="EnabledSection"/>.</param>
-    /// <param name="rolePermissions">Koppeling rol → permissies (<see cref="PermissionRegistry.ReadMapping"/>); leeg als weggelaten.</param>
+    /// <param name="known">All modules the host knows.</param>
+    /// <param name="enabledNames">Names from <see cref="EnabledSection"/>.</param>
+    /// <param name="rolePermissions">Role → permissions mapping (<see cref="PermissionRegistry.ReadMapping"/>); empty if omitted.</param>
     /// <exception cref="ModuleConfigurationException">
-    /// Bij onbekende namen, ontbrekende afhankelijkheden, cycli, ongeldige of dubbele permissies en koppelingen naar
-    /// onbekende permissies — alle fouten tegelijk.
+    /// For unknown names, missing dependencies, cycles, invalid or duplicate permissions and mappings to
+    /// unknown permissions — all errors at once.
     /// </exception>
     public static ModuleCatalog Create(
         IEnumerable<IModule> known,
@@ -112,7 +112,7 @@ public sealed class ModuleCatalog
         return new ModuleCatalog(ordered, permissions);
     }
 
-    /// <summary>Depth-first topologische sortering; behoudt verder de volgorde uit de configuratie.</summary>
+    /// <summary>Depth-first topological sort; otherwise keeps the order from the configuration.</summary>
     private static List<IModule> SortByDependencies(
         List<IModule> enabled,
         Dictionary<string, IModule> enabledByName,

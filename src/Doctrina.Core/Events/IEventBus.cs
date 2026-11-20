@@ -1,33 +1,33 @@
 namespace Doctrina.Core.Events;
 
-/// <summary>Markeert een domeinevent; events staan in het <c>.Contracts</c>-project van de publicerende module.</summary>
+/// <summary>Marks a domain event; events live in the <c>.Contracts</c> project of the publishing module.</summary>
 public interface IDomainEvent;
 
 /// <summary>
-/// In-process eventbus tussen modules (design D6). Events worden afgeleverd aan alle handlers van ingeschakelde
-/// modules; een falende handler wordt gelogd en raakt de publicerende module of andere handlers niet.
+/// In-process event bus between modules (design D6). Events are delivered to all handlers of enabled
+/// modules; a failing handler is logged and does not affect the publishing module or other handlers.
 /// </summary>
 public interface IEventBus
 {
     /// <summary>
-    /// Levert <paramref name="domainEvent"/> direct af aan de handlers van de ingeschakelde modules. Hoort het event bij
-    /// een gegevenswijziging, gebruik dan <c>Entity.RaiseEvent</c>: dan volgt de aflevering pas nadat de wijziging is
-    /// opgeslagen, en niet als het opslaan mislukt.
+    /// Delivers <paramref name="domainEvent"/> immediately to the handlers of the enabled modules. If the event belongs to
+    /// a data change, use <c>Entity.RaiseEvent</c> instead: delivery then follows only after the change has been
+    /// saved, and not if saving fails.
     /// </summary>
-    /// <typeparam name="TEvent">Het eventtype.</typeparam>
-    /// <param name="domainEvent">Het event.</param>
-    /// <param name="cancellationToken">Annulering.</param>
+    /// <typeparam name="TEvent">The event type.</typeparam>
+    /// <param name="domainEvent">The event.</param>
+    /// <param name="cancellationToken">Cancellation.</param>
     Task PublishAsync<TEvent>(TEvent domainEvent, CancellationToken cancellationToken)
         where TEvent : IDomainEvent;
 }
 
-/// <summary>Handelt een domeinevent af; wordt per module in de DI-container geregistreerd.</summary>
-/// <typeparam name="TEvent">Het eventtype.</typeparam>
+/// <summary>Handles a domain event; registered per module in the DI container.</summary>
+/// <typeparam name="TEvent">The event type.</typeparam>
 public interface IEventHandler<in TEvent>
     where TEvent : IDomainEvent
 {
-    /// <summary>Verwerkt het event.</summary>
-    /// <param name="domainEvent">Het event.</param>
-    /// <param name="cancellationToken">Annulering.</param>
+    /// <summary>Processes the event.</summary>
+    /// <param name="domainEvent">The event.</param>
+    /// <param name="cancellationToken">Cancellation.</param>
     Task HandleAsync(TEvent domainEvent, CancellationToken cancellationToken);
 }

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
-// Spec ui-components; taken 5.1–5.4 van add-design-system (design D7, D8, D10). Klasse = requirement, methode = scenario.
+// Spec ui-components; tasks 5.1–5.4 of add-design-system (design D7, D8, D10). Class = requirement, method = scenario.
 namespace Doctrina.UI.Tests.Components;
 
 public sealed class TabellenZijnSemantischEnHebbenEenLegeToestand : IDisposable
@@ -120,7 +120,7 @@ public sealed class FormulierveldenZijnGekoppeldAanLabelEnFoutmelding : IDisposa
         Assert.Equal("true", input.GetAttribute("aria-invalid"));
         Assert.Contains("is-invalid", input.ClassList);
         Assert.Equal("Ongeldig e-mailadres.", error.TextContent.Trim());
-        Assert.Contains(describedBy, id => cut.Find($"#{id}").TextContent == "Je instellingsadres."); // toelichting blijft gekoppeld
+        Assert.Contains(describedBy, id => cut.Find($"#{id}").TextContent == "Je instellingsadres."); // the explanation stays linked
         Assert.Equal(0, cut.Instance.Submitted);
     }
 
@@ -242,23 +242,23 @@ public sealed class DialogenHoudenDeFocusVast : IDisposable
         var cut = _context.Render<DialoogMetKnop>();
         var modal = cut.FindComponent<DcModal>();
 
-        // Naam: de dialoog verwijst met aria-labelledby naar zijn titel.
+        // Name: the dialog points to its title with aria-labelledby.
         var dialog = cut.Find("dialog");
         Assert.Equal("Bevestigen", cut.Find($"#{dialog.GetAttribute("aria-labelledby")}").TextContent);
 
-        // Openen: showModal() via het script, met de dialoog en een terugroep-referentie (focus vasthouden en onthouden).
+        // Opening: showModal() via the script, with the dialog and a callback reference (hold and remember the focus).
         cut.Find("[data-testid=open]").Click();
         var show = Assert.Single(module.Invocations["show"]);
         Assert.IsType<ElementReference>(show.Arguments[0]);
         Assert.IsType<DotNetObjectReference<DcModal>>(show.Arguments[1]);
         Assert.True(modal.Instance.IsOpen);
 
-        // Escape: de browser sluit de dialoog en het script meldt "close" (na focusherstel) via OnClosed.
+        // Escape: the browser closes the dialog and the script reports "close" (after focus restoration) via OnClosed.
         await cut.InvokeAsync(modal.Instance.OnClosed);
         Assert.False(modal.Instance.IsOpen);
         Assert.Equal(1, cut.Instance.Closed);
 
-        // De sluitknop heeft een naam en sluit via het script.
+        // The close button has a name and closes via the script.
         var close = cut.Find("dialog .dc-modal__close");
         Assert.Equal("Close", close.TextContent.Trim());
         close.Click();
@@ -268,7 +268,7 @@ public sealed class DialogenHoudenDeFocusVast : IDisposable
     [Fact]
     public void ScriptZetDeFocusTerugNaSluiten()
     {
-        // Het gedrag in de browser zelf wordt handmatig gecontroleerd (taak 8.2); hier: het script doet wat design D10 zegt.
+        // The behaviour in the browser itself is checked manually (task 8.2); here: the script does what design D10 says.
         var script = File.ReadAllText(Path.Combine(RepoPaths.Ui, "wwwroot", "js", "dc-modal.js"));
 
         Assert.Contains("dialog.showModal()", script, StringComparison.Ordinal);

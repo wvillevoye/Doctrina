@@ -13,8 +13,8 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 namespace Doctrina.Infrastructure.Authentication;
 
 /// <summary>
-/// Inloggen van gebruikers (cookie + OpenID Connect, code flow met PKCE) en bearer-authenticatie voor <c>/api/v1</c>.
-/// Werkt ongewijzigd tegen Keycloak, Entra ID en SURFconext: alleen configuratie verschilt (design D7).
+/// User sign-in (cookie + OpenID Connect, code flow with PKCE) and bearer authentication for <c>/api/v1</c>.
+/// Works unchanged against Keycloak, Entra ID and SURFconext: only configuration differs (design D7).
 /// </summary>
 public static class AuthenticationServiceCollectionExtensions
 {
@@ -55,7 +55,7 @@ public static class AuthenticationServiceCollectionExtensions
                 options.AccessDeniedPath = "/access-denied";
                 options.Events.OnSigningIn = context =>
                 {
-                    // Einde sessie als claim, zodat Blazor-circuits na afloop opnieuw moeten inloggen (design D7).
+                    // End of session as a claim, so Blazor circuits have to sign in again afterwards (design D7).
                     if (context.Principal?.Identity is ClaimsIdentity identity && context.Properties.ExpiresUtc is { } expires)
                     {
                         identity.AddClaim(new Claim(DoctrinaClaimTypes.SessionExpires, expires.UtcDateTime.ToString("O", CultureInfo.InvariantCulture)));
@@ -100,9 +100,9 @@ public static class AuthenticationServiceCollectionExtensions
 
                 options.Events.OnTokenValidated = context =>
                 {
-                    // Alleen het ID-token bewaren (versleuteld in de sessiecookie): nodig als id_token_hint bij uitloggen,
-                    // anders toont Keycloak een bevestigingsscherm en keert de gebruiker niet terug. Access tokens niet.
-                    // Code flow: het ID-token komt uit het antwoord van het token-endpoint.
+                    // Keep only the ID token (encrypted in the session cookie): needed as id_token_hint on sign-out,
+                    // otherwise Keycloak shows a confirmation screen and the user does not return. Not the access tokens.
+                    // Code flow: the ID token comes from the response of the token endpoint.
                     var idToken = context.TokenEndpointResponse?.IdToken ?? context.ProtocolMessage?.IdToken;
                     if (!string.IsNullOrEmpty(idToken))
                     {
@@ -114,7 +114,7 @@ public static class AuthenticationServiceCollectionExtensions
 
                 options.Events.OnRedirectToIdentityProviderForSignOut = context =>
                 {
-                    // client_id als extra identificatie (Keycloak/Entra) naast id_token_hint.
+                    // client_id as an extra identifier (Keycloak/Entra) alongside id_token_hint.
                     context.ProtocolMessage.ClientId = context.Options.ClientId;
                     return Task.CompletedTask;
                 };

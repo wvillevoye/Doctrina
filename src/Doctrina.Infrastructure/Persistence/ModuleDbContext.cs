@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 namespace Doctrina.Infrastructure.Persistence;
 
 /// <summary>
-/// Basis voor de DbContext van een module (design D3): alle tabellen in het eigen schema van de module en een eigen
-/// migratiegeschiedenis in dat schema. Registreer via
-/// <see cref="ModuleDatabaseServiceCollectionExtensions.AddModuleDbContext{TContext}"/>; het schema komt uit die registratie.
+/// Base for the DbContext of a module (design D3): all tables in the module's own schema and its own
+/// migration history in that schema. Register via
+/// <see cref="ModuleDatabaseServiceCollectionExtensions.AddModuleDbContext{TContext}"/>; the schema comes from that registration.
 /// </summary>
 public abstract class ModuleDbContext : DbContext
 {
@@ -19,7 +19,7 @@ public abstract class ModuleDbContext : DbContext
                 $"{GetType().Name} heeft geen moduleschema; registreer de context met AddModuleDbContext of maak opties met ModuleDatabase.CreateOptions.");
     }
 
-    /// <summary>SQL-schema van de module: de modulenaam in kleine letters.</summary>
+    /// <summary>SQL schema of the module: the module name in lower case.</summary>
     public string Schema { get; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -31,8 +31,8 @@ public abstract class ModuleDbContext : DbContext
     }
 
     /// <summary>
-    /// Conventies voor <see cref="Entity"/> en <see cref="ExchangeableEntity"/> (design D4): sequentiële sleutel door
-    /// EF Core, kolomlengtes, status als tekst en een unieke index op (<c>Source</c>, <c>ExternalId</c>).
+    /// Conventions for <see cref="Entity"/> and <see cref="ExchangeableEntity"/> (design D4): sequential key by
+    /// EF Core, column lengths, status as text and a unique index on (<c>Source</c>, <c>ExternalId</c>).
     /// </summary>
     private static void ApplyEntityConventions(ModelBuilder modelBuilder)
     {

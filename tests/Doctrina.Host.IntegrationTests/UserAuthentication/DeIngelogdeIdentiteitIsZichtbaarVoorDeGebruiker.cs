@@ -23,9 +23,9 @@ public sealed class DeIngelogdeIdentiteitIsZichtbaarVoorDeGebruiker(DoctrinaHost
         Assert.Contains("data-testid=\"person-id\">P7002809<", html, StringComparison.Ordinal);
         Assert.Contains($"data-testid=\"issuer\">{StubOidcProvider.Issuer}<", html, StringComparison.Ordinal);
         Assert.Contains("<li>employee</li>", html, StringComparison.Ordinal);
-        Assert.Contains("<code>Sample.Read</code>", html, StringComparison.Ordinal); // afgeleide permissie
+        Assert.Contains("<code>Sample.Read</code>", html, StringComparison.Ordinal); // derived permission
         Assert.Contains("<li>employee: Sample.Read</li>", html, StringComparison.Ordinal);
-        Assert.DoesNotContain("eyJ", html, StringComparison.Ordinal); // geen JWT's op de pagina
+        Assert.DoesNotContain("eyJ", html, StringComparison.Ordinal); // no JWTs on the page
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public sealed class DeIngelogdeIdentiteitIsZichtbaarVoorDeGebruiker(DoctrinaHost
 
         var html = await browser.SignInAndGetAsync("/profile", factory.Idp, new StubUser("sub-4", "Zonder Nummer", ["student"]), Ct);
 
-        // Blazor codeert "–" als &#x2013;; vergelijk de gedecodeerde tekst.
+        // Blazor encodes "–" as &#x2013;; compare the decoded text.
         Assert.Contains("data-testid=\"person-id\">–<", WebUtility.HtmlDecode(html), StringComparison.Ordinal);
     }
 }

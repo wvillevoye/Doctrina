@@ -1,0 +1,58 @@
+@using Doctrina.Modules.Content.Application
+@using Doctrina.Modules.Content.Domain
+@using Microsoft.Extensions.DependencyInjection
+@inject IServiceScopeFactory Scopes
+
+@* Section "Introduction" on the page of a course offering, above "Content" (spec course-introduction, design D3-D5 of
+   add-course-introduction). The layout comes from the template; the text is safe Markdown. Participants only get here
+   for a published introduction (see IntroductionVisibility); those who may manage also see a draft and a link to edit.
+   Sections render at the same time, so this one works in its own scope and does not share a DbContext with the others. *@
+@if (_visible)
+{
+  <div class="@($"intro intro--{LayoutName}")" data-layout="@LayoutName" data-testid="introduction">
+    <DcCard Title="Introduction">
+      @if (_intro is null)
+      {
+        <p>There is no introduction yet.</p>
+      }
+      else
+      {
+        @if (!_intro.Published)
+        {
+          <p><DcBadge Variant="DcBadgeVariant.Warning">Draft</DcBadge></p>
+        }
+        <MarkdownView Text="@_intro.Body" />
+      }
+      @if (_canManage)
+      {
+        <div class="dc-form__actions">
+          <DcButton Href="@($"/courses/{OfferingId:D}/introduction")" Icon="pencil" data-testid="edit-introduction">@(_intro is null ? "Add introduction" : "Edit introduction")</DcButton>
+        </div>
+      }
+    </DcCard>
+  </div>
+}
+
+@code {
+    private IntroductionView? _intro;
+    private bool _canManage;
+    private bool _visible;
+
+    [Parameter]
+    public Guid OfferingId { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    private string LayoutName => (_intro?.Layout ?? IntroductionLayout.Plain).ToString().ToLowerInvariant();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var ct = CancellationToken.None;
+        var user = AuthenticationState is null ? new ClaimsPrincipal() : (await AuthenticationState).User;
+        using var scope = Scopes.CreateScope();
+        _canManage = await scope.ServiceProvider.GetRequiredService<ContentAccess>().CanManageAsync(user, OfferingId, ct);
+        _intro = await scope.ServiceProvider.GetRequiredService<IntroductionService>().FindAsync(OfferingId, ct);
+        _visible = _canManage || _intro?.Published == true;
+    }
+}

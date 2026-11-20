@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace Doctrina.Infrastructure.Authentication;
 
-/// <summary>Endpoints <c>GET /sign-in</c> en <c>POST /sign-out</c>.</summary>
+/// <summary>Endpoints <c>GET /sign-in</c> and <c>POST /sign-out</c>.</summary>
 public static class AuthenticationEndpoints
 {
     public const string SignInPath = "/sign-in";
@@ -26,7 +26,7 @@ public static class AuthenticationEndpoints
             .AllowAnonymous()
             .ExcludeFromDescription();
 
-        // Formulier-POST: [FromForm] zorgt dat antiforgery-validatie verplicht is.
+        // Form POST: [FromForm] makes antiforgery validation mandatory.
         endpoints.MapPost(SignOutPath, ([FromForm] string? returnUrl) =>
                 Results.SignOut(
                     new AuthenticationProperties { RedirectUri = LocalPathOrRoot(returnUrl) },
@@ -36,7 +36,7 @@ public static class AuthenticationEndpoints
         return endpoints;
     }
 
-    /// <summary>Alleen lokale paden (geen open redirect naar andere sites).</summary>
+    /// <summary>Local paths only (no open redirect to other sites).</summary>
     public static string LocalPathOrRoot(string? returnUrl) =>
         !string.IsNullOrEmpty(returnUrl)
         && returnUrl.StartsWith('/')

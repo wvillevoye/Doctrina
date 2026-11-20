@@ -30,10 +30,39 @@ Elke kleur, maat en duur komt uit een token. Gebruik in CSS altijd `var(--dc-…
 | Randen | `--dc-border`, `--dc-border-strong` | decoratieve randen; randen van bedieningselementen (≥ 3:1) |
 | Accent en focus | `--dc-accent`, `--dc-accent-contrast`, `--dc-focus` | hoofdacties; tekst op accent; focus-ring |
 | Status | `--dc-success`, `--dc-warning`, `--dc-danger`, `--dc-info`, elk met `-contrast` en `-subtle` | meldingen, badges, fouten |
-| Palet | `--dc-ink`, `--dc-sage`, `--dc-paper`, `--dc-stone-50` … `--dc-stone-900` | alleen als een semantisch token niet past |
+| Palet | `--dc-um-dark-blue`, `--dc-um-orange`, `--dc-um-light-blue` | merkkleuren; alleen als een semantisch token niet past |
 | Typografie | `--dc-font-body` (Inter), `--dc-font-heading` (Fraunces), `--dc-font-size-*`, `--dc-font-weight-*` | |
 | Ruimte en vorm | `--dc-space-1` … `--dc-space-7`, `--dc-radius-sm`/`--dc-radius`/`--dc-radius-lg`, `--dc-shadow-float` | |
 | Beweging | `--dc-duration` (180 ms), `--dc-duration-fast` (150 ms), `--dc-easing` | worden 0 bij "minder beweging" |
+
+### UM palette
+
+The default look uses the Maastricht University house colours (dark blue `#001C3D`, orange `#D2460F`, light blue
+`#007FAD`, text `#333333`, light grey `#F5F5F5`). Brand colours that are too weak as text get a derived shade of the
+same hue; the brand colour itself is then only used for surfaces and decoration:
+
+| Token | Light | Dark | Why |
+|---|---|---|---|
+| `--dc-bg` | `#F5F5F5` | `#001C3D` | brand light grey / dark blue |
+| `--dc-accent` | `#D2460F` | `#F07A4D` | brand orange (4.54:1 with white text); lighter on dark blue, where the brand orange only reaches 3.75:1 |
+| `--dc-link` | `#006089` | `#4DB8E3` | brand light blue is below 4.5:1 on light grey |
+| `--dc-focus` | `#007FAD` | `#4DB8E3` | focus needs 3:1 only |
+| `--dc-text-muted` | `#5F676E` | `#A9B8C9` | brand grey `#6C757D` reaches 4.30:1 on light grey |
+
+Hover and active states come from mixing with `--dc-shade`; 15% black on the brand orange gives the UM hover colour `#B33C0D`.
+
+### Sidebar
+
+`DcAppShell` shows the main menu (`DcNavMenu`) in a sidebar next to the content. From 64rem it is always visible and
+stays in view while scrolling; on narrower screens it is a drawer (native popover) behind the "Menu" button in the header,
+so it works without scripts. The sidebar has the same colour as the page background, separated from the content by a thin line along its right edge
+(full height). It uses its own tokens, which by default point to the page tokens: `--dc-sidebar-bg`, `--dc-sidebar-text`,
+`--dc-sidebar-text-muted`, `--dc-sidebar-hover`, `--dc-sidebar-active-bg`, `--dc-sidebar-indicator` and `--dc-sidebar-border`;
+a white-label stylesheet can override them. The active item gets a background, a bar at the start and a bolder weight (not only colour).
+
+A module can give a menu item an icon: `new NavItem("Courses", "/academic/courses", Icon: "book-open")`. The value is the
+name of an icon in `src/Doctrina.UI/Icons` (`DcIconSet.Names`); an unknown name throws, so add the Lucide icon first.
+Items without an icon keep working.
 
 Gebruik semantische tokens (`--dc-text`, `--dc-surface`) en niet het palet: alleen semantische tokens wisselen mee met
 het thema. De contrasttests (`tests/Doctrina.UI.Tests/Theming/KleurcontrastVoldoetAanWcag22AaInBeideThemas.cs`)
@@ -123,6 +152,16 @@ Een formulier dat dezelfde upsert-service gebruikt als de API (huisregel 12) en 
 
 `DcForm` vergelijkt de sleutels van `Error.Details` hoofdletterongevoelig met de eigenschappen van het model
 (`code` uit de validator hoort bij `Code`); meldingen zonder bijbehorend veld staan in de melding bovenaan.
+
+## Markdown colours and the editor
+
+Page text (content pages, course introductions) can use theme colours: `{accent}text{/accent}`, and the same for
+`blue` (UM dark blue), `lightblue`, `success`, `warning`, `danger` and `muted` (`accent` is UM orange). Alignment works the
+same way: `{left}`, `{center}` or `{right}` around a paragraph. They render as `<span class="md-color md-color--name">` and use the
+`--dc-md-*` tokens, so they follow the theme and a white-label stylesheet can override them. There are no free colour
+codes and no inline styles. Unknown names and unclosed markers stay plain text, and a colour does not cross the edge of
+other formatting (for example opened inside `**bold**` and closed outside it). `MarkdownEditor` (Content module) is the
+text field with a toolbar for headings, bold, italic, list, link and these colours; use it wherever Markdown is edited.
 
 ## Regels voor modules
 

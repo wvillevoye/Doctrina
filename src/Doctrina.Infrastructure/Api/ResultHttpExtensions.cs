@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Http;
 namespace Doctrina.Infrastructure.Api;
 
 /// <summary>
-/// Vertaalt <see cref="Result"/> naar een HTTP-antwoord (proposal §3.6, spec api-conventions): succes → 200/204,
-/// fout → RFC 9457 ProblemDetails met de status van het <see cref="ErrorType"/>, de foutcode in <c>code</c> en bij
-/// validatie de fouten per veld in <c>errors</c>. De <c>title</c> wordt vertaald op basis van <c>code</c>.
+/// Translates <see cref="Result"/> into an HTTP response (proposal §3.6, spec api-conventions): success → 200/204,
+/// failure → RFC 9457 ProblemDetails with the status of the <see cref="ErrorType"/>, the error code in <c>code</c> and, for
+/// validation, the errors per field in <c>errors</c>. The <c>title</c> is translated based on <c>code</c>.
 /// </summary>
 public static class ResultHttpExtensions
 {
-    /// <summary>De HTTP-status bij een fouttype.</summary>
+    /// <summary>The HTTP status for an error type.</summary>
     public static int StatusCodeFor(ErrorType type) => type switch
     {
         ErrorType.Validation => StatusCodes.Status400BadRequest,
@@ -21,21 +21,21 @@ public static class ResultHttpExtensions
         _ => StatusCodes.Status500InternalServerError,
     };
 
-    /// <summary>Succes → 204 No Content; fout → ProblemDetails.</summary>
+    /// <summary>Success → 204 No Content; failure → ProblemDetails.</summary>
     public static IResult ToHttpResult(this Result result)
     {
         ArgumentNullException.ThrowIfNull(result);
         return result.IsSuccess ? TypedResults.NoContent() : result.Error.ToProblem();
     }
 
-    /// <summary>Succes → 200 OK met de waarde; fout → ProblemDetails.</summary>
+    /// <summary>Success → 200 OK with the value; failure → ProblemDetails.</summary>
     public static IResult ToHttpResult<T>(this Result<T> result)
     {
         ArgumentNullException.ThrowIfNull(result);
         return result.IsSuccess ? TypedResults.Ok(result.Value) : result.Error.ToProblem();
     }
 
-    /// <summary>Succes → <paramref name="onSuccess"/> (bv. 201 Created); fout → ProblemDetails.</summary>
+    /// <summary>Success → <paramref name="onSuccess"/> (e.g. 201 Created); failure → ProblemDetails.</summary>
     public static IResult ToHttpResult<T>(this Result<T> result, Func<T, IResult> onSuccess)
     {
         ArgumentNullException.ThrowIfNull(result);
@@ -43,7 +43,7 @@ public static class ResultHttpExtensions
         return result.IsSuccess ? onSuccess(result.Value!) : result.Error.ToProblem();
     }
 
-    /// <summary>De fout als ProblemDetails-antwoord.</summary>
+    /// <summary>The error as a ProblemDetails response.</summary>
     public static IResult ToProblem(this Error error)
     {
         ArgumentNullException.ThrowIfNull(error);

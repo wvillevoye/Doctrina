@@ -1,6 +1,6 @@
 namespace Doctrina.UI.Components;
 
-/// <summary>Unieke id's voor koppelingen als <c>aria-labelledby</c> en <c>aria-describedby</c> binnen een pagina.</summary>
+/// <summary>Unique ids for links such as <c>aria-labelledby</c> and <c>aria-describedby</c> within a page.</summary>
 internal static class DcIds
 {
     private static long _next;

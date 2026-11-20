@@ -271,3 +271,34 @@ uitvoeringen via zijn contract leveren.
 - **GIVEN** een cursus met drie actieve uitvoeringen, een verwijderde uitvoering, en een uitvoering van een andere cursus
 - **WHEN** de andere uitvoeringen van een van de drie worden opgevraagd
 - **THEN** zijn dat de twee overige actieve uitvoeringen van dezelfde cursus, de nieuwste periode eerst
+
+### Requirement: Pagina's kunnen thema-kleuren en uitlijning gebruiken
+Tekst tussen `{naam}` en `{/naam}` op een pagina, met `naam` een van `accent`,
+`blue`, `lightblue`, `success`, `warning`, `danger`, `muted`, `purple`, `teal`, `pink`, `brown` of `olive`, SHALL met de bijbehorende thema-kleur worden weergegeven,
+en met `naam` `left`, `center` of `right` SHALL de tekst op die manier worden uitgelijnd, in beide gevallen zonder
+`style`-attribuut en zonder andere waarden toe te laten; elke andere of niet gesloten markering SHALL gewone tekst blijven.
+
+#### Scenario: Kleur wordt weergegeven
+- **GIVEN** een pagina met de tekst `{danger}Deadline{/danger} is Friday`
+- **WHEN** de pagina wordt weergegeven
+- **THEN** staat "Deadline" in een element met de klasse `md-color--danger` en bevat de weergave geen `style`-attribuut
+
+#### Scenario: Uitlijning wordt weergegeven
+- **GIVEN** een pagina met de tekst `{center}Welcome{/center}`
+- **WHEN** de pagina wordt weergegeven
+- **THEN** staat "Welcome" in een element met de klasse `md-align--center` en bevat de weergave geen `style`-attribuut
+
+#### Scenario: Kleur om opgemaakte tekst
+- **GIVEN** een pagina met de tekst `{accent}**Read** this{/accent}`
+- **WHEN** de pagina wordt weergegeven
+- **THEN** staat de vetgedrukte tekst "Read" binnen het element met de klasse `md-color--accent`
+
+#### Scenario: Onbekende of ongesloten kleur blijft tekst
+- **GIVEN** een pagina met de tekst `{pink}x{/pink}` en `{danger}open`
+- **WHEN** de pagina wordt weergegeven
+- **THEN** staan beide teksten ongewijzigd als gewone tekst op de pagina en bevat de weergave geen element met een `md-color`-klasse
+
+#### Scenario: Kleur in code blijft tekst
+- **GIVEN** een pagina met de tekst `` `{danger}x{/danger}` ``
+- **WHEN** de pagina wordt weergegeven
+- **THEN** toont de pagina de code `{danger}x{/danger}` letterlijk

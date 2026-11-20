@@ -7,9 +7,9 @@ using Microsoft.Extensions.Logging;
 namespace Doctrina.Infrastructure.Persistence;
 
 /// <summary>
-/// Past bij het opstarten de openstaande migraties van de ingeschakelde modules toe, in afhankelijkheidsvolgorde,
-/// vóórdat de host verzoeken accepteert — alleen als <c>Database:MigrateOnStartup</c> true is (standaard alleen in
-/// Development, design D3). Buiten Development draait de deployment-pipeline EF Core-migratiebundels.
+/// Applies, at start-up, the pending migrations of the enabled modules, in dependency order,
+/// before the host accepts requests — only if <c>Database:MigrateOnStartup</c> is true (by default only in
+/// Development, design D3). Outside Development the deployment pipeline runs EF Core migration bundles.
 /// </summary>
 public sealed partial class ModuleMigrationService(
     IServiceProvider services,
@@ -19,7 +19,7 @@ public sealed partial class ModuleMigrationService(
 {
     public const string MigrateOnStartupKey = "Database:MigrateOnStartup";
 
-    /// <summary>Of migraties bij het opstarten worden toegepast.</summary>
+    /// <summary>Whether migrations are applied at start-up.</summary>
     public static bool IsEnabled(IConfiguration configuration, IHostEnvironment environment)
     {
         ArgumentNullException.ThrowIfNull(configuration);

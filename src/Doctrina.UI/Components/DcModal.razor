@@ -1,9 +1,9 @@
 @implements IAsyncDisposable
 @inject IJSRuntime JS
 
-@* Dialoog met de native <dialog> (spec ui-components "Dialogen houden de focus vast", design D10). Openen met
-   ShowAsync() via @ref; sluiten met de sluitknop, Escape (door de browser) of CloseAsync(). Vereist een interactieve
-   render-modus. *@
+@* Dialog with the native <dialog> (spec ui-components "Dialogen houden de focus vast", design D10). Open with
+   ShowAsync() via @ref; close with the close button, Escape (by the browser) or CloseAsync(). Requires an interactive
+   render mode. *@
 <dialog @ref="_dialog" class="dc-modal" aria-labelledby="@_titleId" data-testid="modal">
   <div class="dc-modal__header">
     <h2 id="@_titleId" class="dc-modal__title">@Title</h2>
@@ -24,25 +24,25 @@
     private IJSObjectReference? _module;
     private DotNetObjectReference<DcModal>? _self;
 
-    /// <summary>Titel; is ook de toegankelijke naam van de dialoog.</summary>
+    /// <summary>Title; is also the accessible name of the dialog.</summary>
     [Parameter, EditorRequired]
     public string Title { get; set; } = string.Empty;
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
-    /// <summary>Knoppen onderaan, bv. "Annuleren" en "Verwijderen".</summary>
+    /// <summary>Buttons at the bottom, e.g. "Cancel" and "Delete".</summary>
     [Parameter]
     public RenderFragment? Footer { get; set; }
 
-    /// <summary>Na sluiten (knop, Escape of <see cref="CloseAsync"/>); de focus is dan al teruggezet.</summary>
+    /// <summary>After closing (button, Escape or <see cref="CloseAsync"/>); the focus has already been restored.</summary>
     [Parameter]
     public EventCallback OnClose { get; set; }
 
-    /// <summary>Is de dialoog open?</summary>
+    /// <summary>Is the dialog open?</summary>
     public bool IsOpen { get; private set; }
 
-    /// <summary>Opent de dialoog modaal; de focus gaat naar de dialoog en komt na sluiten terug.</summary>
+    /// <summary>Opens the dialog modally; the focus moves to the dialog and returns after closing.</summary>
     public async Task ShowAsync()
     {
         _module ??= await JS.InvokeAsync<IJSObjectReference>("import", ModulePath);
@@ -51,7 +51,7 @@
         IsOpen = true;
     }
 
-    /// <summary>Sluit de dialoog (zelfde gevolg als Escape).</summary>
+    /// <summary>Closes the dialog (same effect as Escape).</summary>
     public async Task CloseAsync()
     {
         if (_module is not null)
@@ -60,7 +60,7 @@
         }
     }
 
-    /// <summary>Aangeroepen door het script na het <c>close</c>-event van de dialoog.</summary>
+    /// <summary>Called by the script after the <c>close</c> event of the dialog.</summary>
     [JSInvokable]
     public async Task OnClosed()
     {
@@ -87,7 +87,7 @@
             }
             catch (JSDisconnectedException)
             {
-                // Verbinding al weg: niets op te ruimen in de browser.
+                // Connection already gone: nothing to clean up in the browser.
             }
         }
 

@@ -28,19 +28,19 @@ else
 }
 
 @code {
-    /// <summary>Id van het uitklapbare accountmenu; uniek per pagina.</summary>
+    /// <summary>Id of the collapsible account menu; unique per page.</summary>
     [Parameter]
     public string MenuId { get; set; } = "dc-accountmenu";
 
-    /// <summary>Weergavenaam van de ingelogde gebruiker; <see langword="null"/> voor een anonieme bezoeker.</summary>
+    /// <summary>Display name of the signed-in user; <see langword="null"/> for an anonymous visitor.</summary>
     [Parameter]
     public string? UserName { get; set; }
 
-    /// <summary>Inlogadres, inclusief de huidige pagina als terugkeeradres.</summary>
+    /// <summary>Sign-in address, including the current page as return address.</summary>
     [Parameter, EditorRequired]
     public string SignInHref { get; set; } = string.Empty;
 
-    /// <summary>Formulier-endpoint voor uitloggen (POST met antiforgery).</summary>
+    /// <summary>Form endpoint for signing out (POST with antiforgery).</summary>
     [Parameter, EditorRequired]
     public string SignOutAction { get; set; } = string.Empty;
 

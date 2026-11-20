@@ -2,7 +2,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using Doctrina.TestKit.Authentication;
 
-// Spec theming, requirement "Lettertypen en iconen worden zelf gehost"; taken 1.3 en 3.3.
+// Spec theming, requirement "Lettertypen en iconen worden zelf gehost"; tasks 1.3 and 3.3.
 namespace Doctrina.Host.IntegrationTests.Theming;
 
 public sealed partial class LettertypenEnIconenWordenZelfGehost(DoctrinaHostFactory factory) : IClassFixture<DoctrinaHostFactory>
@@ -72,11 +72,11 @@ public sealed partial class LettertypenEnIconenWordenZelfGehost(DoctrinaHostFact
         }
 
         Assert.Contains(seen, s => s.AbsolutePath.Contains("_content/Doctrina.UI/css/doctrina", StringComparison.Ordinal));
-        Assert.Equal(3, fonts); // Inter normaal en cursief, Fraunces
+        Assert.Equal(3, fonts); // Inter regular and italic, Fraunces
         Assert.Empty(external);
     }
 
-    /// <summary>Absolute URL naar een ander domein (of protocol-relatief) is een externe bron; <c>data:</c> niet.</summary>
+    /// <summary>An absolute URL to another domain (or protocol-relative) is an external source; <c>data:</c> is not.</summary>
     private static void Check(string reference, string source, List<string> external)
     {
         if (reference.StartsWith("data:", StringComparison.Ordinal) || reference.StartsWith('#'))

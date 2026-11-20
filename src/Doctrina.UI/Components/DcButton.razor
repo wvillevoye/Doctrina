@@ -1,5 +1,5 @@
-@* Knop of link in knopvorm (design D7). Altijd een toegankelijke naam: tekst (ChildContent) of Label bij alleen een
-   icoon (spec ui-components "Knoppen en links hebben altijd een toegankelijke naam"). *@
+@* Button or link in button form (design D7). Always an accessible name: text (ChildContent) or Label for an
+   icon-only button (spec ui-components "Knoppen en links hebben altijd een toegankelijke naam"). *@
 @if (Href is not null)
 {
   <a href="@Href" class="@CssClass" @attributes="AdditionalAttributes">@Content</a>
@@ -34,33 +34,33 @@ else
         }
     </text>;
 
-    /// <summary>Zichtbare tekst van de knop.</summary>
+    /// <summary>Visible text of the button.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
-    /// <summary>Toegankelijke naam voor een knop met alleen een icoon (niet zichtbaar, wel voorgelezen).</summary>
+    /// <summary>Accessible name for an icon-only button (not visible, but read aloud).</summary>
     [Parameter]
     public string? Label { get; set; }
 
     [Parameter]
     public DcButtonVariant Variant { get; set; } = DcButtonVariant.Secondary;
 
-    /// <summary>Lucide-icoon vóór de tekst.</summary>
+    /// <summary>Lucide icon before the text.</summary>
     [Parameter]
     public string? Icon { get; set; }
 
-    /// <summary>Maakt er een link in knopvorm van (navigatie in plaats van actie).</summary>
+    /// <summary>Turns it into a link in button form (navigation instead of an action).</summary>
     [Parameter]
     public string? Href { get; set; }
 
-    /// <summary><c>button</c> (standaard), <c>submit</c> of <c>reset</c>.</summary>
+    /// <summary><c>button</c> (default), <c>submit</c> or <c>reset</c>.</summary>
     [Parameter]
     public string Type { get; set; } = "button";
 
     [Parameter]
     public bool Disabled { get; set; }
 
-    /// <summary>De actie loopt: de knop is uitgeschakeld en meldt "bezig".</summary>
+    /// <summary>The action is running: the button is disabled and announces "busy".</summary>
     [Parameter]
     public bool Busy { get; set; }
 
@@ -78,7 +78,7 @@ else
         _ => "dc-button btn btn-secondary",
     } + (ChildContent is null ? " dc-button--icon" : string.Empty);
 
-    // Ook als een event toch binnenkomt (bv. vlak voor het uitschakelen): niet opnieuw activeren.
+    // Even if an event still arrives (e.g. just before disabling): do not activate again.
     private Task HandleClick(MouseEventArgs args) => Busy || Disabled ? Task.CompletedTask : OnClick.InvokeAsync(args);
 
     protected override void OnParametersSet()

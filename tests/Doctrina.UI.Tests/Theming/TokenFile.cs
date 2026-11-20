@@ -4,8 +4,8 @@ using System.Text.RegularExpressions;
 namespace Doctrina.UI.Tests.Theming;
 
 /// <summary>
-/// Leest <c>Styles/_tokens.scss</c> (design D2: één token per regel) en geeft de kleurwaarde van elk <c>--dc-*</c>-token
-/// per thema, met <c>#{$sass-variabele}</c> en <c>var(--dc-…)</c> opgelost.
+/// Reads <c>Styles/_tokens.scss</c> (design D2: one token per line) and gives the colour value of each <c>--dc-*</c> token
+/// per theme, with <c>#{$sass-variable}</c> and <c>var(--dc-…)</c> resolved.
 /// </summary>
 internal static partial class TokenFile
 {
@@ -14,7 +14,7 @@ internal static partial class TokenFile
 
     private static readonly Lazy<string[]> Lines = new(() => File.ReadAllLines(RepoPaths.Tokens));
 
-    /// <summary>Alle tokens van een thema: de thema-onafhankelijke <c>:root</c>-tokens plus de mixin van het thema.</summary>
+    /// <summary>All tokens of a theme: the theme-independent <c>:root</c> tokens plus the theme's mixin.</summary>
     public static IReadOnlyDictionary<string, string> Theme(string mixin)
     {
         var sass = Lines.Value.Select(l => SassVariable().Match(l)).Where(m => m.Success)
@@ -38,7 +38,7 @@ internal static partial class TokenFile
         return tokens;
     }
 
-    /// <summary>Kleur van een token als RGB, met <c>var(--dc-…)</c>-verwijzingen gevolgd.</summary>
+    /// <summary>Colour of a token as RGB, with <c>var(--dc-…)</c> references followed.</summary>
     public static (double R, double G, double B) Color(IReadOnlyDictionary<string, string> theme, string token)
     {
         var value = theme[token];
@@ -60,7 +60,7 @@ internal static partial class TokenFile
         return (Channel(0), Channel(1), Channel(2));
     }
 
-    /// <summary>Contrastverhouding volgens WCAG 2.2 (relatieve luminantie).</summary>
+    /// <summary>Contrast ratio according to WCAG 2.2 (relative luminance).</summary>
     public static double Contrast(IReadOnlyDictionary<string, string> theme, string foreground, string background)
     {
         var a = Luminance(Color(theme, foreground));

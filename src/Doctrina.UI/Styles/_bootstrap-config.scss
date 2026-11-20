@@ -1,26 +1,26 @@
-// Sass-variabelen van Bootstrap (compile-time). Kleuren komen uit _tokens.scss; tijdens runtime zet
-// _bootstrap-bridge.scss Bootstrap's CSS-variabelen op de --dc-tokens (design D2).
+// Sass variables of Bootstrap (compile time). Colours come from _tokens.scss; at runtime
+// _bootstrap-bridge.scss sets Bootstrap's CSS variables to the --dc-tokens (design D2).
 
 $prefix: bs-;
 
-$enable-dark-mode: false; // donker thema komt uit de tokens (data-dc-theme), niet uit Bootstrap's color modes
+$enable-dark-mode: false; // dark theme comes from the tokens (data-dc-theme), not from Bootstrap's color modes
 $enable-shadows: false;
 $enable-gradients: false;
 $enable-reduced-motion: true;
 $enable-smooth-scroll: false;
 
-$primary: $dc-accent;
-$secondary: $dc-stone-600;
+$primary: $um-orange;
+$secondary: $dc-light-text-muted;
 $success: $dc-light-success;
 $info: $dc-light-info;
 $warning: $dc-light-warning;
 $danger: $dc-light-danger;
-$light: $dc-stone-50;
-$dark: $dc-ink;
+$light: $dc-light-surface-sunken;
+$dark: $um-dark-blue;
 
-$body-bg: $dc-paper;
-$body-color: $dc-ink;
-$border-color: $dc-stone-200;
+$body-bg: $um-grey-100;
+$body-color: $um-text;
+$border-color: $dc-light-border;
 
 $font-family-sans-serif: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 $font-family-monospace: ui-monospace, "Cascadia Mono", Consolas, monospace;
@@ -39,7 +39,7 @@ $btn-font-weight: 600;
 $input-padding-y: 0.5rem;
 $input-padding-x: 0.75rem;
 
-$form-select-indicator-color: $dc-stone-500;
+$form-select-indicator-color: $um-grey-600;
 $link-decoration: underline;
 
 $transition-base: all 0.18s cubic-bezier(0.2, 0, 0, 1);

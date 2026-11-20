@@ -5,57 +5,57 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Doctrina.Core.Modules;
 
 /// <summary>
-/// Een feature-module van Doctrina (proposal §3.4, design D1/D2). Modules worden meegecompileerd en via
-/// <c>Modules:Enabled</c> aangezet; een uitgeschakelde module levert niets aan de host.
+/// A feature module of Doctrina (proposal §3.4, design D1/D2). Modules are compiled in and enabled through
+/// <c>Modules:Enabled</c>; a disabled module contributes nothing to the host.
 /// </summary>
 /// <remarks>
-/// Razor-componenten worden uit de assembly van de module gehaald. Health checks voegt een module toe in
-/// <see cref="ConfigureServices"/> met de tag <see cref="ModuleHealthChecks.Tag"/>.
+/// Razor components are taken from the module's assembly. A module adds health checks in
+/// <see cref="ConfigureServices"/> with the tag <see cref="ModuleHealthChecks.Tag"/>.
 /// </remarks>
 public interface IModule
 {
-    /// <summary>Unieke naam, zoals gebruikt in <c>Modules:Enabled</c> en als prefix van permissies (bv. <c>Academic</c>).</summary>
+    /// <summary>Unique name, as used in <c>Modules:Enabled</c> and as the prefix of permissions (e.g. <c>Academic</c>).</summary>
     string Name { get; }
 
-    /// <summary>Namen van de modules die eerder moeten starten en ingeschakeld moeten zijn.</summary>
+    /// <summary>Names of the modules that must start earlier and be enabled.</summary>
     IReadOnlyCollection<string> DependsOn { get; }
 
-    /// <summary>Navigatie-items die de host in het menu opneemt.</summary>
+    /// <summary>Navigation items the host includes in the menu.</summary>
     IReadOnlyCollection<NavItem> Navigation { get; }
 
-    /// <summary>Permissies die deze module gebruikt; namen beginnen met <see cref="Name"/>.</summary>
+    /// <summary>Permissions this module uses; names start with <see cref="Name"/>.</summary>
     IReadOnlyCollection<Permission> Permissions { get; }
 
-    /// <summary>Registreert de services van de module (DbContext, handlers, health checks, …).</summary>
-    /// <param name="services">De servicecollectie van de host.</param>
-    /// <param name="configuration">De configuratie van de host.</param>
+    /// <summary>Registers the module's services (DbContext, handlers, health checks, …).</summary>
+    /// <param name="services">The host's service collection.</param>
+    /// <param name="configuration">The host's configuration.</param>
     void ConfigureServices(IServiceCollection services, IConfiguration configuration);
 
-    /// <summary>Koppelt de API-endpoints van de module.</summary>
+    /// <summary>Maps the module's API endpoints.</summary>
     /// <param name="api">
-    /// De <c>/api/v1</c>-routegroep: alleen bearer-tokens en standaard authenticatie vereist, zodat een module het
-    /// versieprefix en de beveiliging niet kan omzeilen.
+    /// The <c>/api/v1</c> route group: only bearer tokens and default authentication required, so a module cannot bypass
+    /// the version prefix and the security.
     /// </param>
     void MapEndpoints(IEndpointRouteBuilder api);
 
     /// <summary>
-    /// Koppelt de browser-endpoints van de module (cookie-authenticatie, bv. een launch of een publiek JWKS-adres).
-    /// Standaard doet een module niets.
+    /// Maps the module's browser endpoints (cookie authentication, e.g. a launch or a public JWKS address).
+    /// By default a module does nothing.
     /// </summary>
     /// <param name="app">
-    /// De groep <c>/{modulenaam in kleine letters}</c>: ingelogd vereist; een endpoint kan zichzelf expliciet
-    /// <c>AllowAnonymous()</c> maken.
+    /// The group <c>/{module name in lower case}</c>: signed-in required; an endpoint can explicitly make itself
+    /// <c>AllowAnonymous()</c>.
     /// </param>
     void MapBrowserEndpoints(IEndpointRouteBuilder app)
     {
     }
 
     /// <summary>
-    /// Koppelt de endpoints van een externe standaard-API die onder <c>/ooapi/v5</c> staat (change add-ooapi-interop).
-    /// Standaard doet een module niets.
+    /// Maps the endpoints of an external standard API that lives under <c>/ooapi/v5</c> (change add-ooapi-interop).
+    /// By default a module does nothing.
     /// </summary>
     /// <param name="ooapi">
-    /// De <c>/ooapi/v5</c>-routegroep: net als <c>/api/v1</c> alleen bearer-tokens en standaard authenticatie vereist.
+    /// The <c>/ooapi/v5</c> route group: like <c>/api/v1</c>, only bearer tokens and default authentication required.
     /// </param>
     void MapOoapiEndpoints(IEndpointRouteBuilder ooapi)
     {

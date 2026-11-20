@@ -1,6 +1,6 @@
 @implements IDisposable
 
-@* Foutmelding(en) van één veld. Het invoerelement verwijst ernaar met aria-describedby (zie DcFieldBase). *@
+@* Error message(s) of one field. The input element points to it with aria-describedby (see DcFieldBase). *@
 @if (_messages.Count > 0)
 {
   <div id="@Id" class="dc-field-error" data-testid="field-error">
@@ -13,11 +13,11 @@
     private EditContext? _subscribedContext;
     private List<string> _messages = [];
 
-    /// <summary>Id waarnaar het invoerelement verwijst.</summary>
+    /// <summary>Id the input element points to.</summary>
     [Parameter, EditorRequired]
     public string Id { get; set; } = string.Empty;
 
-    /// <summary>Het veld waarvan de meldingen worden getoond.</summary>
+    /// <summary>The field whose messages are shown.</summary>
     [Parameter, EditorRequired]
     public FieldIdentifier Field { get; set; }
 

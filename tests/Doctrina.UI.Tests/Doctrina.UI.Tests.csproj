@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
-  <!-- Componenttests (bUnit) en tests op tokens en gecompileerde CSS van Doctrina.UI (design D12). -->
+  <!-- Component tests (bUnit) and tests on tokens and compiled CSS of Doctrina.UI (design D12). -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RootNamespace>Doctrina.UI.Tests</RootNamespace>

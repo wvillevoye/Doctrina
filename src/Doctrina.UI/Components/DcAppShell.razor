@@ -1,9 +1,14 @@
-@* Layout van elke pagina (spec app-shell, design D9): skiplink, header met merk, hoofdmenu, themakeuze en
-   accountgedeelte, en de hoofdinhoud. Werkt bij statische weergave zonder scripts. *@
+@* Layout of every page (spec app-shell, design D9): skip link, header with brand, main menu, theme choice and
+   account area, the sidebar with the main menu and the main content (design D1-D3 of add-sidebar-navigation).
+   On narrow screens the sidebar is a popover behind the Menu button (native, works without scripts). *@
 <a href="#content" class="dc-skip-link">Skip to content</a>
 
 <header class="dc-shell__header">
   <div class="dc-shell__bar">
+    <button type="button" class="dc-shell__toggle" popovertarget="dc-sidebar" data-testid="menu-toggle">
+      <DcIcon Name="menu" />
+      <span>Menu</span>
+    </button>
     <a href="/" class="dc-shell__brand" data-testid="brand">
       @if (LogoPath is not null)
       {
@@ -11,10 +16,10 @@
       }
       else
       {
+        <DcLogo Size="32" />
         <span class="dc-shell__wordmark">Doctrina</span>
       }
     </a>
-    <div class="dc-shell__nav">@Navigation</div>
     <div class="dc-shell__tools">
       <DcThemeSwitcher Current="Theme" ReturnUrl="@ReturnUrl" />
       <DcAccountMenu UserName="@UserName" SignInHref="@SignInHref" SignOutAction="@SignOutAction" ProfileHref="@ProfileHref" />
@@ -22,20 +27,26 @@
   </div>
 </header>
 
-<main id="content" tabindex="-1" class="dc-shell__main">
-  @ChildContent
-</main>
+<div class="dc-shell__body">
+  <aside id="dc-sidebar" popover class="dc-shell__sidebar">
+    <div class="dc-shell__sidebar-inner">@Navigation</div>
+  </aside>
+
+  <main id="content" tabindex="-1" class="dc-shell__main">
+    @ChildContent
+  </main>
+</div>
 
 @code {
-    /// <summary>De inhoud van de pagina.</summary>
+    /// <summary>The content of the page.</summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
-    /// <summary>Het hoofdmenu, meestal een <see cref="DcNavMenu"/> met de items die de host zichtbaar maakt.</summary>
+    /// <summary>The main menu, usually a <see cref="DcNavMenu"/> with the items the host makes visible.</summary>
     [Parameter]
     public RenderFragment? Navigation { get; set; }
 
-    /// <summary>Eigen logo (white-label) in plaats van het woordmerk; vereist <see cref="LogoAlt"/>.</summary>
+    /// <summary>Custom logo (white-label) instead of the wordmark; requires <see cref="LogoAlt"/>.</summary>
     [Parameter]
     public string? LogoPath { get; set; }
 
@@ -45,11 +56,11 @@
     [Parameter]
     public DcTheme Theme { get; set; }
 
-    /// <summary>De huidige pagina (lokaal pad), voor de themakeuze.</summary>
+    /// <summary>The current page (local path), for the theme choice.</summary>
     [Parameter, EditorRequired]
     public string ReturnUrl { get; set; } = "/";
 
-    /// <summary>Weergavenaam van de ingelogde gebruiker; <see langword="null"/> voor een anonieme bezoeker.</summary>
+    /// <summary>Display name of the signed-in user; <see langword="null"/> for an anonymous visitor.</summary>
     [Parameter]
     public string? UserName { get; set; }
 

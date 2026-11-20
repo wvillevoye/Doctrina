@@ -1,0 +1,46 @@
+.dc-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--dc-space-4);
+  background-color: var(--dc-surface);
+  animation: dc-splash-out 0.5s ease 1.4s forwards;
+  pointer-events: none;
+}
+
+.dc-splash__name {
+  font-family: var(--dc-font-heading);
+  font-size: 2.5rem;
+  font-weight: var(--dc-font-weight-semibold);
+  letter-spacing: -0.01em;
+  color: var(--dc-heading);
+}
+
+.dc-splash ::deep .dc-logo,
+.dc-splash__name {
+  animation: dc-splash-in 0.6s ease both;
+}
+
+html[data-dc-splash="seen"] .dc-splash {
+  display: none;
+}
+
+@keyframes dc-splash-in {
+  from { opacity: 0; transform: translateY(0.5rem) scale(0.96); }
+}
+
+@keyframes dc-splash-out {
+  to { opacity: 0; visibility: hidden; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dc-splash,
+  .dc-splash ::deep .dc-logo,
+  .dc-splash__name {
+    animation-duration: 0.01s;
+  }
+}

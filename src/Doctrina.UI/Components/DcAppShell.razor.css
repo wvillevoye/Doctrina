@@ -25,14 +25,13 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--dc-space-3) var(--dc-space-5);
-  max-width: var(--dc-content-width);
-  margin: 0 auto;
   padding: var(--dc-space-3) var(--dc-space-4);
 }
 
 .dc-shell__brand {
   display: inline-flex;
   align-items: center;
+  gap: var(--dc-space-3);
   color: var(--dc-heading);
   text-decoration: none;
 }
@@ -61,12 +60,106 @@
   margin-left: auto;
 }
 
+.dc-shell__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dc-space-2);
+  min-height: 2.5rem;
+  padding: var(--dc-space-2) var(--dc-space-3);
+  border: var(--dc-border-width) solid var(--dc-border-strong);
+  border-radius: var(--dc-radius);
+  color: var(--dc-text);
+  background-color: var(--dc-surface);
+  font-weight: var(--dc-font-weight-semibold);
+  cursor: pointer;
+}
+
+/* Narrow screen: the sidebar is a drawer (popover) from the start edge. width/height override the
+   fit-content that the browser gives [popover]. */
+.dc-shell__sidebar {
+  inset: 0 auto 0 0;
+  width: min(18rem, 85vw);
+  height: 100dvh;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-right: var(--dc-border-width) solid var(--dc-sidebar-border);
+  overflow-y: auto;
+  color: var(--dc-sidebar-text);
+  background-color: var(--dc-sidebar-bg);
+  box-shadow: var(--dc-shadow-float);
+}
+
+.dc-shell__sidebar::backdrop {
+  background-color: var(--dc-backdrop);
+}
+
+.dc-shell__sidebar-inner {
+  padding: var(--dc-space-4);
+}
+
+/* Pages use the width next to the sidebar, aligned to its edge (up to 80rem). A page that wraps its content in
+   .dc-page--center (e.g. the start page) is centred at the reading width instead. */
 .dc-shell__main {
-  max-width: var(--dc-content-width);
-  margin: 0 auto;
+  max-width: 80rem;
+  margin: 0;
   padding: var(--dc-space-6) var(--dc-space-4) var(--dc-space-7);
+}
+
+.dc-shell__main:has(> .dc-page--center) {
+  max-width: var(--dc-content-width);
+  margin-inline: auto;
 }
 
 .dc-shell__main:focus {
   outline: none;
+}
+
+/* Wide screen: sidebar and content side by side; the sidebar is always visible and stays in view when scrolling.
+   Overrides the browser hiding [popover]. */
+@media (min-width: 64rem) {
+  .dc-shell__toggle {
+    display: none;
+  }
+
+  /* The line along the sidebar runs from the top of the window to the bottom, behind the header (which is opaque and
+     above it), so it starts below the header and also continues when the page content is short. */
+  .dc-shell__header {
+    position: relative;
+    z-index: 1;
+  }
+
+  .dc-shell__body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 16rem;
+    width: var(--dc-border-width);
+    margin-left: calc(-1 * var(--dc-border-width));
+    background-color: var(--dc-sidebar-border);
+  }
+
+  .dc-shell__body {
+    display: grid;
+    grid-template-columns: 16rem minmax(0, 1fr);
+  }
+
+  .dc-shell__sidebar {
+    position: static;
+    display: block;
+    inset: auto;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    border-right: 0;
+    box-shadow: none;
+  }
+
+  .dc-shell__sidebar-inner {
+    position: sticky;
+    top: 0;
+    max-height: 100dvh;
+    overflow-y: auto;
+  }
 }

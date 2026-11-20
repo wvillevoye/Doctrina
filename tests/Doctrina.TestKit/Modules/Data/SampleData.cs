@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Doctrina.TestKit.Modules.Data;
 
-/// <summary>Uitwisselbare testentiteit van module <c>Sample</c>.</summary>
+/// <summary>Exchangeable test entity of module <c>Sample</c>.</summary>
 public sealed class SampleItem : ExchangeableEntity
 {
     public required string Name { get; set; }
 
-    /// <summary>Maakt een item en laat <see cref="SampleCreated"/> ontstaan (afgeleverd na het opslaan).</summary>
+    /// <summary>Creates an item and raises <see cref="SampleCreated"/> (delivered after saving).</summary>
     public static SampleItem Create(string externalId, string source = "SIS", string name = "Voorbeeld")
     {
         var item = new SampleItem { ExternalId = externalId, Source = source, Name = name };
@@ -18,7 +18,7 @@ public sealed class SampleItem : ExchangeableEntity
     }
 }
 
-/// <summary>DbContext van testmodule <c>Sample</c> (schema <c>sample</c>).</summary>
+/// <summary>DbContext of test module <c>Sample</c> (schema <c>sample</c>).</summary>
 public sealed class SampleDbContext(DbContextOptions<SampleDbContext> options) : ModuleDbContext(options)
 {
     public DbSet<SampleItem> Items => Set<SampleItem>();
@@ -31,16 +31,16 @@ public sealed class SampleDbContext(DbContextOptions<SampleDbContext> options) :
     }
 }
 
-/// <summary>Voor <c>dotnet ef</c> (zie <c>docs/ontwikkelen/database.md</c>).</summary>
+/// <summary>For <c>dotnet ef</c> (see <c>docs/ontwikkelen/database.md</c>).</summary>
 public sealed class SampleDbContextFactory() : ModuleDesignTimeDbContextFactory<SampleDbContext>(SampleModule.ModuleName);
 
-/// <summary>Entiteit van testmodule <c>Notes</c>: een gewone (niet-uitwisselbare) entiteit.</summary>
+/// <summary>Entity of test module <c>Notes</c>: an ordinary (non-exchangeable) entity.</summary>
 public sealed class Note : Entity
 {
     public required string Text { get; set; }
 }
 
-/// <summary>DbContext van testmodule <c>Notes</c> (schema <c>notes</c>).</summary>
+/// <summary>DbContext of test module <c>Notes</c> (schema <c>notes</c>).</summary>
 public sealed class NotesDbContext(DbContextOptions<NotesDbContext> options) : ModuleDbContext(options)
 {
     public DbSet<Note> Notes => Set<Note>();
@@ -53,5 +53,5 @@ public sealed class NotesDbContext(DbContextOptions<NotesDbContext> options) : M
     }
 }
 
-/// <summary>Voor <c>dotnet ef</c>.</summary>
+/// <summary>For <c>dotnet ef</c>.</summary>
 public sealed class NotesDbContextFactory() : ModuleDesignTimeDbContextFactory<NotesDbContext>(NotesModule.ModuleName);

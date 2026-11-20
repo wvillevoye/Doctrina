@@ -17,7 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-// Tests volgen spec openspec/specs/api-conventions/spec.md:
+// Tests follow spec openspec/specs/api-conventions/spec.md:
 // klasse = requirement, methode = scenario.
 namespace Doctrina.Host.IntegrationTests.ApiConventions;
 
@@ -29,7 +29,7 @@ internal static class ApiHosts
         return await response.Content.ReadFromJsonAsync<JsonElement>(ct);
     }
 
-    /// <summary>Testmodule met een endpoint per fouttype: <c>GET errors/{type}</c> en <c>GET errors/validatie</c>.</summary>
+    /// <summary>Test module with an endpoint per error type: <c>GET errors/{type}</c> and <c>GET errors/validatie</c>.</summary>
     public static TestModule ErrorsModule() => new("Errors")
     {
         Endpoints = api =>
@@ -227,7 +227,7 @@ public sealed class FouttitelsZijnVertaald(DoctrinaHostFactory factory) : IClass
     [Fact]
     public void ComponentenKrijgenDezelfdeTitelsViaIErrorTitles()
     {
-        // add-design-system design D8: DcResult gebruikt IErrorTitles uit Doctrina.Core in plaats van ErrorTitles.
+        // add-design-system design D8: DcResult uses IErrorTitles from Doctrina.Core instead of ErrorTitles.
         using var host = factory.WithModules([new SampleModule()], SampleModule.ModuleName);
         using var scope = host.Services.CreateScope();
         var previous = System.Globalization.CultureInfo.CurrentUICulture;
@@ -237,7 +237,7 @@ public sealed class FouttitelsZijnVertaald(DoctrinaHostFactory factory) : IClass
             var titles = scope.ServiceProvider.GetRequiredService<IErrorTitles>();
 
             Assert.Same(scope.ServiceProvider.GetRequiredService<ErrorTitles>(), titles);
-            // switch-ui-to-english design D2: de UI krijgt altijd de Engelse titel, ook bij cultuur nl.
+            // switch-ui-to-english design D2: the UI always gets the English title, also with culture nl.
             Assert.Equal("Sample item not found", titles.For("Sample.Item.NotFound", "terugval"));
             Assert.Equal("terugval", titles.For("Sample.Bestaat.Niet", "terugval"));
         }
@@ -278,7 +278,7 @@ public sealed class OnverwachteFoutenLekkenGeenDetails(DoctrinaHostFactory facto
         Assert.Contains(traceId!, logged.Message, StringComparison.Ordinal);
         Assert.Contains("api/v1/errors/exception", logged.Message, StringComparison.Ordinal);
         Assert.DoesNotContain("I6123456", logged.Message, StringComparison.Ordinal);
-        Assert.Null(logged.Exception); // geen exceptionobject met melding in de log
+        Assert.Null(logged.Exception); // no exception object with a message in the log
     }
 }
 

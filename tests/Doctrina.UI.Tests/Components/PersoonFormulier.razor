@@ -2,7 +2,7 @@
 @using Doctrina.Core.Results
 @using Doctrina.UI.Components
 
-@* Testformulier voor DcForm en de velden (taken 5.2 en 5.3). *@
+@* Test form for DcForm and the fields (tasks 5.2 and 5.3). *@
 <DcForm Model="Model" Error="Error" FormName="persoon" OnValidSubmit="() => Submitted++">
   <DcTextField Label="E-mailadres" Type="email" Required @bind-Value="Model.Email" Hint="Je instellingsadres." />
   <DcTextField Label="Voornaam" @bind-Value="Model.GivenName" />

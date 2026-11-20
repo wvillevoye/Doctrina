@@ -1,5 +1,5 @@
 <Project>
-  <!-- Geen central package management voor de dev-stack-voorbeelden (versies staan in hun eigen .csproj). -->
+  <!-- No central package management for the dev-stack samples (versions are in their own .csproj). -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
   </PropertyGroup>

@@ -1,9 +1,9 @@
 @using System.Reflection
 
-@* Formulier rond EditForm (design D7, D8): validatie met DataAnnotations, en een fout uit een Result wordt getoond met
-   DcResult; de meldingen per veld (Error.Details) komen bij de velden, met hoofdletterongevoelige veldnamen
-   (API-sleutels zijn camelCase, eigenschappen PascalCase). novalidate: de meldingen van Doctrina in plaats van die van
-   de browser, zodat ze overal gelijk en gekoppeld zijn. *@
+@* Form around EditForm (design D7, D8): validation with DataAnnotations, and an error from a Result is shown with
+   DcResult; the messages per field (Error.Details) go to the fields, with case-insensitive field names
+   (API keys are camelCase, properties PascalCase). novalidate: Doctrina's messages instead of those of
+   the browser, so they are the same everywhere and linked. *@
 <EditForm EditContext="_editContext" FormName="@FormName" OnValidSubmit="OnValidSubmit" OnInvalidSubmit="OnInvalidSubmit"
           class="dc-form" novalidate @attributes="AdditionalAttributes">
   @if (Validate)
@@ -20,11 +20,11 @@
     private Error? _appliedError;
     private List<string> _unmatched = [];
 
-    /// <summary>Het model waaraan de velden gebonden zijn.</summary>
+    /// <summary>The model the fields are bound to.</summary>
     [Parameter, EditorRequired]
     public object Model { get; set; } = default!;
 
-    /// <summary>Naam van het formulier; nodig bij statische weergave (SSR) met meerdere formulieren.</summary>
+    /// <summary>Name of the form; needed for static rendering (SSR) with several forms.</summary>
     [Parameter]
     public string? FormName { get; set; }
 
@@ -34,11 +34,11 @@
     [Parameter]
     public EventCallback<EditContext> OnInvalidSubmit { get; set; }
 
-    /// <summary>Fout uit het laatste <c>Result</c> (bv. van de upsert-service); <see langword="null"/> = geen fout.</summary>
+    /// <summary>Error from the last <c>Result</c> (e.g. of the upsert service); <see langword="null"/> = no error.</summary>
     [Parameter]
     public Error? Error { get; set; }
 
-    /// <summary>Validatie met DataAnnotations aan (standaard).</summary>
+    /// <summary>Validation with DataAnnotations on (default).</summary>
     [Parameter]
     public bool Validate { get; set; } = true;
 
@@ -55,7 +55,7 @@
         {
             _editContext = new EditContext(Model);
             _serverMessages = new ValidationMessageStore(_editContext);
-            // Een veld dat de gebruiker wijzigt, verliest de melding van de server.
+            // A field the user changes loses the message from the server.
             _editContext.OnFieldChanged += (_, e) => _serverMessages.Clear(e.FieldIdentifier);
             _appliedError = null;
         }

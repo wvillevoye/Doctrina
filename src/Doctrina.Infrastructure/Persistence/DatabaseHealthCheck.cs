@@ -5,8 +5,8 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 namespace Doctrina.Infrastructure.Persistence;
 
 /// <summary>
-/// Readiness-check van de database (<c>ConnectionStrings:Doctrina</c>): verbinden en <c>SELECT 1</c>. De uitkomst bevat
-/// geen connection string of foutmelding, alleen de status.
+/// Readiness check of the database (<c>ConnectionStrings:Doctrina</c>): connect and <c>SELECT 1</c>. The result contains
+/// no connection string or error message, only the status.
 /// </summary>
 public sealed class DatabaseHealthCheck(IConfiguration configuration) : IHealthCheck
 {

@@ -3,7 +3,7 @@ using Doctrina.UI.Components;
 using Doctrina.UI.Icons;
 using Microsoft.AspNetCore.Components;
 
-// Spec ui-components, requirement "Knoppen en links hebben altijd een toegankelijke naam"; taak 4.1, design D6/D7.
+// Spec ui-components, requirement "Knoppen en links hebben altijd een toegankelijke naam"; task 4.1, design D6/D7.
 namespace Doctrina.UI.Tests.Components;
 
 public sealed class KnoppenEnLinksHebbenAltijdEenToegankelijkeNaam : IDisposable
@@ -18,7 +18,7 @@ public sealed class KnoppenEnLinksHebbenAltijdEenToegankelijkeNaam : IDisposable
         var button = cut.Find("button");
         var icon = button.QuerySelector("svg")!;
 
-        // Toegankelijke naam = de (visueel verborgen) tekst; het icoon telt niet mee.
+        // Accessible name = the (visually hidden) text; the icon doesn't count.
         Assert.Equal("Verwijderen", button.TextContent.Trim());
         Assert.Equal("Verwijderen", button.QuerySelector(".visually-hidden")!.TextContent);
         Assert.Equal("true", icon.GetAttribute("aria-hidden"));

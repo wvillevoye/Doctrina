@@ -15,6 +15,6 @@ public sealed class DeModuleMigreertNaarEenEigenSchema
         var tables = await db.Database.QueryAsync(
             "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'content' ORDER BY TABLE_NAME", Ct);
 
-        Assert.Equal(["__EFMigrationsHistory", "Items", "Sections"], tables.Select(r => r[0]));
+        Assert.Equal(["__EFMigrationsHistory", "Introductions", "IntroductionTemplates", "Items", "Sections"], tables.Select(r => r[0]));
     }
 }

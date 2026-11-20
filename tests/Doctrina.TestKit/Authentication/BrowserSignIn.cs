@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.WebUtilities;
 
 namespace Doctrina.TestKit.Authentication;
 
-/// <summary>Speelt de rol van browser + provider in de OIDC-codeflow (zonder Keycloak).</summary>
+/// <summary>Plays the role of browser + provider in the OIDC code flow (without Keycloak).</summary>
 public static partial class BrowserSignIn
 {
     /// <summary>
-    /// Rondt een challenge (302 naar de provider) af: de provider geeft een code uit en stuurt de browser terug naar
-    /// de redirect-URI (form_post of query). Geeft het antwoord van Doctrina op de callback terug.
+    /// Completes a challenge (302 to the provider): the provider issues a code and redirects the browser back to
+    /// the redirect URI (form_post or query). Returns Doctrina's response to the callback.
     /// </summary>
     public static async Task<HttpResponseMessage> CompleteSignInAsync(
         this HttpClient browser,
@@ -40,7 +40,7 @@ public static partial class BrowserSignIn
         return await browser.GetAsync(new Uri(QueryHelpers.AddQueryString(callback.PathAndQuery, fields!), UriKind.Relative), cancellationToken);
     }
 
-    /// <summary>Haalt een pagina op die een challenge geeft en logt meteen in; volgt de redirect terug.</summary>
+    /// <summary>Fetches a page that gives a challenge and signs in immediately; follows the redirect back.</summary>
     public static async Task<string> SignInAndGetAsync(
         this HttpClient browser,
         string path,
@@ -54,7 +54,7 @@ public static partial class BrowserSignIn
         return await browser.GetStringAsync(target.IsAbsoluteUri ? new Uri(target.PathAndQuery, UriKind.Relative) : target, cancellationToken);
     }
 
-    /// <summary>Leest het antiforgery-token uit een formulier op de pagina.</summary>
+    /// <summary>Reads the antiforgery token from a form on the page.</summary>
     public static string ReadAntiforgeryToken(string html)
     {
         var match = AntiforgeryInput().Match(html);

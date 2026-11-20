@@ -5,7 +5,7 @@ using Doctrina.Infrastructure.Authorization;
 using Doctrina.Infrastructure.Modules;
 using Doctrina.TestKit.Modules;
 
-// Aanvulling op spec access-control (design D8): alleen Doctrina bepaalt permissies.
+// Addition to spec access-control (design D8): only Doctrina determines permissions.
 namespace Doctrina.Host.IntegrationTests.AccessControl;
 
 public sealed class PermissiesKomenAlleenUitDeRolkoppeling

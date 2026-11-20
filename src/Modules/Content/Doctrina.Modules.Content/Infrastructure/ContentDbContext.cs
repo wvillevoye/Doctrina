@@ -11,9 +11,13 @@ public sealed class ContentDbContext(DbContextOptions<ContentDbContext> options)
     public const int TitleMaxLength = 200;
     public const int UrlMaxLength = 2048;
     public const int FileNameMaxLength = 255;
+    public const int TemplateNameMaxLength = 100;
+    public const int IntroductionTextMaxLength = 50_000;
 
     public DbSet<ContentSection> Sections => Set<ContentSection>();
     public DbSet<ContentItem> Items => Set<ContentItem>();
+    public DbSet<IntroductionTemplate> IntroductionTemplates => Set<IntroductionTemplate>();
+    public DbSet<CourseIntroduction> Introductions => Set<CourseIntroduction>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -34,6 +38,17 @@ public sealed class ContentDbContext(DbContextOptions<ContentDbContext> options)
             b.Property(i => i.FileName).HasMaxLength(FileNameMaxLength);
             b.Property(i => i.ContentType).HasMaxLength(FileNameMaxLength);
             b.Ignore(i => i.IsVisible);
+        });
+        modelBuilder.Entity<IntroductionTemplate>(b =>
+        {
+            b.ToTable("IntroductionTemplates");
+            b.Property(t => t.Name).HasMaxLength(TemplateNameMaxLength);
+            b.Property(t => t.Layout).HasConversion<string>().HasMaxLength(16);
+        });
+        modelBuilder.Entity<CourseIntroduction>(b =>
+        {
+            b.ToTable("Introductions");
+            b.HasIndex(i => i.OfferingId).IsUnique();
         });
         base.OnModelCreating(modelBuilder);
     }

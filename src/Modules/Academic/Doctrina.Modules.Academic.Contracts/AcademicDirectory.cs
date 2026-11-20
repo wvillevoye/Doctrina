@@ -72,11 +72,23 @@ public static class AcademicDirectoryExtensions
 /// A component shown on the page of a course offering (<c>/courses/{offering}</c>). The component gets the parameter
 /// <c>[Parameter] public Guid OfferingId { get; set; }</c>.
 /// </summary>
-public sealed record OfferingPageSection(Type Component, int Order);
+/// <param name="Component">The component to show.</param>
+/// <param name="Order">Position on the page; lower comes first.</param>
+/// <param name="Title">Title in the course menu.</param>
+/// <param name="Icon">Lucide icon name in the course menu.</param>
+/// <param name="IsVisible">
+/// Decides per user and offering whether the section and its menu item are shown; <see langword="null"/> means always.
+/// Gets the service provider of the page, the current user and the offering id.
+/// </param>
+public sealed record OfferingPageSection(
+    Type Component, int Order, string Title, string? Icon = null,
+    Func<IServiceProvider, ClaimsPrincipal, Guid, Task<bool>>? IsVisible = null);
 
 public static class OfferingPageSectionExtensions
 {
     /// <summary>Registers <typeparamref name="TComponent"/> as a section of the offering page; call from <c>ConfigureServices</c>.</summary>
-    public static IServiceCollection AddOfferingPageSection<TComponent>(this IServiceCollection services, int order) =>
-        services.AddSingleton(new OfferingPageSection(typeof(TComponent), order));
+    public static IServiceCollection AddOfferingPageSection<TComponent>(
+        this IServiceCollection services, int order, string title, string? icon = null,
+        Func<IServiceProvider, ClaimsPrincipal, Guid, Task<bool>>? isVisible = null) =>
+        services.AddSingleton(new OfferingPageSection(typeof(TComponent), order, title, icon, isVisible));
 }

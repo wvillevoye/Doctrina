@@ -8,27 +8,27 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Doctrina.Infrastructure.Persistence;
 
-/// <summary>Gedeelde instellingen voor de databases van modules (design D3/D13).</summary>
+/// <summary>Shared settings for the databases of modules (design D3/D13).</summary>
 public static class ModuleDatabase
 {
-    /// <summary>Naam van de connection string (<c>ConnectionStrings:Doctrina</c>).</summary>
+    /// <summary>Name of the connection string (<c>ConnectionStrings:Doctrina</c>).</summary>
     public const string ConnectionStringName = "Doctrina";
 
-    /// <summary>Naam van de migratiegeschiedenistabel; staat per module in het eigen schema.</summary>
+    /// <summary>Name of the migration history table; lives per module in its own schema.</summary>
     public const string MigrationsHistoryTable = "__EFMigrationsHistory";
 
-    /// <summary>Lokale standaarddatabase voor ontwikkelen en ontwerptijd (<c>dotnet ef</c>), zie design D13.</summary>
+    /// <summary>Local default database for development and design time (<c>dotnet ef</c>), see design D13.</summary>
     public const string LocalDbConnectionString =
         @"Server=(localdb)\MSSQLLocalDB;Database=Doctrina;Trusted_Connection=True;TrustServerCertificate=True";
 
-    /// <summary>SQL-schema van een module: de modulenaam in kleine letters.</summary>
+    /// <summary>SQL schema of a module: the module name in lower case.</summary>
     public static string SchemaFor(string moduleName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleName);
         return moduleName.Replace(".", string.Empty, StringComparison.Ordinal).ToLowerInvariant();
     }
 
-    /// <summary>Configureert SQL Server met het moduleschema voor de migratiegeschiedenis.</summary>
+    /// <summary>Configures SQL Server with the module schema for the migration history.</summary>
     public static DbContextOptionsBuilder UseModuleSqlServer(this DbContextOptionsBuilder options, string connectionString, string moduleName)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -36,7 +36,7 @@ public static class ModuleDatabase
         return options.UseSqlServer(connectionString, sql => sql.MigrationsHistoryTable(MigrationsHistoryTable, schema));
     }
 
-    /// <summary>Opties zonder DI, bv. voor <c>dotnet ef</c> of tests; zonder <paramref name="events"/> worden entiteit-events niet afgeleverd.</summary>
+    /// <summary>Options without DI, e.g. for <c>dotnet ef</c> or tests; without <paramref name="events"/> entity events are not delivered.</summary>
     public static DbContextOptions<TContext> CreateOptions<TContext>(
         string connectionString,
         string moduleName,
@@ -55,23 +55,23 @@ public static class ModuleDatabase
     }
 
     /// <summary>
-    /// Is de fout een schending van een unieke index (SQL Server 2601/2627), bv. een dubbele <c>ExternalId</c> binnen een
-    /// <c>Source</c>? De upsert-services vertalen dit naar een <c>Conflict</c>-fout.
+    /// Is the error a unique index violation (SQL Server 2601/2627), e.g. a duplicate <c>ExternalId</c> within a
+    /// <c>Source</c>? The upsert services translate this into a <c>Conflict</c> error.
     /// </summary>
     public static bool IsUniqueConstraintViolation(this DbUpdateException exception) =>
         exception?.InnerException is SqlException { Number: 2601 or 2627 };
 }
 
-/// <summary>Een DbContext van een ingeschakelde module, in afhankelijkheidsvolgorde geregistreerd (voor migraties).</summary>
+/// <summary>A DbContext of an enabled module, registered in dependency order (for migrations).</summary>
 public sealed record ModuleDbContextRegistration(string ModuleName, Type ContextType);
 
-/// <summary>Registratie van module-DbContexts.</summary>
+/// <summary>Registration of module DbContexts.</summary>
 public static class ModuleDatabaseServiceCollectionExtensions
 {
     /// <summary>
-    /// Registreert <typeparamref name="TContext"/> voor module <paramref name="moduleName"/>: eigen schema, eigen
-    /// migratiegeschiedenis, <c>DateLastModified</c>-interceptor en aflevering van entiteit-events na het opslaan. Roep aan vanuit <c>IModule.ConfigureServices</c>, zodat
-    /// alleen ingeschakelde modules een database krijgen.
+    /// Registers <typeparamref name="TContext"/> for module <paramref name="moduleName"/>: own schema, own
+    /// migration history, <c>DateLastModified</c> interceptor and delivery of entity events after saving. Call from <c>IModule.ConfigureServices</c>, so
+    /// only enabled modules get a database.
     /// </summary>
     public static IServiceCollection AddModuleDbContext<TContext>(this IServiceCollection services, IConfiguration configuration, string moduleName)
         where TContext : ModuleDbContext
@@ -98,9 +98,9 @@ public static class ModuleDatabaseServiceCollectionExtensions
 }
 
 /// <summary>
-/// Basis voor de ontwerptijd-factory van een module, zodat <c>dotnet ef</c> werkt zonder de host te starten
-/// (zie <c>docs/ontwikkelen/database.md</c>). Connection string: argument <c>--connection</c> na <c>--</c>, anders de
-/// omgevingsvariabele <c>ConnectionStrings__Doctrina</c>, anders LocalDB.
+/// Base for the design-time factory of a module, so <c>dotnet ef</c> works without starting the host
+/// (see <c>docs/ontwikkelen/database.md</c>). Connection string: argument <c>--connection</c> after <c>--</c>, otherwise the
+/// environment variable <c>ConnectionStrings__Doctrina</c>, otherwise LocalDB.
 /// </summary>
 public abstract class ModuleDesignTimeDbContextFactory<TContext>(string moduleName) : IDesignTimeDbContextFactory<TContext>
     where TContext : ModuleDbContext

@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 
 namespace Doctrina.Infrastructure.Authorization;
 
-/// <summary>Policynamen voor permissies: <c>Permission:&lt;naam&gt;</c> (design D8).</summary>
+/// <summary>Policy names for permissions: <c>Permission:&lt;name&gt;</c> (design D8).</summary>
 public static class PermissionPolicy
 {
     public const string Prefix = "Permission:";
@@ -29,14 +29,14 @@ public static class PermissionPolicy
     }
 }
 
-/// <summary>Vereist een permissie voor een Razor-pagina of -component: <c>@attribute [RequirePermission("Sample.Manage")]</c>.</summary>
+/// <summary>Requires a permission for a Razor page or component: <c>@attribute [RequirePermission("Sample.Manage")]</c>.</summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
 public sealed class RequirePermissionAttribute(string permission) : AuthorizeAttribute(PermissionPolicy.For(permission))
 {
     public string Permission { get; } = permission;
 }
 
-/// <summary>Maakt van <c>Permission:&lt;naam&gt;</c> een policy; andere namen gaan naar de standaardprovider.</summary>
+/// <summary>Turns <c>Permission:&lt;name&gt;</c> into a policy; other names go to the default provider.</summary>
 public sealed class PermissionPolicyProvider(IOptions<AuthorizationOptions> options) : DefaultAuthorizationPolicyProvider(options)
 {
     public override async Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
@@ -54,9 +54,9 @@ public sealed class PermissionPolicyProvider(IOptions<AuthorizationOptions> opti
 }
 
 /// <summary>
-/// Voegt eenmaal per verzoek de permissies toe die bij de <c>roles</c>-claim horen, als
-/// <see cref="DoctrinaClaimTypes.Permission"/>-claims in een eigen identity. Permissieclaims die van buiten komen
-/// (bv. uit een token) worden verwijderd: alleen Doctrina bepaalt permissies.
+/// Adds, once per request, the permissions that belong to the <c>roles</c> claim, as
+/// <see cref="DoctrinaClaimTypes.Permission"/> claims in a separate identity. Permission claims that come from outside
+/// (e.g. from a token) are removed: only Doctrina determines permissions.
 /// </summary>
 public sealed class PermissionClaimsTransformation(PermissionRegistry registry) : IClaimsTransformation
 {
@@ -87,10 +87,10 @@ public sealed class PermissionClaimsTransformation(PermissionRegistry registry) 
     }
 }
 
-/// <summary>Registratie en gebruik van permissies.</summary>
+/// <summary>Registration and use of permissions.</summary>
 public static class PermissionExtensions
 {
-    /// <summary>Claims-transformatie (rollen → permissies) en dynamische permissie-policies.</summary>
+    /// <summary>Claims transformation (roles → permissions) and dynamic permission policies.</summary>
     public static IServiceCollection AddDoctrinaAuthorization(this IServiceCollection services)
     {
         services.AddTransient<IClaimsTransformation, PermissionClaimsTransformation>();
@@ -98,18 +98,18 @@ public static class PermissionExtensions
         return services;
     }
 
-    /// <summary>Vereist <paramref name="permission"/> voor een endpoint of groep.</summary>
+    /// <summary>Requires <paramref name="permission"/> for an endpoint or group.</summary>
     public static TBuilder RequirePermission<TBuilder>(this TBuilder builder, string permission)
         where TBuilder : IEndpointConventionBuilder =>
         builder.RequireAuthorization(PermissionPolicy.For(permission));
 }
 
-/// <summary>ProblemDetails voor geweigerde verzoeken.</summary>
+/// <summary>ProblemDetails for rejected requests.</summary>
 public static class AuthorizationProblemDetails
 {
     /// <summary>
-    /// Stabiele foutcodes voor kale 401/403-antwoorden (spec access-control: <c>Auth.Forbidden</c>), zodat ook
-    /// geweigerde API-aanroepen een ProblemDetails-body met <c>code</c> krijgen.
+    /// Stable error codes for bare 401/403 responses (spec access-control: <c>Auth.Forbidden</c>), so that rejected
+    /// API calls also get a ProblemDetails body with <c>code</c>.
     /// </summary>
     public static void AddErrorCode(ProblemDetailsContext context)
     {

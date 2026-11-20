@@ -4,14 +4,14 @@ using Doctrina.UI.Components;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Hosting;
 
-// Spec ui-components, requirement "De stijlgids toont elk component" (add-design-system, taak 7.1, design D11).
+// Spec ui-components, requirement "De stijlgids toont elk component" (add-design-system, task 7.1, design D11).
 namespace Doctrina.Host.IntegrationTests.HostUi;
 
 public sealed class DeStijlgidsToontElkComponent(DoctrinaHostFactory factory) : IClassFixture<DoctrinaHostFactory>
 {
     private static CancellationToken Ct => Xunit.TestContext.Current.CancellationToken;
 
-    /// <summary>Alle publieke componenten van Doctrina.UI (Dc*), zodat een nieuw component niet ongemerkt ontbreekt.</summary>
+    /// <summary>All public components of Doctrina.UI (Dc*), so a new component can't go missing unnoticed.</summary>
     private static IEnumerable<Type> PublicComponents =>
         typeof(DcButton).Assembly.GetExportedTypes()
             .Where(t => typeof(IComponent).IsAssignableFrom(t) && !t.IsAbstract && t.Name.StartsWith("Dc", StringComparison.Ordinal));
@@ -28,9 +28,9 @@ public sealed class DeStijlgidsToontElkComponent(DoctrinaHostFactory factory) : 
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("Style guide · Doctrina", page.Title);
-        Assert.Equal(19, PublicComponents.Count());
+        Assert.Equal(20, PublicComponents.Count());
         Assert.All(PublicComponents, c => Assert.True(sections.Contains(SectionId(c)), $"Sectie '{SectionId(c)}' voor {c.Name} ontbreekt in de stijlgids."));
-        // Elk voorbeeld staat in een lichte en een donkere container.
+        // Every example is in a light and a dark container.
         Assert.All(page.QuerySelectorAll("main section[id^='dc-']"), s =>
         {
             Assert.NotNull(s.QuerySelector("[data-dc-theme=light]"));

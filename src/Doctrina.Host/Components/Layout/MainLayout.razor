@@ -1,9 +1,10 @@
+@using Microsoft.AspNetCore.Components.Sections
 @inherits LayoutComponentBase
 @inject NavigationManager Navigation
 @inject IOptions<ThemeSettings> ThemeOptions
 
-@* Layout van de host: de app-shell uit Doctrina.UI met de gegevens van de host (spec app-shell). De standaardtitel
-   wordt overschreven door de PageTitle of DcPageHeader van de pagina. *@
+@* Layout of the host: the app shell from Doctrina.UI with the host's data (spec app-shell). The default title
+   is overridden by the PageTitle or DcPageHeader of the page. *@
 <PageTitle>Doctrina</PageTitle>
 
 <DcAppShell LogoPath="@NullIfEmpty(ThemeOptions.Value.LogoPath)"
@@ -15,6 +16,7 @@
             SignOutAction="@AuthenticationEndpoints.SignOutPath">
   <Navigation>
     <NavMenu />
+    <SectionOutlet SectionName="sidebar-extra" />
   </Navigation>
   <ChildContent>
     @Body

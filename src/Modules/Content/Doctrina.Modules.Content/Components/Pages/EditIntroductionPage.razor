@@ -1,0 +1,115 @@
+@page "/courses/{OfferingId:guid}/introduction"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@using Doctrina.Core.Results
+@using Doctrina.Modules.Academic.Contracts
+@using Doctrina.Modules.Content.Application
+@using Doctrina.Modules.Content.Domain
+@using Microsoft.Extensions.DependencyInjection
+@inject IServiceScopeFactory Scopes
+@inject NavigationManager Navigation
+
+@* Edit the introduction of a course offering in Markdown, with a preview and a template (spec course-introduction,
+   design D6 of add-course-introduction). Access: lecturers and coordinators of the offering, and Content.Manage. *@
+@if (_loaded)
+{
+  <DcPageHeader Title="Introduction" DocumentTitle="@($"Introduction · {_offeringName}")">
+    <Description><DcLink Href="@($"/courses/{OfferingId:D}")">@_offeringName</DcLink></Description>
+  </DcPageHeader>
+
+  <div class="dc-stack">
+    <DcCard>
+      <DcForm Model="_form" Error="_error" OnValidSubmit="SaveAsync" FormName="edit-introduction" data-testid="edit-introduction-form">
+        <DcSelect TValue="Guid" Label="Template" Value="_form.TemplateId" ValueChanged="OnTemplateChanged" ValueExpression="() => _form.TemplateId">
+          @foreach (var template in _templates)
+          {
+            <option value="@template.Id">@template.Name</option>
+          }
+        </DcSelect>
+        <MarkdownEditor Label="Text" Rows="16" Hint="Markdown: # heading, **bold**, *italic*, - list, [link](https://…)." @bind-Value="_form.Text" />
+        <DcCheckbox Label="Published" @bind-Value="_form.Published" />
+        <div class="dc-form__actions">
+          <DcButton Type="submit" Variant="DcButtonVariant.Primary">Save</DcButton>
+          <DcButton OnClick="() => _preview = !_preview" data-testid="preview-toggle">@(_preview ? "Hide preview" : "Preview")</DcButton>
+          <DcButton Variant="DcButtonVariant.Ghost" Href="@($"/courses/{OfferingId:D}")">Cancel</DcButton>
+        </div>
+      </DcForm>
+    </DcCard>
+
+    @if (_preview)
+    {
+      <PreviewWindow Text="@_form.Text" OnClose="() => _preview = false" />
+    }
+  </div>
+}
+
+@code {
+    private readonly IntroductionForm _form = new();
+    private IReadOnlyList<IntroductionTemplate> _templates = [];
+    private Error? _error;
+    private string _offeringName = string.Empty;
+    private bool _loaded;
+    private bool _preview;
+
+    [Parameter]
+    public Guid OfferingId { get; set; }
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var ct = CancellationToken.None;
+        using var scope = Scopes.CreateScope();
+        var offering = await scope.ServiceProvider.GetRequiredService<IAcademicDirectory>().FindOfferingAsync(OfferingId, ct);
+        if (offering.IsFailure)
+        {
+            Navigation.NotFound();
+            return;
+        }
+
+        var user = AuthenticationState is null ? new ClaimsPrincipal() : (await AuthenticationState).User;
+        if (!await scope.ServiceProvider.GetRequiredService<ContentAccess>().CanManageAsync(user, OfferingId, ct))
+        {
+            Navigation.NavigateTo("/access-denied");
+            return;
+        }
+
+        var introductions = scope.ServiceProvider.GetRequiredService<IntroductionService>();
+        _templates = await introductions.TemplatesAsync(ct);
+        var intro = await introductions.FindAsync(OfferingId, ct);
+        _form.TemplateId = intro?.TemplateId ?? _templates.First(t => t.IsDefault).Id;
+        (_form.Text, _form.Published) = (intro?.Body, intro?.Published ?? false);
+        _offeringName = offering.Value!.Name;
+        _loaded = true;
+    }
+
+    // Choosing a template fills an empty text with its starting text; an existing text is left alone.
+    private void OnTemplateChanged(Guid id)
+    {
+        _form.TemplateId = id;
+        if (string.IsNullOrWhiteSpace(_form.Text))
+        {
+            _form.Text = _templates.FirstOrDefault(t => t.Id == id)?.StartBody;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        using var scope = Scopes.CreateScope();
+        var result = await scope.ServiceProvider.GetRequiredService<IntroductionService>()
+            .SaveAsync(OfferingId, _form.TemplateId, _form.Text, _form.Published, CancellationToken.None);
+        _error = result.Error;
+        if (result.IsSuccess)
+        {
+            Navigation.NavigateTo($"/courses/{OfferingId:D}");
+        }
+    }
+
+    private sealed class IntroductionForm
+    {
+        public Guid TemplateId { get; set; }
+        public string? Text { get; set; }
+        public bool Published { get; set; }
+    }
+}

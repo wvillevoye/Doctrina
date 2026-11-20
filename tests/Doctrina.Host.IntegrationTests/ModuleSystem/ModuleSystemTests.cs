@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-// Tests volgen spec openspec/specs/module-system/spec.md:
+// Tests follow spec openspec/specs/module-system/spec.md:
 // klasse = requirement, methode = scenario.
 namespace Doctrina.Host.IntegrationTests.ModuleSystem;
 
@@ -46,7 +46,7 @@ public sealed class ModulesWordenViaConfiguratieAangezet(DoctrinaHostFactory fac
 
         Assert.Equal(HttpStatusCode.NotFound, endpoint.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, page.StatusCode);
-        // De falende health check van de uitgeschakelde module telt niet mee (de database hoort hier niet bij deze test).
+        // The failing health check of the disabled module doesn't count (the database doesn't belong to this test).
         var report = await ready.Content.ReadFromJsonAsync<HealthResponse>(JsonSerializerOptions.Web, Ct);
         Assert.NotNull(report);
         Assert.False(report.Modules.ContainsKey(SampleModule.ModuleName));
@@ -72,7 +72,7 @@ public sealed class ModuleAfhankelijkhedenWordenBijHetOpstartenOpgelost(Doctrina
     [Fact]
     public void AfhankelijkhedenStartenEerst()
     {
-        // B staat bewust eerst in Modules:Enabled.
+        // B deliberately comes first in Modules:Enabled.
         using var host = factory.WithModules([TestModules.A(), TestModules.B("A")], "B", "A");
 
         var initialized = host.Services.GetServices<InitializedModule>().Select(m => m.Name);
@@ -133,7 +133,7 @@ public sealed class ModulesMeldenHunGezondheid(DoctrinaHostFactory factory) : IC
 
 public static class ModuleHostExtensions
 {
-    /// <summary>Client met een bearer-token van de nagebootste provider van <paramref name="root"/>.</summary>
+    /// <summary>Client with a bearer token from the stubbed provider of <paramref name="root"/>.</summary>
     public static HttpClient CreateApiClient(this DoctrinaHostFactory root, WebApplicationFactory<Program> host)
     {
         var client = host.CreateBrowser();

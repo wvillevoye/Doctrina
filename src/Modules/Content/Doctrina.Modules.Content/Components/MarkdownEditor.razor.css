@@ -1,0 +1,66 @@
+.md-editor__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+  padding: 0.25rem;
+  border: 1px solid var(--dc-border);
+  border-radius: 0.375rem;
+  background: var(--dc-surface-sunken);
+}
+
+.md-editor__colors {
+  display: inline-block;
+}
+
+.md-editor__palette {
+  margin: 0;
+  padding: 0.25rem;
+  inset: auto;
+  border: 1px solid var(--dc-border);
+  border-radius: 0.375rem;
+  background: var(--dc-surface);
+  color: var(--dc-text);
+}
+
+.md-editor__palette:popover-open {
+  /* A popover sits in the top layer, so it is placed against its button with CSS anchor positioning. */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  max-width: 12rem;
+  position: fixed;
+  top: anchor(bottom);
+  left: anchor(left);
+}
+
+.md-editor__swatch--accent { background: var(--dc-md-accent); }
+.md-editor__swatch--blue { background: var(--dc-md-blue); }
+.md-editor__swatch--lightblue { background: var(--dc-md-lightblue); }
+.md-editor__swatch--purple { background: var(--dc-md-purple); }
+.md-editor__swatch--teal { background: var(--dc-md-teal); }
+.md-editor__swatch--pink { background: var(--dc-md-pink); }
+.md-editor__swatch--brown { background: var(--dc-md-brown); }
+.md-editor__swatch--olive { background: var(--dc-md-olive); }
+.md-editor__swatch--success { background: var(--dc-md-success); }
+.md-editor__swatch--warning { background: var(--dc-md-warning); }
+.md-editor__swatch--danger { background: var(--dc-md-danger); }
+.md-editor__swatch--muted { background: var(--dc-md-muted); }
+
+.md-editor__swatch {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid var(--dc-border-strong);
+  border-radius: 0.25rem;
+}
+
+/* Name of a swatch for screen readers only. */
+.md-editor__name {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

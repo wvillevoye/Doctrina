@@ -4,7 +4,7 @@ using System.Net.Http.Json;
 using Doctrina.TestKit.Authentication;
 using Microsoft.AspNetCore.WebUtilities;
 
-// Tests volgen spec openspec/specs/user-authentication/spec.md:
+// Tests follow spec openspec/specs/user-authentication/spec.md:
 // klasse = requirement, methode = scenario.
 namespace Doctrina.Host.IntegrationTests.UserAuthentication;
 
@@ -132,16 +132,16 @@ public sealed class GebruikersLoggenUitBijDoctrinaEnBijDeProvider(DoctrinaHostFa
 
         using var signOut = await browser.PostAsync(new Uri("/sign-out", UriKind.Relative), form, Ct);
 
-        // Doctrina-sessie weg en doorgestuurd naar het end-session-endpoint van de provider
+        // Doctrina session gone and redirected to the provider's end-session endpoint
         Assert.Equal(HttpStatusCode.Redirect, signOut.StatusCode);
         var endSession = signOut.Headers.Location!;
         Assert.Equal(factory.Idp.Configuration.EndSessionEndpoint, endSession.GetLeftPart(UriPartial.Path));
         var query = QueryHelpers.ParseQuery(endSession.Query);
         Assert.Equal(DoctrinaHostFactory.WebClientId, query["client_id"]);
-        Assert.False(string.IsNullOrEmpty(query["id_token_hint"])); // zonder hint vraagt Keycloak om bevestiging
+        Assert.False(string.IsNullOrEmpty(query["id_token_hint"])); // without a hint Keycloak asks for confirmation
         Assert.Contains(signOut.Headers.GetValues("Set-Cookie"), c => c.StartsWith("doctrina.session=;", StringComparison.Ordinal));
 
-        // Provider stuurt terug naar post_logout_redirect_uri → Doctrina stuurt naar de startpagina
+        // Provider redirects back to post_logout_redirect_uri → Doctrina redirects to the start page
         var callback = new Uri(query["post_logout_redirect_uri"].ToString());
         using var back = await browser.GetAsync(new Uri($"{callback.AbsolutePath}?state={Uri.EscapeDataString(query["state"].ToString())}", UriKind.Relative), Ct);
         Assert.Equal("/", back.Headers.Location?.OriginalString);

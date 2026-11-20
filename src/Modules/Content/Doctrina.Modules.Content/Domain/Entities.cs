@@ -45,3 +45,36 @@ public sealed class ContentItem : ExchangeableEntity
     /// <summary>Visible to participants: the item and its section are both published.</summary>
     public bool IsVisible => Published && Section.Published;
 }
+
+/// <summary>The fixed layouts an introduction template can use; each is a CSS class of the introduction section.</summary>
+public enum IntroductionLayout { Plain, Banner, Objectives }
+
+/// <summary>
+/// A template for the introduction of a course offering: a fixed layout and a starting text (design D2 of
+/// add-course-introduction). Managed by administrators; the template "Default" always exists.
+/// </summary>
+public sealed class IntroductionTemplate : ExchangeableEntity
+{
+    public required string Name { get; set; }
+    public IntroductionLayout Layout { get; set; }
+
+    /// <summary>Markdown that fills an empty introduction when the template is chosen.</summary>
+    public string StartBody { get; set; } = string.Empty;
+
+    public int Position { get; set; }
+    public bool IsDefault { get; set; }
+}
+
+/// <summary>The introduction of a course offering. <see cref="OfferingId"/> has no foreign key (Academic owns offerings).</summary>
+public sealed class CourseIntroduction : ExchangeableEntity
+{
+    public Guid OfferingId { get; set; }
+
+    /// <summary>The chosen template; <see langword="null"/> or an inactive template means "Default".</summary>
+    public Guid? TemplateId { get; set; }
+
+    /// <summary>Markdown text.</summary>
+    public string Body { get; set; } = string.Empty;
+
+    public bool Published { get; set; }
+}

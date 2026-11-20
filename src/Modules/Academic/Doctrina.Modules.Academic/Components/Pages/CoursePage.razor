@@ -1,11 +1,13 @@
 @page "/courses/{OfferingId:guid}"
 @attribute [Authorize]
 @using Doctrina.Infrastructure.Authentication
+@using Microsoft.AspNetCore.Components.Sections
 @using Doctrina.Modules.Academic.Components
 @using Doctrina.Modules.Academic.Contracts
 @inject IAcademicDirectory Directory
 @inject IEnumerable<OfferingPageSection> Sections
 @inject NavigationManager Navigation
+@inject IServiceProvider Services
 
 @* The page of a course offering for its participants, with sections from other modules (spec course-page, design
    D2 of add-groups). Access: an active enrolment in the offering, or Academic.Read. *@
@@ -15,27 +17,45 @@
     <Description>@_offering.Name</Description>
   </DcPageHeader>
 
-  <div class="dc-stack">
-    <DcCard>
-      <dl class="dc-details" data-testid="offering-details">
-        <dt>Academic session</dt><dd>@_offering.SessionName</dd>
-        <dt>My role</dt><dd data-testid="my-role">@(_roles.Count == 0 ? "–" : string.Join(", ", _roles.Select(Labels.Role)))</dd>
-      </dl>
-    </DcCard>
+  @* The course menu goes into the sidebar of the layout, below the main menu. Absolute hrefs: <base href="/">. *@
+  <SectionContent SectionName="sidebar-extra">
+    <div class="course__menu" data-testid="course-nav">
+      <DcNavMenu Label="Course" Items="@MenuItems" />
+    </div>
+  </SectionContent>
 
-    @foreach (var section in Sections.OrderBy(s => s.Order))
+  <div class="dc-stack">
+    <section id="overview" aria-label="Overview">
+      <DcCard>
+        <dl class="dc-details" data-testid="offering-details">
+          <dt>Academic session</dt><dd>@_offering.SessionName</dd>
+          <dt>My role</dt><dd data-testid="my-role">@(_roles.Count == 0 ? "–" : string.Join(", ", _roles.Select(Labels.Role)))</dd>
+        </dl>
+      </DcCard>
+    </section>
+
+    @foreach (var section in _sections)
     {
-      <DynamicComponent Type="section.Component" Parameters="@(new Dictionary<string, object> { ["OfferingId"] = OfferingId })" />
+      <section id="@($"section-{section.Order}")" aria-label="@section.Title">
+        <DynamicComponent Type="section.Component" Parameters="@(new Dictionary<string, object> { ["OfferingId"] = OfferingId })" />
+      </section>
     }
   </div>
 }
 
 @code {
     private OfferingInfo? _offering;
+    private IReadOnlyList<OfferingPageSection> _sections = [];
     private List<OfferingRole> _roles = [];
 
     [Parameter]
     public Guid OfferingId { get; set; }
+
+    private IReadOnlyList<DcNavItem> MenuItems =>
+    [
+        new("Overview", $"/courses/{OfferingId:D}#overview", Icon: "info"),
+        .. _sections.Select(s => new DcNavItem(s.Title, $"/courses/{OfferingId:D}#section-{s.Order}", Icon: s.Icon ?? "book-open")),
+    ];
 
     [CascadingParameter]
     private Task<AuthenticationState>? AuthenticationState { get; set; }
@@ -59,6 +79,16 @@
             return;
         }
 
+        List<OfferingPageSection> visible = [];
+        foreach (var section in Sections.OrderBy(s => s.Order))
+        {
+            if (section.IsVisible is null || await section.IsVisible(Services, user, OfferingId))
+            {
+                visible.Add(section);
+            }
+        }
+
+        _sections = visible;
         _offering = offering.Value;
     }
 }

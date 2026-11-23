@@ -9,7 +9,8 @@
   background: var(--dc-surface-sunken);
 }
 
-.md-editor__colors {
+.md-editor__colors,
+.md-editor__menu {
   display: inline-block;
 }
 
@@ -63,4 +64,9 @@
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+.md-editor__list:popover-open {
+  flex-direction: column;
+  max-width: none;
 }

@@ -56,6 +56,73 @@ public sealed class DeWerkbalkVoegtMarkdownSyntaxIn
     }
 
     [Fact]
+    public void NormaleTekstHaaltDeKopWeg() =>
+        Assert.Equal("Welcome", Apply(MarkdownActionKind.NormalText, "## Welcome", 0, 0).Text);
+
+    [Fact]
+    public void Doorhalen() => Assert.Equal("~~old~~", Apply(MarkdownActionKind.Strikethrough, "old", 0, 3).Text);
+
+    [Fact]
+    public void CodeInDeRegel() =>
+        Assert.Equal("run `dotnet build`", Apply(MarkdownActionKind.InlineCode, "run dotnet build", 4, 16).Text);
+
+    [Fact]
+    public void GenummerdeLijst()
+    {
+        Assert.Equal("1. One\n2. Two", Apply(MarkdownActionKind.NumberedList, "One\nTwo", 0, 7).Text);
+        Assert.Equal("One\nTwo", Apply(MarkdownActionKind.NumberedList, "1. One\n2. Two", 0, 13).Text);
+    }
+
+    [Fact]
+    public void LijstsoortWisselen()
+    {
+        Assert.Equal("1. One\n2. Two", Apply(MarkdownActionKind.NumberedList, "- One\n- Two", 0, 11).Text);
+        Assert.Equal("- One", Apply(MarkdownActionKind.BulletedList, "1. One", 0, 0).Text);
+        Assert.Equal("- [ ] One", Apply(MarkdownActionKind.TaskList, "- One", 0, 0).Text);
+    }
+
+    [Fact]
+    public void Takenlijst()
+    {
+        Assert.Equal("- [ ] One\n- [ ] Two", Apply(MarkdownActionKind.TaskList, "One\nTwo", 0, 7).Text);
+        Assert.Equal("One", Apply(MarkdownActionKind.TaskList, "- [ ] One", 0, 0).Text);
+    }
+
+    [Fact]
+    public void Citaat()
+    {
+        Assert.Equal("> Wise words", Apply(MarkdownActionKind.Quote, "Wise words", 3, 3).Text);
+        Assert.Equal("Wise words", Apply(MarkdownActionKind.Quote, "> Wise words", 0, 0).Text);
+    }
+
+    [Fact]
+    public void CodeblokMetTaal()
+    {
+        var s = Apply(MarkdownActionKind.CodeBlock, "var x = 1;", 0, 10, "csharp");
+
+        Assert.Equal("```csharp\nvar x = 1;\n```", s.Text.TrimEnd());
+        Assert.Equal("var x = 1;", s.Text[s.Start..s.End]);
+        Assert.Equal("```\ncode\n```", Apply(MarkdownActionKind.CodeBlock, "", 0, 0, "cobol").Text.TrimEnd()); // unknown language: plain text
+    }
+
+    [Fact]
+    public void AfbeeldingInvoegen()
+    {
+        var s = Apply(MarkdownActionKind.Image, "Diagram", 0, 7);
+
+        Assert.Equal("![Diagram](https://)", s.Text);
+        Assert.Equal("https://", s.Text[s.Start..s.End]);
+    }
+
+    [Fact]
+    public void TabelInvoegen() =>
+        Assert.Equal("| Column 1 | Column 2 |\n| --- | --- |\n|  |  |", Apply(MarkdownActionKind.Table, "", 0, 0).Text.TrimEnd());
+
+    [Fact]
+    public void HorizontaleLijn() =>
+        Assert.StartsWith("One\n\n---", Apply(MarkdownActionKind.HorizontalRule, "One", 3, 3).Text);
+
+    [Fact]
     public void TekstCentreren()
     {
         Assert.Equal("{center}Welcome{/center}", Apply(MarkdownActionKind.Align, "Welcome", 0, 7, "center").Text);
@@ -104,7 +171,8 @@ public sealed class DeWerkbalkIsToegankelijkEnHoudtDeFocusInHetTekstveld : IDisp
 
         Assert.Equal("Formatting", page.Find("[role=toolbar]").GetAttribute("aria-label"));
         var names = page.FindAll("[role=toolbar] > button .visually-hidden").Select(n => n.TextContent).ToList();
-        Assert.Equal(["Heading 1", "Heading 2", "Heading 3", "Bold", "Italic", "Bulleted list", "Link", "Align left", "Align center", "Align right"], names);
+        Assert.Equal(["Bold", "Italic", "Strikethrough", "Inline code", "Bulleted list", "Numbered list", "Task list", "Quote", "Link", "Image", "Table", "Horizontal rule", "Align left", "Align center", "Align right"], names);
+        Assert.Equal(["Heading", "Code block", "Color"], page.FindAll("[role=toolbar] > span > button .visually-hidden").Select(n => n.TextContent).ToList());
         Assert.All(page.FindAll("[role=toolbar] button"), b => Assert.Equal("button", b.GetAttribute("type")));
     }
 
@@ -113,7 +181,7 @@ public sealed class DeWerkbalkIsToegankelijkEnHoudtDeFocusInHetTekstveld : IDisp
     {
         var page = Render();
 
-        await page.InvokeAsync(() => page.Find("button:has(.visually-hidden)").ClickAsync()); // Heading 1
+        await page.InvokeAsync(() => page.FindAll("[aria-label=Heading] button").Single(b => b.TextContent.Trim() == "Heading 1").ClickAsync());
         var call = _module.Invocations["setState"].Single();
 
         Assert.Equal("# typed", ((EditorState)call.Arguments[1]!).Text); // setState puts back focus and selection in the textarea
@@ -125,9 +193,27 @@ public sealed class DeWerkbalkIsToegankelijkEnHoudtDeFocusInHetTekstveld : IDisp
         var page = Render();
         _value = "stale"; // what the server knows; the browser state ("typed") wins
 
-        await page.InvokeAsync(() => page.FindAll("[role=toolbar] > button")[3].ClickAsync()); // Bold
+        await page.InvokeAsync(() => page.FindAll("[role=toolbar] > button")[0].ClickAsync()); // Bold
 
         Assert.Equal("**typed**", ((EditorState)_module.Invocations["setState"].Single().Arguments[1]!).Text);
+    }
+
+    [Fact]
+    public async Task CodeblokMetTaalViaDeKeuze()
+    {
+        var page = Render();
+
+        await page.InvokeAsync(() => page.Find("[data-language=csharp]").ClickAsync());
+
+        Assert.Equal("```csharp\ntyped\n```", ((EditorState)_module.Invocations["setState"].Single().Arguments[1]!).Text.TrimEnd());
+    }
+
+    [Fact]
+    public void GeenUploadknop()
+    {
+        var page = Render();
+
+        Assert.DoesNotContain(page.FindAll("[role=toolbar] button"), b => b.TextContent.Contains("upload", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

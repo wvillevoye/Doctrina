@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Markdig;
+using Markdig.Extensions.EmphasisExtras;
 using Markdig.Renderers;
 using Markdig.Renderers.Html;
 using Markdig.Syntax;
@@ -25,7 +26,7 @@ internal static partial class Markdown
 
     private static MarkdownPipeline BuildPipeline()
     {
-        var builder = new MarkdownPipelineBuilder().UsePipeTables().UseAutoLinks().DisableHtml();
+        var builder = new MarkdownPipelineBuilder().UsePipeTables().UseAutoLinks().UseEmphasisExtras(EmphasisExtraOptions.Strikethrough).UseTaskLists().DisableHtml();
         builder.Extensions.Add(new ColorExtension());
         return builder.Build();
     }

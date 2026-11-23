@@ -9,13 +9,38 @@
    script only reads and sets text and selection (design D1 of add-markdown-toolbar). *@
 <div class="md-editor" @ref="_container" data-testid="markdown-editor">
   <div class="md-editor__toolbar" role="toolbar" aria-label="Formatting">
-    <DcButton Variant="DcButtonVariant.Ghost" Icon="heading-1" Label="Heading 1" OnClick="@(() => ApplyAsync(MarkdownActionKind.Heading1))" />
-    <DcButton Variant="DcButtonVariant.Ghost" Icon="heading-2" Label="Heading 2" OnClick="@(() => ApplyAsync(MarkdownActionKind.Heading2))" />
-    <DcButton Variant="DcButtonVariant.Ghost" Icon="heading-3" Label="Heading 3" OnClick="@(() => ApplyAsync(MarkdownActionKind.Heading3))" />
+    <span class="md-editor__menu" style="anchor-name: --@_headingId">
+      <DcButton Variant="DcButtonVariant.Ghost" Icon="heading" Label="Heading" aria-haspopup="true" popovertarget="@_headingId" />
+      <div id="@_headingId" popover class="md-editor__palette md-editor__list" style="position-anchor: --@_headingId" role="group" aria-label="Heading">
+        @foreach (var (kind, caption) in Headings)
+        {
+          <DcButton Variant="DcButtonVariant.Ghost" popovertarget="@_headingId" popovertargetaction="hide"
+                    OnClick="@(() => ApplyAsync(kind))">@caption</DcButton>
+        }
+      </div>
+    </span>
     <DcButton Variant="DcButtonVariant.Ghost" Icon="bold" Label="Bold" OnClick="@(() => ApplyAsync(MarkdownActionKind.Bold))" />
     <DcButton Variant="DcButtonVariant.Ghost" Icon="italic" Label="Italic" OnClick="@(() => ApplyAsync(MarkdownActionKind.Italic))" />
+    <DcButton Variant="DcButtonVariant.Ghost" Icon="strikethrough" Label="Strikethrough" OnClick="@(() => ApplyAsync(MarkdownActionKind.Strikethrough))" />
+    <DcButton Variant="DcButtonVariant.Ghost" Icon="code" Label="Inline code" OnClick="@(() => ApplyAsync(MarkdownActionKind.InlineCode))" />
     <DcButton Variant="DcButtonVariant.Ghost" Icon="list" Label="Bulleted list" OnClick="@(() => ApplyAsync(MarkdownActionKind.BulletedList))" />
+    <DcButton Variant="DcButtonVariant.Ghost" Icon="list-ordered" Label="Numbered list" OnClick="@(() => ApplyAsync(MarkdownActionKind.NumberedList))" />
+    <DcButton Variant="DcButtonVariant.Ghost" Icon="list-checks" Label="Task list" OnClick="@(() => ApplyAsync(MarkdownActionKind.TaskList))" />
+    <DcButton Variant="DcButtonVariant.Ghost" Icon="quote" Label="Quote" OnClick="@(() => ApplyAsync(MarkdownActionKind.Quote))" />
+    <span class="md-editor__menu" style="anchor-name: --@_codeId">
+      <DcButton Variant="DcButtonVariant.Ghost" Icon="square-code" Label="Code block" aria-haspopup="true" popovertarget="@_codeId" />
+      <div id="@_codeId" popover class="md-editor__palette md-editor__list" style="position-anchor: --@_codeId" role="group" aria-label="Code block">
+        @foreach (var language in MarkdownFormatter.CodeLanguages)
+        {
+          <DcButton Variant="DcButtonVariant.Ghost" popovertarget="@_codeId" popovertargetaction="hide"
+                    data-language="@language" OnClick="@(() => ApplyAsync(MarkdownActionKind.CodeBlock, language))">@LanguageCaption(language)</DcButton>
+        }
+      </div>
+    </span>
     <DcButton Variant="DcButtonVariant.Ghost" Icon="link" Label="Link" OnClick="@(() => ApplyAsync(MarkdownActionKind.Link))" />
+    <DcButton Variant="DcButtonVariant.Ghost" Icon="image" Label="Image" OnClick="@(() => ApplyAsync(MarkdownActionKind.Image))" />
+    <DcButton Variant="DcButtonVariant.Ghost" Icon="table" Label="Table" OnClick="@(() => ApplyAsync(MarkdownActionKind.Table))" />
+    <DcButton Variant="DcButtonVariant.Ghost" Icon="minus" Label="Horizontal rule" OnClick="@(() => ApplyAsync(MarkdownActionKind.HorizontalRule))" />
     <DcButton Variant="DcButtonVariant.Ghost" Icon="align-left" Label="Align left" OnClick="@(() => ApplyAsync(MarkdownActionKind.Align, "left"))" />
     <DcButton Variant="DcButtonVariant.Ghost" Icon="align-center" Label="Align center" OnClick="@(() => ApplyAsync(MarkdownActionKind.Align, "center"))" />
     <DcButton Variant="DcButtonVariant.Ghost" Icon="align-right" Label="Align right" OnClick="@(() => ApplyAsync(MarkdownActionKind.Align, "right"))" />
@@ -36,6 +61,8 @@
 </div>
 
 @code {
+    private readonly string _headingId = "md-heading-" + Guid.NewGuid().ToString("N")[..8]; // DOM id only
+    private readonly string _codeId = "md-code-" + Guid.NewGuid().ToString("N")[..8]; // DOM id only
     private readonly string _popoverId = "md-colors-" + Guid.NewGuid().ToString("N")[..8]; // DOM id only, not an entity key
     private ElementReference _container;
     private IJSObjectReference? _module;
@@ -58,6 +85,23 @@
 
     private const string ModulePath = "./_content/Doctrina.Modules.Content/md-editor.js";
 
+    private static readonly (MarkdownActionKind, string)[] Headings =
+    [
+        (MarkdownActionKind.Heading1, "Heading 1"), (MarkdownActionKind.Heading2, "Heading 2"),
+        (MarkdownActionKind.Heading3, "Heading 3"), (MarkdownActionKind.NormalText, "Normal text"),
+    ];
+
+    private static string LanguageCaption(string language) => language switch
+    {
+        "" => "Plain text",
+        "csharp" => "C#",
+        "sql" => "SQL",
+        "json" => "JSON",
+        "html" => "HTML",
+        "bash" => "Bash",
+        _ => language,
+    };
+
     private static string Caption(string name) => name switch
     {
         "accent" => "UM orange",
@@ -66,12 +110,12 @@
         _ => char.ToUpperInvariant(name[0]) + name[1..],
     };
 
-    private async Task ApplyAsync(MarkdownActionKind kind, string? color = null)
+    private async Task ApplyAsync(MarkdownActionKind kind, string? argument = null)
     {
         // The state comes from the browser: typed text that has not fired a change event yet is not lost.
         _module ??= await JS.InvokeAsync<IJSObjectReference>("import", ModulePath);
         var state = await _module.InvokeAsync<EditorState>("getState", _container);
-        var next = MarkdownFormatter.Apply(new MarkdownAction(kind, color), state);
+        var next = MarkdownFormatter.Apply(new MarkdownAction(kind, argument), state);
         await _module.InvokeVoidAsync("setState", _container, next);
     }
 

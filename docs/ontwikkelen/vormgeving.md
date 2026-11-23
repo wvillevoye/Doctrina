@@ -161,7 +161,7 @@ same way: `{left}`, `{center}` or `{right}` around a paragraph. They render as `
 `--dc-md-*` tokens, so they follow the theme and a white-label stylesheet can override them. There are no free colour
 codes and no inline styles. Unknown names and unclosed markers stay plain text, and a colour does not cross the edge of
 other formatting (for example opened inside `**bold**` and closed outside it). `MarkdownEditor` (Content module) is the
-text field with a toolbar for headings, bold, italic, list, link and these colours; use it wherever Markdown is edited.
+text field with a toolbar for a heading menu, bold, italic, strikethrough, code, bulleted/numbered/task lists, quote, code block (with language), link, image, table, horizontal rule, alignment and these colours; use it wherever Markdown is edited.
 
 ## Regels voor modules
 
